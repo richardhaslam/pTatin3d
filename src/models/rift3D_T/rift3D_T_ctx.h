@@ -48,8 +48,8 @@ typedef struct {
 	PetscBool use_semi_eulerian_mesh;
 	PetscBool output_markers;
 	GeometryObject G[100];
-	PetscInt  ngo; 
-	
+	PetscInt  ngo;
+
 } ModelRift3D_TCtx;
 
 

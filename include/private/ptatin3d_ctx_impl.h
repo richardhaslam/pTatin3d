@@ -51,21 +51,21 @@ struct _p_pTatinCtx {
 	PetscReal  checkpoint_every_ncpumins;
 	PetscBool  checkpoint_disable;
 	PetscBool  use_mf_stokes;
-	
+
 	/* rheology */
   //RheologyConstants rheology_constants;
-	
+
 	/* Mesh size */
 	PetscInt   mx,my,mz;
-	
+
   DM  pack; /* all physics gets jammed in here */
-	
+
 	char       formatted_timestamp[PETSC_MAX_PATH_LEN];
 	char       outputpath[PETSC_MAX_PATH_LEN];
 	/* material points */
 	PetscInt   coefficient_projection_type;
 	DataBucket materialpoint_db;
-	DataEx     materialpoint_ex;	
+	DataEx     materialpoint_ex;
 	/* options */
 	PetscBool solverstatistics;
 	/* snes continuation parameter */
@@ -77,7 +77,7 @@ struct _p_pTatinCtx {
 	PetscReal time_max,time;
 	PetscBool use_constant_dt;
 	PetscReal constant_dt;
-	
+
 	/* rheology */
   RheologyConstants rheology_constants;
 	DataBucket material_constants;

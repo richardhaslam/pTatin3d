@@ -54,7 +54,7 @@ def ccode_array(var,nrow,ncol,outputVarName,add):
 					print outputVarName + '[' + str(i)+'] += ' + ccode(var[0,i]) + ';'
 				else:
 					print outputVarName + '[' + str(i)+'] = ' + ccode(var[0,i]) + ';'
-				
+
 
 	if ncol == 1:
 		if nrow != 1:
@@ -77,7 +77,7 @@ def ccode_array(var,nrow,ncol,outputVarName,add):
 def Stokes3dMixedFEM_MatMult_gp(nu,np,X,Y):
 
 	eta_gp = Symbol('eta_gp')
-	nsd   = 3 # spatial dimensions 
+	nsd   = 3 # spatial dimensions
 	ntens = 6 # tensor componenets
 
 	for i in range(0,nsd*nu+np):
@@ -131,8 +131,8 @@ def Stokes3dMixedFEM_MatMult_gp(nu,np,X,Y):
 	dwdy_gp = dNudy.transpose() * Uzdof
 	dwdz_gp = dNudz.transpose() * Uzdof
 
-		
-	# compute pressure		
+
+	# compute pressure
 	Pdof = zeros((np,1))
 	Np   = zeros((1,np))
 
@@ -143,13 +143,13 @@ def Stokes3dMixedFEM_MatMult_gp(nu,np,X,Y):
 	eval_p_gp  = Np * Pdof
 	print '// pressure at gauss point //'
 	ccode_array(eval_p_gp,1,1,'p_gp',False)
-	
+
 	# compute strain-rate
 	eval_E_gp = zeros((ntens,1))
 	eval_E_gp[0,0] = 0.5 * ( dudx_gp[0,0] + dudx_gp[0,0] )
 	eval_E_gp[1,0] = 0.5 * ( dvdy_gp[0,0] + dvdy_gp[0,0] )
 	eval_E_gp[2,0] = 0.5 * ( dwdz_gp[0,0] + dwdz_gp[0,0] )
-	
+
 	eval_E_gp[3,0] = ( dudy_gp[0,0] + dvdx_gp[0,0] )
 	eval_E_gp[4,0] = ( dudz_gp[0,0] + dwdx_gp[0,0] )
 	eval_E_gp[5,0] = ( dvdz_gp[0,0] + dwdy_gp[0,0] )
@@ -173,7 +173,7 @@ def Stokes3dMixedFEM_MatMult_gp(nu,np,X,Y):
 	D[5,5] =       eta_gp
 
 	# compute deviatoric stress
-	eval_tau_gp = D * E_gp 
+	eval_tau_gp = D * E_gp
 	print '// deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //'
 	ccode_array(eval_tau_gp,ntens,1,'tau_gp',False)
 
@@ -212,7 +212,7 @@ def Stokes3dMixedFEM_MatMult_gp(nu,np,X,Y):
 	m[0,0] = 1
 	m[1,0] = 1
 	m[2,0] = 1
-	
+
 	m[3,0] = 0
 	m[4,0] = 0
 	m[5,0] = 0
@@ -240,7 +240,7 @@ def Stokes3dMixedFEM_MatMult_gp(nu,np,X,Y):
 		div_gp = Symbol('div_gp')
 
 	Np_div_u = -Np.transpose() * div_gp
-	
+
 	print '// y = A21.u at gauss point //'
 	ccode_array(Np_div_u,np,1,'y1_pu',True)
 
@@ -258,7 +258,7 @@ def Stokes3dStabFEM_MatMult_gp(nu,np,X,Y):
 
 	eta_gp = Symbol('eta_gp')
 	eta_avg_gp = Symbol('eta_avg_gp')
-	nsd   = 3 # spatial dimensions 
+	nsd   = 3 # spatial dimensions
 	ntens = 6 # tensor componenets
 
 	for i in range(0,nsd*nu+np):
@@ -312,8 +312,8 @@ def Stokes3dStabFEM_MatMult_gp(nu,np,X,Y):
 	dwdy_gp = dNudy.transpose() * Uzdof
 	dwdz_gp = dNudz.transpose() * Uzdof
 
-		
-	# compute pressure		
+
+	# compute pressure
 	Pdof = zeros((np,1))
 	Np   = zeros((1,np))
 
@@ -324,13 +324,13 @@ def Stokes3dStabFEM_MatMult_gp(nu,np,X,Y):
 	eval_p_gp  = Np * Pdof
 	print '// pressure at gauss point //'
 	ccode_array(eval_p_gp,1,1,'p_gp',False)
-	
+
 	# compute strain-rate
 	eval_E_gp = zeros((ntens,1))
 	eval_E_gp[0,0] = 0.5 * ( dudx_gp[0,0] + dudx_gp[0,0] )
 	eval_E_gp[1,0] = 0.5 * ( dvdy_gp[0,0] + dvdy_gp[0,0] )
 	eval_E_gp[2,0] = 0.5 * ( dwdz_gp[0,0] + dwdz_gp[0,0] )
-	
+
 	eval_E_gp[3,0] = ( dudy_gp[0,0] + dvdx_gp[0,0] )
 	eval_E_gp[4,0] = ( dudz_gp[0,0] + dwdx_gp[0,0] )
 	eval_E_gp[5,0] = ( dvdz_gp[0,0] + dwdy_gp[0,0] )
@@ -354,7 +354,7 @@ def Stokes3dStabFEM_MatMult_gp(nu,np,X,Y):
 	D[5,5] =       eta_gp
 
 	# compute deviatoric stress
-	eval_tau_gp = D * E_gp 
+	eval_tau_gp = D * E_gp
 	print '// deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //'
 	ccode_array(eval_tau_gp,ntens,1,'tau_gp',False)
 
@@ -393,7 +393,7 @@ def Stokes3dStabFEM_MatMult_gp(nu,np,X,Y):
 	m[0,0] = 1
 	m[1,0] = 1
 	m[2,0] = 1
-	
+
 	m[3,0] = 0
 	m[4,0] = 0
 	m[5,0] = 0
@@ -421,13 +421,13 @@ def Stokes3dStabFEM_MatMult_gp(nu,np,X,Y):
 		div_gp = Symbol('div_gp')
 
 	Np_div_u = -Np.transpose() * div_gp
-	
+
 	print '// y = A21.u at gauss point //'
 	ccode_array(Np_div_u,np,1,'y1_pu',True)
 
 
 	print '// shifted pressure at gauss point //'
-	
+
 	ones = zeros((np,1))
 	for d in range(0,np):
 		ones[d,0] = 1.0
@@ -466,7 +466,7 @@ def Stokes3dStabFEM_MatMult_gp(nu,np,X,Y):
 def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 
 	eta_gp = Symbol('eta_gp')
-	nsd   = 3 # spatial dimensions 
+	nsd   = 3 # spatial dimensions
 	ntens = 6 # tensor componenets
 
 
@@ -539,8 +539,8 @@ def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	dwdy_gp = dNudy.transpose() * Uzdof
 	dwdz_gp = dNudz.transpose() * Uzdof
 
-		
-	# compute pressure		
+
+	# compute pressure
 	Pdof = zeros((np,1))
 	Np   = zeros((1,np))
 
@@ -554,13 +554,13 @@ def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 
 	ops = count_operations(eval_p_gp)
 	total_ops = total_ops + ops
-	
+
 	# compute strain-rate
 	eval_E_gp = zeros((ntens,1))
 	eval_E_gp[0,0] = 0.5 * ( dudx_gp[0,0] + dudx_gp[0,0] )
 	eval_E_gp[1,0] = 0.5 * ( dvdy_gp[0,0] + dvdy_gp[0,0] )
 	eval_E_gp[2,0] = 0.5 * ( dwdz_gp[0,0] + dwdz_gp[0,0] )
-	
+
 	eval_E_gp[3,0] = ( dudy_gp[0,0] + dvdx_gp[0,0] )
 	eval_E_gp[4,0] = ( dudz_gp[0,0] + dwdx_gp[0,0] )
 	eval_E_gp[5,0] = ( dvdz_gp[0,0] + dwdy_gp[0,0] )
@@ -589,7 +589,7 @@ def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	D[5,5] =       eta_gp
 
 	# compute deviatoric stress
-	eval_tau_gp = D * E_gp 
+	eval_tau_gp = D * E_gp
 	print '  // deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //'
 	ccode_array(eval_tau_gp,ntens,1,'  tau_gp',False)
 	ops = 0
@@ -632,7 +632,7 @@ def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	m[0,0] = 1
 	m[1,0] = 1
 	m[2,0] = 1
-	
+
 	m[3,0] = 0
 	m[4,0] = 0
 	m[5,0] = 0
@@ -654,7 +654,7 @@ def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	eval_div_gp = m.transpose() * E_gp
 	print '  // divergence at gauss point //'
 	ccode_array( eval_div_gp,1,1, '  div_gp', False )
-	
+
 	ops = count_operations(eval_div_gp)
 	total_ops = total_ops + ops
 
@@ -663,7 +663,7 @@ def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 		div_gp = Symbol('div_gp')
 
 	Np_div_u = -Np.transpose() * div_gp
-	
+
 	print '  // y = A21.u at gauss point //'
 	#ccode_array(Np_div_u,np,1,'y1_pu')
 
@@ -689,13 +689,13 @@ def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	Yextract = extract_fields(Y,nsd,nu,vfields,np,pfield)
 	lu = len(vfields)
 	lp = len(pfield)
-	
+
 	ops = 0
 	for d in range(0,lu*nu+lp*np):
 		ops = ops + count_operations(Yextract[d,0])
 	total_ops = total_ops + ops
 
-	# add += 
+	# add +=
 	total_ops = total_ops + (lu*nu+lp*np)
 
 
@@ -708,7 +708,7 @@ def Stokes3dMixedFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 def Stokes3dMixedFEM_diag_MatMult_gp_with_filter(funcname,nu,np,vfields,pfield):
 
 	eta_gp = Symbol('eta_gp')
-	nsd   = 3 # spatial dimensions 
+	nsd   = 3 # spatial dimensions
 	ntens = 6 # tensor componenets
 
 
@@ -733,8 +733,8 @@ def Stokes3dMixedFEM_diag_MatMult_gp_with_filter(funcname,nu,np,vfields,pfield):
 		dNudy[i,0] = Symbol('dNudy['+str(i)+']')
 		dNudz[i,0] = Symbol('dNudz['+str(i)+']')
 
-		
-	# compute pressure		
+
+	# compute pressure
 	Np   = zeros((1,np))
 
 	for i in range(0,np):
@@ -749,7 +749,7 @@ def Stokes3dMixedFEM_diag_MatMult_gp_with_filter(funcname,nu,np,vfields,pfield):
 	D[4,4] =       eta_gp
 	D[5,5] =       eta_gp
 
-	
+
 	# compute strain-rate operator
 	eval_B1_gp = zeros((ntens,nu))
 	eval_B2_gp = zeros((ntens,nu))
@@ -787,8 +787,8 @@ def Stokes3dMixedFEM_diag_MatMult_gp_with_filter(funcname,nu,np,vfields,pfield):
 				a = a + eval_B1_gp[ss,ii] * D[ss,tt] * eval_B1_gp[tt,ii]
 				b = b + eval_B2_gp[ss,ii] * D[ss,tt] * eval_B2_gp[tt,ii]
 				c = c + eval_B3_gp[ss,ii] * D[ss,tt] * eval_B3_gp[tt,ii]
-			
-		
+
+
 		Yu[ii] = a
 		Yv[ii] = b
 		Yw[ii] = c
@@ -818,13 +818,13 @@ def Stokes3dMixedFEM_diag_MatMult_gp_with_filter(funcname,nu,np,vfields,pfield):
 	Yextract = extract_fields(Y,nsd,nu,vfields,np,pfield)
 	lu = len(vfields)
 	lp = len(pfield)
-	
+
 	ops = 0
 	for d in range(0,lu*nu+lp*np):
 		ops = ops + count_operations(Yextract[d,0])
 	total_ops = total_ops + ops
 
-	# add += 
+	# add +=
 	total_ops = total_ops + (lu*nu+lp*np)
 
 
@@ -840,7 +840,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 
 	eta_gp = Symbol('eta_gp')
 	eta_avg_gp = Symbol('eta_avg_gp')
-	nsd   = 3 # spatial dimensions 
+	nsd   = 3 # spatial dimensions
 	ntens = 6 # tensor componenets
 
 
@@ -913,8 +913,8 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	dwdy_gp = dNudy.transpose() * Uzdof
 	dwdz_gp = dNudz.transpose() * Uzdof
 
-		
-	# compute pressure		
+
+	# compute pressure
 	Pdof = zeros((np,1))
 	Np   = zeros((1,np))
 
@@ -928,13 +928,13 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 
 	ops = count_operations(eval_p_gp)
 	total_ops = total_ops + ops
-	
+
 	# compute strain-rate
 	eval_E_gp = zeros((ntens,1))
 	eval_E_gp[0,0] = 0.5 * ( dudx_gp[0,0] + dudx_gp[0,0] )
 	eval_E_gp[1,0] = 0.5 * ( dvdy_gp[0,0] + dvdy_gp[0,0] )
 	eval_E_gp[2,0] = 0.5 * ( dwdz_gp[0,0] + dwdz_gp[0,0] )
-	
+
 	eval_E_gp[3,0] = ( dudy_gp[0,0] + dvdx_gp[0,0] )
 	eval_E_gp[4,0] = ( dudz_gp[0,0] + dwdx_gp[0,0] )
 	eval_E_gp[5,0] = ( dvdz_gp[0,0] + dwdy_gp[0,0] )
@@ -963,7 +963,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	D[5,5] =       eta_gp
 
 	# compute deviatoric stress
-	eval_tau_gp = D * E_gp 
+	eval_tau_gp = D * E_gp
 	print '  // deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //'
 	ccode_array(eval_tau_gp,ntens,1,'  tau_gp',False)
 	ops = 0
@@ -1006,7 +1006,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	m[0,0] = 1
 	m[1,0] = 1
 	m[2,0] = 1
-	
+
 	m[3,0] = 0
 	m[4,0] = 0
 	m[5,0] = 0
@@ -1028,7 +1028,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	eval_div_gp = m.transpose() * E_gp
 	print '  // divergence at gauss point //'
 	ccode_array( eval_div_gp,1,1, '  div_gp', False )
-	
+
 	ops = count_operations(eval_div_gp)
 	total_ops = total_ops + ops
 
@@ -1037,7 +1037,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 		div_gp = Symbol('div_gp')
 
 	Np_div_u = -Np.transpose() * div_gp
-	
+
 	print '  // y = A21.u at gauss point //'
 	#ccode_array(Np_div_u,np,1,'y1_pu')
 
@@ -1084,13 +1084,13 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	Yextract = extract_fields(Y,nsd,nu,vfields,np,pfield)
 	lu = len(vfields)
 	lp = len(pfield)
-	
+
 	ops = 0
 	for d in range(0,lu*nu+lp*np):
 		ops = ops + count_operations(Yextract[d,0])
 	total_ops = total_ops + ops
 
-	# add += 
+	# add +=
 	total_ops = total_ops + (lu*nu+lp*np)
 
 
@@ -1100,18 +1100,18 @@ def Stokes3dStabFEM_MatMult_gp_with_filter(funcname,nu,np,X,vfields,pfield):
 	print '}'
 
 
-##########################################################################################		
+##########################################################################################
 def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield):
 
 	eta_gp = Symbol('eta_gp')
 	eta_avg_gp = Symbol('eta_avg_gp')
-	nsd   = 3 # spatial dimensions 
+	nsd   = 3 # spatial dimensions
 	ntens = 6 # tensor componenets
 
 
 	print 'inline void ' + funcname + '(const double FAC,const double eta_gp,const double avg_eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])'
 	print '{'
-	
+
 	print '  const int nsd = '+str(nsd)+';'
 	print '  const int ntens = '+str(ntens)+';'
 	print '  double    p_gp;'
@@ -1186,8 +1186,8 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 	dwdy_gp = dNudy.transpose() * Uzdof
 	dwdz_gp = dNudz.transpose() * Uzdof
 
-		
-	# compute pressure		
+
+	# compute pressure
 	Pdof = zeros((np,1))
 	Np   = zeros((1,np))
 
@@ -1201,13 +1201,13 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 
 	ops = count_operations(eval_p_gp)
 	total_ops = total_ops + ops
-	
+
 	# compute strain-rate
 	eval_E_gp = zeros((ntens,1))
 	eval_E_gp[0,0] = 0.5 * ( dudx_gp[0,0] + dudx_gp[0,0] )
 	eval_E_gp[1,0] = 0.5 * ( dvdy_gp[0,0] + dvdy_gp[0,0] )
 	eval_E_gp[2,0] = 0.5 * ( dwdz_gp[0,0] + dwdz_gp[0,0] )
-	
+
 	eval_E_gp[3,0] = ( dudy_gp[0,0] + dvdx_gp[0,0] )
 	eval_E_gp[4,0] = ( dudz_gp[0,0] + dwdx_gp[0,0] )
 	eval_E_gp[5,0] = ( dvdz_gp[0,0] + dwdy_gp[0,0] )
@@ -1236,7 +1236,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 	D[5,5] =       eta_gp
 
 	# compute deviatoric stress
-	eval_tau_gp = D * E_gp 
+	eval_tau_gp = D * E_gp
 	print '  // deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //'
 	ccode_array(eval_tau_gp,ntens,1,'  tau_gp',False)
 	ops = 0
@@ -1279,7 +1279,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 	m[0,0] = 1
 	m[1,0] = 1
 	m[2,0] = 1
-	
+
 	m[3,0] = 0
 	m[4,0] = 0
 	m[5,0] = 0
@@ -1301,7 +1301,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 	eval_div_gp = m.transpose() * E_gp
 	print '  // divergence at gauss point //'
 	ccode_array( eval_div_gp,1,1, '  div_gp', False )
-	
+
 	ops = count_operations(eval_div_gp)
 	total_ops = total_ops + ops
 
@@ -1310,7 +1310,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 		div_gp = Symbol('div_gp')
 
 	Np_div_u = -Np.transpose() * div_gp
-	
+
 	print '  // y = A21.u at gauss point //'
 	#ccode_array(Np_div_u,np,1,'y1_pu')
 
@@ -1349,7 +1349,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 	p_gp_on_eta_avg = Symbol('p_gp_on_eta_avg')
 
 	stab = zeros((np,1))
-	stab = - Np.transpose() * p_gp_on_eta_avg + ones * scaled_p_on_eta_avg 
+	stab = - Np.transpose() * p_gp_on_eta_avg + ones * scaled_p_on_eta_avg
 #	ccode_array(stab,np,1,'  y1_pp',True)
 
 
@@ -1368,13 +1368,13 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 	Yextract = extract_fields(Y,nsd,nu,vfields,np,pfield)
 	lu = len(vfields)
 	lp = len(pfield)
-	
+
 	ops = 0
 	for d in range(0,lu*nu+lp*np):
 		ops = ops + count_operations(Yextract[d,0])
 	total_ops = total_ops + ops
 
-	# add += 
+	# add +=
 	total_ops = total_ops + (lu*nu+lp*np)
 
 
@@ -1382,7 +1382,7 @@ def Stokes3dStabFEM_MatMult_gp_with_filter_DEBUG(funcname,nu,np,X,vfields,pfield
 	print '  \n// total operations = ' + str(total_ops)
 
 	print '}'
-##########################################################################################		
+##########################################################################################
 
 def extract_fields(Y,nsd,nu,velfields,np,pressurefields):
 #	print '// velfields = ',velfields
@@ -1499,11 +1499,11 @@ def test3d():
 
 #	Yextract = extract_fields(Y,3,nnodes_u,0,nnodes_p,['p'])
 #	ccode_array(Yextract,0*nnodes_u+1*nnodes_p,1,'Ye')
-	
+
 	Yextract = extract_fields(Y,3,nnodes_u,['u'],nnodes_p,['p'])
 	ccode_array(Yextract,1*nnodes_u+1*nnodes_p,1,'Ye',True)
 
-	
+
 	print '\n\n*** FILTER y = A11.x ***'
 	# zero components
 	Xc = X * 1.0

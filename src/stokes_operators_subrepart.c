@@ -272,9 +272,9 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     ctx->nodes_remote_offset = -1; /* Not used */
   }
 
-  /* Note: In return for the convenience of sending a continguous range of node 
-     numbers, we send some that are not actually needed, as the subset of 
-     elements likely "splits a layer" of the grid. A further optimization 
+  /* Note: In return for the convenience of sending a continguous range of node
+     numbers, we send some that are not actually needed, as the subset of
+     elements likely "splits a layer" of the grid. A further optimization
      could be to make sure that the partition respects the grid layering.
 
      Note that a previous, more complex implementation computed exactly which

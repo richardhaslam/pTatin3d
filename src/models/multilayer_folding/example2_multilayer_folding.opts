@@ -23,7 +23,7 @@
 -fieldsplit_u_mg_coarse_ksp_type fgmres
 -fieldsplit_u_mg_coarse_pc_type lu
 
- 
+
 #-fieldsplit_u_mg_levels_ksp_norm_type NONE
 #-fieldsplit_u_mg_levels_ksp_type chebyshev
 -fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE
@@ -31,7 +31,7 @@
 -fieldsplit_u_mg_levels_ksp_max_it 10
 -fieldsplit_u_mg_levels_pc_type jacobi
 
-## MORE ROBUST ON DEFORMED MESHES? 
+## MORE ROBUST ON DEFORMED MESHES?
 -fieldsplit_u_mg_levels_ksp_max_it 8
 -fieldsplit_u_mg_levels_ksp_type fgmres
 
@@ -46,9 +46,9 @@
 -model_multilayer_folding_L_char 100.0
 
 # 	perturbation types
-#  0: random noise 
+#  0: random noise
 #  1: co and sinusoidal perturbation
-# 
+#
 
 -model_multilayer_folding_perturbation_type 1
 -model_multilayer_folding_kx 0.3142
@@ -63,15 +63,15 @@
 # Three layer model implies we need 3 element resolutions and 3 viscosities and 3 densities
 -model_multilayer_folding_layer_eta     0.0025,1.0,0.0025
 -model_multilayer_folding_layer_res_j   6,2,6
--model_multilayer_folding_layer_rho     0.0,0.0,0.0	
+-model_multilayer_folding_layer_rho     0.0,0.0,0.0
 -mx 16
 -mz 16
 -model_multilayer_folding_vx       0.005
 -model_multilayer_folding_vz	     0.005
 -model_multilayer_folding_exx     -0.3e2
 -model_multilayer_folding_ezz     -0.1e2
--model_multilayer_folding_bc_type  1         
--constant_dt 5.0e-05                    
+-model_multilayer_folding_bc_type  1
+-constant_dt 5.0e-05
 
 
 -ptatin_model multilayer_folding
@@ -90,7 +90,7 @@
 -stk_velocity_da_refine_hierarchy_y 2
 -stk_velocity_da_refine_hierarchy_z 4
 
-# dump the geometric multi-grid mesh hierarchy 
+# dump the geometric multi-grid mesh hierarchy
 #-stk_velocity_da_view_hierarchy
 
 #End of PETSc Option Table entries

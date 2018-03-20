@@ -57,12 +57,12 @@ const char *MaterialConst_SoftLin_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_SoftLin */
 /* ===================================== */
-void MaterialConst_SoftLinGetField_eps_min(MaterialConst_SoftLin *point,double *data) 
+void MaterialConst_SoftLinGetField_eps_min(MaterialConst_SoftLin *point,double *data)
 {
   *data = point->eps_min;
 }
 
-void MaterialConst_SoftLinGetField_eps_max(MaterialConst_SoftLin *point,double *data) 
+void MaterialConst_SoftLinGetField_eps_max(MaterialConst_SoftLin *point,double *data)
 {
   *data = point->eps_max;
 }
@@ -71,12 +71,12 @@ void MaterialConst_SoftLinGetField_eps_max(MaterialConst_SoftLin *point,double *
 /* ===================================== */
 /* Setters for MaterialConst_SoftLin */
 /* ===================================== */
-void MaterialConst_SoftLinSetField_eps_min(MaterialConst_SoftLin *point,double data) 
+void MaterialConst_SoftLinSetField_eps_min(MaterialConst_SoftLin *point,double data)
 {
   point->eps_min = data;
 }
 
-void MaterialConst_SoftLinSetField_eps_max(MaterialConst_SoftLin *point,double data) 
+void MaterialConst_SoftLinSetField_eps_max(MaterialConst_SoftLin *point,double data)
 {
   point->eps_max = data;
 }
@@ -103,7 +103,7 @@ void MaterialConst_SoftLinView(MaterialConst_SoftLin *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_SoftLin */
 /* ===================================== */
-void MaterialConst_SoftLinVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_SoftLin points[]) 
+void MaterialConst_SoftLinVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_SoftLin points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eps_min\" format=\"ascii\">\n");
@@ -122,7 +122,7 @@ void MaterialConst_SoftLinVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const 
 /* ===================================== */
 /* PVTU viewer for MaterialConst_SoftLin */
 /* ===================================== */
-void MaterialConst_SoftLinPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_SoftLinPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eps_min\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eps_max\" NumberOfComponents=\"1\"/>\n");
@@ -132,7 +132,7 @@ void MaterialConst_SoftLinPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_SoftLin */
 /* ===================================== */
-void MaterialConst_SoftLinVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_SoftLin points[]) 
+void MaterialConst_SoftLinVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_SoftLin points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eps_min\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -146,7 +146,7 @@ void MaterialConst_SoftLinVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_SoftLin */
 /* ==================================================== */
-void MaterialConst_SoftLinVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_SoftLin points[]) 
+void MaterialConst_SoftLinVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_SoftLin points[])
 {
   int p,length;
   size_t atomic_size;

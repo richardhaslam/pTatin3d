@@ -39,13 +39,13 @@ typedef struct {
 	PetscReal rho[100];
 	PetscReal cohesion[100];
 	PetscInt  bc_type, perturbation_type;
-	PetscReal ezz; 
+	PetscReal ezz;
 	PetscReal exx;
 	PetscReal vx_compression;
 	PetscReal vz_compression;
 	PetscReal Lx, Lz, Ly, L_char;
     PetscReal amp;
-    PetscReal kx,kz; 
+    PetscReal kx,kz;
     PetscReal A0;
 	PetscBool visco_plastic,quasi2d;
 } ModelMultilayerFoldingCtx;

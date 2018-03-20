@@ -39,8 +39,8 @@ PetscErrorCode DMDAViewPetscVTK(DM da,Vec field,const char name[])
 	Vec x;
 	PetscViewer vv;
 	PetscErrorCode ierr;
-	
-	
+
+
 	PetscFunctionBegin;
 	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), name, &vv);CHKERRQ(ierr);
 	ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -53,7 +53,7 @@ PetscErrorCode DMDAViewPetscVTK(DM da,Vec field,const char name[])
 	if (field) {
 		const char *name;
 		name = NULL;
-		/* temp work around - calling GetName forces a name to be inserted if you isn't there 
+		/* temp work around - calling GetName forces a name to be inserted if you isn't there
 		- in parallel an error will occur if [1]PETSC ERROR: VecView_MPI_DA() line 464 in src/dm/impls/da/gr2.c
 		if the name is null
 		*/

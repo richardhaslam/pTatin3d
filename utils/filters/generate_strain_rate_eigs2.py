@@ -20,7 +20,7 @@ def CubicSolver_OnlyRealRoots(a2,a1,a0):
 	R = (9.0*a2*a1 - 27.0 * a0 - 2.0 * a2 * a2 * a2)/54.0
 
 	D = Q*Q*Q + R*R
-		
+
 	if math.fabs(D) < 1.0e-8:
 
 		if R < 0.0 :
@@ -32,7 +32,7 @@ def CubicSolver_OnlyRealRoots(a2,a1,a0):
 		rootList[1] = -a2/3.0 - halfB
 		rootList[2] = -a2/3.0 - halfB
 		return rootList
-	
+
 	if D > 0.0:
 			print "Polynomial discrimanent is positive which means there are complex solutions.\nCannot solve equation"
 
@@ -61,7 +61,7 @@ def SymmetricTensor_CalcAllEigenvalues3D(tensor):
 			  (tensor[0][0] * tensor[1][2] * tensor[1][2])  +  \
 			  (tensor[1][1] * tensor[0][2] * tensor[0][2])  +  \
 			  (tensor[2][2] * tensor[0][1] * tensor[0][1])
-	
+
 	rootList = CubicSolver_OnlyRealRoots( a2, a1, a0 )
 
 	return rootList
@@ -71,7 +71,7 @@ def EQL(a,b):
 		return True
 	else:
 		return False
-		
+
 
 def SymmetricTensor_CalcEigenvector3D( tensor, eigenvalue ):
 	vector = [0]*3
@@ -92,14 +92,14 @@ def SymmetricTensor_CalcEigenvector3D( tensor, eigenvalue ):
 	print B*e - f*d, e
 	print f*A-d*e, e
 	print d*d-B*A,d
-	
-	
-	
+
+
+
 	if ((EQL(B*e, f*d)==False) & (EQL( e, 0.0 )==False)):
 		print '1'
 		vector[0] = 1.0
 		vector[1] = (f*A - d*e)/(B*e - f*d)
-		vector[2] = (-A - d * vector[1] ) / e 
+		vector[2] = (-A - d * vector[1] ) / e
 	elif ((EQL(f*A, d*e)==False) & (EQL( e, 0.0 )==False)) :
 		print '2'
 		vector[0] = (B*e - f*d)/(f*A - d*e)
@@ -182,7 +182,7 @@ def SymmetricTensor_CalcEigenvector3D_DAM( tensor, index, eigenvalue ):
 	mag = math.sqrt( vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2] )
 #	if (eigenvalue < 0.0):
 #		mag = -mag
-		
+
 	vector[0] = vector[0] / mag
 	vector[1] = vector[1] / mag
 	vector[2] = vector[2] / mag
@@ -204,7 +204,7 @@ def compute_E_from_L(ncells,grad_v_cell_data):
 		for j in xrange(3):
 			ee[i].append(0)
 			ll[i].append(0)
-	
+
 
 	#print grad_v_cell_data.GetNumberOfTuples()
 	#print grad_v_cell_data.GetNumberOfComponents()
@@ -300,13 +300,13 @@ def compute_E_from_L(ncells,grad_v_cell_data):
 #				min_kk = kk
 #		eigs[2] = teigs[min_kk]
 #		teigs[min_kk] = 1.0e32
-#		
+#
 #		print 'sorted',eigs
 
 		v1 = SymmetricTensor_CalcEigenvector3D_DAM(ee,0,eigs[0])
 		v2 = SymmetricTensor_CalcEigenvector3D_DAM(ee,1,eigs[1])
 		v3 = SymmetricTensor_CalcEigenvector3D_DAM(ee,2,eigs[2])
-		
+
 		for kk in range(0,3):
 			v1[kk] = v1[kk] * eigs[0]
 			v2[kk] = v2[kk] * eigs[1]
@@ -320,7 +320,7 @@ def compute_E_from_L(ncells,grad_v_cell_data):
 
 		for kk in range(0,3):
 			cdata_eigs.SetValue(3*c+kk,float(eigs[kk]))
-			
+
 			cdata_v1.SetValue(3*c+kk,float(v1[kk]))
 			cdata_v2.SetValue(3*c+kk,float(v2[kk]))
 			cdata_v3.SetValue(3*c+kk,float(v3[kk]))
@@ -345,7 +345,7 @@ def compute_Eeigs_from_L(ncells,grad_v_cell_data):
 		for j in xrange(3):
 			ee[i].append(0)
 			ll[i].append(0)
-	
+
 
 	cdata_eigs = vtk.vtkDoubleArray()
 	cdata_eigs.SetName('eig_val')
@@ -437,15 +437,15 @@ def compute_Eeigs_from_L(ncells,grad_v_cell_data):
 		teigs[min_kk] = 1.0e32
 		indx2 = min_kk
 
-#		
+#
 #		print 'sorted',eigs
 #		print indx0,indx1,indx2
 
-		
+
 
 		for kk in range(0,3):
 			cdata_eigs.SetValue(3*c+kk,float(eigs[kk]))
-			
+
 			if indx0 == 0:
 				cdata_v1.SetValue(3*c+kk,float(v1[kk]))
 			elif indx0 == 1:
@@ -466,7 +466,7 @@ def compute_Eeigs_from_L(ncells,grad_v_cell_data):
 				cdata_v3.SetValue(3*c+kk,float(v2[kk]))
 			else:
 				cdata_v3.SetValue(3*c+kk,float(v3[kk]))
-			
+
 		if c%500000 == 0:
 			print 'Done ' + str(c) + ' cells of ' + str(ncells)
 
@@ -484,7 +484,7 @@ def compute_inv2E_from_L(ncells,grad_v_cell_data):
 		for j in xrange(3):
 			ee[i].append(0)
 			ll[i].append(0)
-	
+
 
 	sr2_cell_data = vtk.vtkDoubleArray()
 	sr2_cell_data.SetName('strain_rate_inv')
@@ -532,7 +532,7 @@ def compute_Eeigs_from_L(ncells,grad_v_cell_data):
 		for j in xrange(3):
 			ee[i].append(0)
 			ll[i].append(0)
-	
+
 
 	cdata_eigs = vtk.vtkDoubleArray()
 	cdata_eigs.SetName('eig_val')
@@ -626,7 +626,7 @@ def compute_Eeigs_from_L(ncells,grad_v_cell_data):
 
 		for kk in range(0,3):
 			cdata_eigs.SetValue(3*c+kk,float(eigs[kk]))
-			
+
 			if indx0 == 0:
 				cdata_v1.SetValue(3*c+kk,float(v1[kk]))
 			elif indx0 == 1:
@@ -647,7 +647,7 @@ def compute_Eeigs_from_L(ncells,grad_v_cell_data):
 				cdata_v3.SetValue(3*c+kk,float(v2[kk]))
 			else:
 				cdata_v3.SetValue(3*c+kk,float(v3[kk]))
-			
+
 		if c%500000 == 0:
 			print 'Done ' + str(c) + ' cells of ' + str(ncells)
 
@@ -665,7 +665,7 @@ def compute_E_from_L(ncells,grad_v_cell_data):
 		for j in xrange(3):
 			ee[i].append(0)
 			ll[i].append(0)
-	
+
 	sr_cell_data = vtk.vtkDoubleArray()
 	sr_cell_data.SetName('strain_rate')
 	sr_cell_data.SetNumberOfComponents(6)
@@ -735,7 +735,7 @@ def generate_strain_rate(infilename,outfilename):
 	sr_cell_data                          = compute_E_from_L(      mesh_in.GetNumberOfCells(), grad_v_cell_data   )
 	eigs_cdata,v1_cdata,v2_cdata,v3_cdata = compute_Eeigs_from_L(  mesh_in.GetNumberOfCells(), grad_v_cell_data   )
 
-	# output 
+	# output
 	mesh_in.GetCellData().AddArray( sr2_cell_data )
 	mesh_in.GetCellData().AddArray( sr_cell_data )
 	mesh_in.GetCellData().AddArray( eigs_cdata )
@@ -758,7 +758,7 @@ def main():
 
 	optparser=OptionParser(usage='usage: %prog -i <filename1>',
 												 add_help_option=True,
-												 description="""Read vtu file with velocity and grad(V)""" + 
+												 description="""Read vtu file with velocity and grad(V)""" +
 												 """and generate strain rates.""")
 
 	optparser.add_option( "-i", "--input", dest="opt_inputfile",
@@ -774,7 +774,7 @@ def main():
 	infilename = options.opt_inputfile
 	if os.path.splitext(infilename)[1]=='.vts':
 		vts_name = os.path.splitext(infilename)[0] + "_sr_eigs.vts"
-	
+
 		print 'Reading: ' + infilename
 		print 'Writing: ' + vts_name
 		generate_strain_rate(infilename,vts_name)

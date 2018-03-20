@@ -69,42 +69,42 @@ const char *MaterialConst_ViscosityArrh_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_ViscosityArrh */
 /* ===================================== */
-void MaterialConst_ViscosityArrhGetField_preexpA(MaterialConst_ViscosityArrh *point,double *data) 
+void MaterialConst_ViscosityArrhGetField_preexpA(MaterialConst_ViscosityArrh *point,double *data)
 {
   *data = point->preexpA;
 }
 
-void MaterialConst_ViscosityArrhGetField_Ascale(MaterialConst_ViscosityArrh *point,double *data) 
+void MaterialConst_ViscosityArrhGetField_Ascale(MaterialConst_ViscosityArrh *point,double *data)
 {
   *data = point->Ascale;
 }
 
-void MaterialConst_ViscosityArrhGetField_entalpy(MaterialConst_ViscosityArrh *point,double *data) 
+void MaterialConst_ViscosityArrhGetField_entalpy(MaterialConst_ViscosityArrh *point,double *data)
 {
   *data = point->entalpy;
 }
 
-void MaterialConst_ViscosityArrhGetField_Vmol(MaterialConst_ViscosityArrh *point,double *data) 
+void MaterialConst_ViscosityArrhGetField_Vmol(MaterialConst_ViscosityArrh *point,double *data)
 {
   *data = point->Vmol;
 }
 
-void MaterialConst_ViscosityArrhGetField_nexp(MaterialConst_ViscosityArrh *point,double *data) 
+void MaterialConst_ViscosityArrhGetField_nexp(MaterialConst_ViscosityArrh *point,double *data)
 {
   *data = point->nexp;
 }
 
-void MaterialConst_ViscosityArrhGetField_Tref(MaterialConst_ViscosityArrh *point,double *data) 
+void MaterialConst_ViscosityArrhGetField_Tref(MaterialConst_ViscosityArrh *point,double *data)
 {
   *data = point->Tref;
 }
 
-void MaterialConst_ViscosityArrhGetField_Eta_scale(MaterialConst_ViscosityArrh *point,double *data) 
+void MaterialConst_ViscosityArrhGetField_Eta_scale(MaterialConst_ViscosityArrh *point,double *data)
 {
   *data = point->Eta_scale;
 }
 
-void MaterialConst_ViscosityArrhGetField_P_scale(MaterialConst_ViscosityArrh *point,double *data) 
+void MaterialConst_ViscosityArrhGetField_P_scale(MaterialConst_ViscosityArrh *point,double *data)
 {
   *data = point->P_scale;
 }
@@ -113,42 +113,42 @@ void MaterialConst_ViscosityArrhGetField_P_scale(MaterialConst_ViscosityArrh *po
 /* ===================================== */
 /* Setters for MaterialConst_ViscosityArrh */
 /* ===================================== */
-void MaterialConst_ViscosityArrhSetField_preexpA(MaterialConst_ViscosityArrh *point,double data) 
+void MaterialConst_ViscosityArrhSetField_preexpA(MaterialConst_ViscosityArrh *point,double data)
 {
   point->preexpA = data;
 }
 
-void MaterialConst_ViscosityArrhSetField_Ascale(MaterialConst_ViscosityArrh *point,double data) 
+void MaterialConst_ViscosityArrhSetField_Ascale(MaterialConst_ViscosityArrh *point,double data)
 {
   point->Ascale = data;
 }
 
-void MaterialConst_ViscosityArrhSetField_entalpy(MaterialConst_ViscosityArrh *point,double data) 
+void MaterialConst_ViscosityArrhSetField_entalpy(MaterialConst_ViscosityArrh *point,double data)
 {
   point->entalpy = data;
 }
 
-void MaterialConst_ViscosityArrhSetField_Vmol(MaterialConst_ViscosityArrh *point,double data) 
+void MaterialConst_ViscosityArrhSetField_Vmol(MaterialConst_ViscosityArrh *point,double data)
 {
   point->Vmol = data;
 }
 
-void MaterialConst_ViscosityArrhSetField_nexp(MaterialConst_ViscosityArrh *point,double data) 
+void MaterialConst_ViscosityArrhSetField_nexp(MaterialConst_ViscosityArrh *point,double data)
 {
   point->nexp = data;
 }
 
-void MaterialConst_ViscosityArrhSetField_Tref(MaterialConst_ViscosityArrh *point,double data) 
+void MaterialConst_ViscosityArrhSetField_Tref(MaterialConst_ViscosityArrh *point,double data)
 {
   point->Tref = data;
 }
 
-void MaterialConst_ViscosityArrhSetField_Eta_scale(MaterialConst_ViscosityArrh *point,double data) 
+void MaterialConst_ViscosityArrhSetField_Eta_scale(MaterialConst_ViscosityArrh *point,double data)
 {
   point->Eta_scale = data;
 }
 
-void MaterialConst_ViscosityArrhSetField_P_scale(MaterialConst_ViscosityArrh *point,double data) 
+void MaterialConst_ViscosityArrhSetField_P_scale(MaterialConst_ViscosityArrh *point,double data)
 {
   point->P_scale = data;
 }
@@ -205,7 +205,7 @@ void MaterialConst_ViscosityArrhView(MaterialConst_ViscosityArrh *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_ViscosityArrh */
 /* ===================================== */
-void MaterialConst_ViscosityArrhVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityArrh points[]) 
+void MaterialConst_ViscosityArrhVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityArrh points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"preexpA\" format=\"ascii\">\n");
@@ -254,7 +254,7 @@ void MaterialConst_ViscosityArrhVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,
 /* ===================================== */
 /* PVTU viewer for MaterialConst_ViscosityArrh */
 /* ===================================== */
-void MaterialConst_ViscosityArrhPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_ViscosityArrhPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"preexpA\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"Ascale\" NumberOfComponents=\"1\"/>\n");
@@ -270,7 +270,7 @@ void MaterialConst_ViscosityArrhPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_ViscosityArrh */
 /* ===================================== */
-void MaterialConst_ViscosityArrhVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_ViscosityArrh points[]) 
+void MaterialConst_ViscosityArrhVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_ViscosityArrh points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"preexpA\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -302,7 +302,7 @@ void MaterialConst_ViscosityArrhVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_ViscosityArrh */
 /* ==================================================== */
-void MaterialConst_ViscosityArrhVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityArrh points[]) 
+void MaterialConst_ViscosityArrhVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityArrh points[])
 {
   int p,length;
   size_t atomic_size;

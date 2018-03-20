@@ -41,12 +41,12 @@ PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 	PetscViewer    v;
 	MPI_Comm       comm;
 	Vec            xn;
-	
+
 
 	PetscFunctionBegin;
 	PetscObjectGetComm( (PetscObject)da, &comm );
 	if (da == NULL) SETERRQ(comm,PETSC_ERR_USER, "da is NULL");
-	
+
 	ierr = DMCreateGlobalVector(da, &xn);CHKERRQ(ierr);
 
 	ierr = PetscViewerCreate(comm,&v);CHKERRQ(ierr);
@@ -58,16 +58,16 @@ PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 	ierr = PetscViewerFileSetName(v,name);CHKERRQ(ierr);
 	ierr = VecLoad(xn,v); CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&v); CHKERRQ(ierr);
-	
-	/* 
+
+	/*
 	 putain - VecLoadIntoVector inserts the option below into the command line.
 	 This will screw shit up if you load in vectors with different block sizes.
 	 */
 	ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
-	
+
 	*da_x = xn;
-	
-	PetscFunctionReturn(0);	
+
+	PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[])
@@ -75,27 +75,27 @@ PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[])
 	PetscErrorCode ierr;
 	DM             cda;
 	Vec            coords,da_coords;
-	
-	
+
+
 	PetscFunctionBegin;
 	if (da == NULL) SETERRQ( PetscObjectComm((PetscObject)da),PETSC_ERR_USER, "da is NULL" );
-	
+
 	/* make sure the vector is present */
 	ierr = DMDASetUniformCoordinates(da, 0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-	
+
 	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
 	ierr = DMDALoadGlobalVectorFromFile(cda,name,&coords);CHKERRQ(ierr);
-	
+
 	/* set the global coordinates */
 	ierr = DMGetCoordinates(da,&da_coords);CHKERRQ(ierr);
 	ierr = VecCopy(coords,da_coords);CHKERRQ(ierr);
-	
+
 	/* make sure the local coordinates are upto date */
 	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
-	
+
 	ierr = VecDestroy(&coords);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);		
+
+	PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
@@ -103,26 +103,26 @@ PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
 	char fieldname[PETSC_MAX_PATH_LEN];
 	PetscViewer viewer;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
-	
+
 	if (zip_file) {
 		sprintf(fieldname,"%s.gz",name);
 	} else {
 		sprintf(fieldname,"%s",name);
 	}
-	
+
   ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-#ifdef PTATIN_USE_MPIIO	
+#ifdef PTATIN_USE_MPIIO
 	ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
 #endif
 	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
-	
+
 	ierr = VecView(x,viewer);CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -130,10 +130,10 @@ PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 {
 	PetscErrorCode ierr;
 	PetscViewer    v;
-	
-	
+
+
 	PetscFunctionBegin;
-	
+
 	ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&v);CHKERRQ(ierr);
 	ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
 	ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
@@ -143,14 +143,14 @@ PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 	ierr = PetscViewerFileSetName(v,name);CHKERRQ(ierr);
 	ierr = VecLoad(x,v); CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&v); CHKERRQ(ierr);
-	
-	/* 
+
+	/*
 	 putain - VecLoadIntoVector inserts the option below into the command line.
 	 This will screw shit up if you load in vectors with different block sizes.
 	 */
 	ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);	
+
+	PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
@@ -167,17 +167,17 @@ PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
   int *lri,*lrj,*lrk;
   Vec coords = NULL;
   PetscErrorCode ierr;
-  
-  
+
+
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
-  
+
   ierr = DMGetOptionsPrefix(da,&prefix);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,&ndof,&sw,&bc_type[0],&bc_type[1],&bc_type[2],&st);CHKERRQ(ierr);
   ierr = DMDAGetRefinementFactor(da,&refine[0],&refine[1],&refine[2]);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(da,&_lri,&_lrj,&_lrk);CHKERRQ(ierr);
-  
+
   ierr = PetscMalloc1(m,&lri);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&lrj);CHKERRQ(ierr);
   ierr = PetscMalloc1(p,&lrk);CHKERRQ(ierr);
@@ -192,11 +192,11 @@ PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
     PetscSNPrintf(jfilename,PETSC_MAX_PATH_LEN-1,"dmda.json");
     PetscSNPrintf(cfilename,PETSC_MAX_PATH_LEN-1,"dmda_coords.pbvec");
   }
-  
+
   ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
   if (coords) {
     PetscViewer v;
-    
+
     ierr = PetscViewerCreate(PetscObjectComm((PetscObject)da),&v);CHKERRQ(ierr);
     ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(v,FILE_MODE_WRITE);CHKERRQ(ierr);
@@ -207,16 +207,16 @@ PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
     ierr = VecView(coords,v);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
   }
-  
+
   if (commrank == 0) {
     cJSON *jso_file = NULL,*jso_dm = NULL,*ja,*jso_part,*content,*obj;
-    
+
     /* create json meta data file */
     jso_file = cJSON_CreateObject();
-    
+
     jso_dm = cJSON_CreateObject();
     cJSON_AddItemToObject(jso_file,"DMDA",jso_dm);
-    
+
     if (prefix) {
       content = cJSON_CreateString((char*)prefix);  cJSON_AddItemToObject(jso_dm,"optionsPrefix",content);
     }
@@ -233,8 +233,8 @@ PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
       default:
         SETERRQ(comm,PETSC_ERR_USER,"Unknown stenctil type detected");
         break;
-    }			
-    
+    }
+
     ja = cJSON_CreateArray();
     cJSON_AddItemToObject(jso_dm,"directions",ja);
 
@@ -310,7 +310,7 @@ PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
 
     {
       cJSON *jso_c;
-      
+
       jso_c = cJSON_CreateObject();
       cJSON_AddItemToObject(jso_dm,"coordinate",jso_c);
 
@@ -321,11 +321,11 @@ PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
         content = cJSON_CreateString("null"); cJSON_AddItemToObject(jso_c,"dmCoordinateFile",content);
       }
     }
-    
+
     jso_part = cJSON_CreateObject();
     cJSON_AddItemToObject(jso_dm,"partition",jso_part);
     content = cJSON_CreateInt((int)commsize);  cJSON_AddItemToObject(jso_part,"commSize",content);
-    
+
     ja = cJSON_CreateArray();
     cJSON_AddItemToObject(jso_part,"directions",ja);
 
@@ -348,26 +348,26 @@ PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
       cJSON_AddItemToArray(ja,obj);
     }
 
-    
+
     /* write json meta data file */
     {
       FILE *fp;
       char *jbuff = cJSON_Print(jso_file);
-      
+
       fp = fopen(jfilename,"w");
       if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",jfilename);
       fprintf(fp,"%s\n",jbuff);
       fclose(fp);
       free(jbuff);
     }
-    
+
     cJSON_Delete(jso_file);
   }
-  
+
   ierr = PetscFree(lri);CHKERRQ(ierr);
   ierr = PetscFree(lrj);CHKERRQ(ierr);
   ierr = PetscFree(lrk);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -386,7 +386,7 @@ PetscErrorCode _DMDAParseLayout_JSON(cJSON *jdmda,MPI_Comm comm,
   int k,nf;
   char stencilTypeName[PETSC_MAX_PATH_LEN];
   char boundaryTypeName[PETSC_MAX_PATH_LEN];
-  
+
   ierr = cJSONGetPetscString(comm,jdmda,"optionsPrefix",prefix,&found);CHKERRQ(ierr);
 
   ierr = cJSONGetPetscInt(comm,jdmda,"dim",dim,&found);CHKERRQ(ierr); if (!found) SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"dim\"");
@@ -397,7 +397,7 @@ PetscErrorCode _DMDAParseLayout_JSON(cJSON *jdmda,MPI_Comm comm,
   PetscStrcmp(stencilTypeName,"box",&match);    if (match) { *stencil_type = DMDA_STENCIL_BOX;  goto foundValidStencil; }
   if (!match) SETERRQ(comm,PETSC_ERR_USER,"Failed to match any valid DMDAStencilType");
   foundValidStencil:
-  
+
   nf = (int)(*dim);
   if (jdmda) {
     dirlist = cJSON_GetObjectItem(jdmda,"directions");
@@ -405,10 +405,10 @@ PetscErrorCode _DMDAParseLayout_JSON(cJSON *jdmda,MPI_Comm comm,
     nf = cJSON_GetArraySize(dirlist);
     d_k = cJSON_GetArrayItemRoot(dirlist);
   }
-  
+
   for (k=0; k<nf; k++) {
     ierr = cJSONGetPetscInt(comm,d_k,"points",&M[k],&found);CHKERRQ(ierr); if (!found) SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"points\"");
-    
+
     ierr = cJSONGetPetscString(comm,d_k,"boundaryType",boundaryTypeName,&found);CHKERRQ(ierr); if (!found) SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"boundaryType\"");
     PetscStrcmp(boundaryTypeName,"none",&match);        if (match) { bc_type[k] = DM_BOUNDARY_NONE;     goto foundValidBoundary; }
     PetscStrcmp(boundaryTypeName,"ghosted",&match);     if (match) { bc_type[k] = DM_BOUNDARY_GHOSTED;  goto foundValidBoundary; }
@@ -416,10 +416,10 @@ PetscErrorCode _DMDAParseLayout_JSON(cJSON *jdmda,MPI_Comm comm,
     PetscStrcmp(boundaryTypeName,"periodic",&match);    if (match) { bc_type[k] = DM_BOUNDARY_PERIODIC; goto foundValidBoundary; }
     if (!match) SETERRQ(comm,PETSC_ERR_USER,"Failed to match any valid DMBoundaryType");
     foundValidBoundary:
-    
+
     if (d_k) { d_k = cJSON_GetArrayItemNext(d_k); }
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -433,15 +433,15 @@ PetscErrorCode _DMDAParsePartition_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
   PetscBool found;
   int k,nf;
   PetscInt commsize,nvalues;
-  
+
   if (jdmda) {
     part = cJSON_GetObjectItem(jdmda,"partition");
     if (!part) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"partition\"\n");
   }
-  
+
   ierr = cJSONGetPetscInt(comm,part,"commSize",&commsize,&found);CHKERRQ(ierr); if (!found) SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"commSize\"");
   *csize = (PetscMPIInt)commsize;
-  
+
   nf = (int)dim;
   if (part) {
     dirlist = cJSON_GetObjectItem(part,"directions");
@@ -449,7 +449,7 @@ PetscErrorCode _DMDAParsePartition_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
     nf = cJSON_GetArraySize(dirlist);
     d_k = cJSON_GetArrayItemRoot(dirlist);
   }
-  
+
   for (k=0; k<nf; k++) {
     ierr = cJSONGetPetscInt(comm,d_k,"ranks",&mr[k],&found);CHKERRQ(ierr);
     if (!found) SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"ranks\"");
@@ -468,10 +468,10 @@ PetscErrorCode _DMDAParsePartition_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
     } else {
       SETERRQ(comm,PETSC_ERR_USER,"\"direction\" can only contain at most three entries \n");
     }
-    
+
     if (d_k) { d_k = cJSON_GetArrayItemNext(d_k); }
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -482,7 +482,7 @@ PetscErrorCode _DMDAParseRefine_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
   cJSON *dirlist = NULL,*d_k = NULL;
   PetscBool found;
   int k,nf;
-  
+
   nf = (int)dim;
   if (jdmda) {
     dirlist = cJSON_GetObjectItem(jdmda,"directions");
@@ -490,13 +490,13 @@ PetscErrorCode _DMDAParseRefine_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
     nf = cJSON_GetArraySize(dirlist);
     d_k = cJSON_GetArrayItemRoot(dirlist);
   }
-  
+
   for (k=0; k<nf; k++) {
     ierr = cJSONGetPetscInt(comm,d_k,"refinementFactor",&refine[k],&found);CHKERRQ(ierr); if (!found) SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"refinementFactor\"");
-    
+
     if (d_k) { d_k = cJSON_GetArrayItemNext(d_k); }
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -511,11 +511,11 @@ PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da)
   DMBoundaryType bc_type[3];
   DMDAStencilType stencil_type;
   PetscBool found,has_coords;
-  
-  
+
+
   ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  
+
   if (rank == 0) {
     cJSON_FileView(jfilename,&jfile);
     if (!jfile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to open JSON file \"%s\"",jfilename);
@@ -530,10 +530,10 @@ PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da)
   ndof = 1;
   sw = 0;
   lri = lrj = lrk = NULL;
-  
+
   refine[0] = refine[1] = refine[2] = 2;
   optionsprefix[0] = '\0';
-  
+
   ierr = _DMDAParseLayout_JSON(jdmda,comm,optionsprefix,&dim,bc_type,&stencil_type,M,&ndof,&sw);CHKERRQ(ierr);
   ierr = _DMDAParsePartition_JSON(jdmda,comm,dim,mr,&lri,&lrj,&lrk,&csize_file);CHKERRQ(ierr);
   ierr = _DMDAParseRefine_JSON(jdmda,comm,dim,refine);CHKERRQ(ierr);
@@ -542,13 +542,13 @@ PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da)
     /* reset all information regarding the partition */
     PetscPrintf(comm,"[DMDACheckpointLoad]: Ignoring partition information from file. Current comm.size = %d, whilst data was written using comm.size = %d\n",(int)nproc,(int)csize_file);
     mr[0] = mr[1] = mr[2] = PETSC_DECIDE;
-    
+
     ierr = PetscFree(lri);CHKERRQ(ierr);
     ierr = PetscFree(lrj);CHKERRQ(ierr);
     ierr = PetscFree(lrk);CHKERRQ(ierr);
     lri = lrj = lrk = NULL;
   }
-  
+
   switch (dim) {
     case 1:
       SETERRQ(comm,PETSC_ERR_SUP,"1D requires code adjustment: Only tested for 3D");
@@ -562,12 +562,12 @@ PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da)
       ierr = DMDACreate3d(comm,bc_type[0],bc_type[1],bc_type[2],stencil_type,M[0],M[1],M[2],mr[0],mr[1],mr[2],ndof,sw,lri,lrj,lrk,&da);CHKERRQ(ierr);
       ierr = DMSetUp(da);CHKERRQ(ierr);
       break;
-      
+
     default:
       SETERRQ(comm,PETSC_ERR_SUP,"Spatial dimension must be 1, 2 or 3");
       break;
   }
-  
+
   /* load coordinate file if found */
   cfilename[0] = '\0';
   has_coords = PETSC_FALSE;
@@ -576,14 +576,14 @@ PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da)
     has_coords = PETSC_TRUE;
   }
   ierr = MPI_Bcast(&has_coords,1,MPIU_BOOL,0,comm);CHKERRQ(ierr);
-  
+
   if (has_coords) {
     ierr = cJSONGetPetscString(comm,jdmdacoor,"dmCoordinateFile",cfilename,&found);CHKERRQ(ierr);
     if (!found) SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"dmCoordinateFile\"");
-    
+
     ierr = DMDALoadCoordinatesFromFile(da,cfilename);CHKERRQ(ierr);
   }
-  
+
   /* set prefix and refinement factor */
   if (da) {
     if (optionsprefix[0]) {
@@ -591,14 +591,14 @@ PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da)
     }
     ierr = DMDASetRefinementFactor(da,refine[0],refine[1],refine[2]);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscFree(lri);CHKERRQ(ierr);
   ierr = PetscFree(lrj);CHKERRQ(ierr);
   ierr = PetscFree(lrk);CHKERRQ(ierr);
-  
+
   if (jfile) { cJSON_Delete(jfile); }
-  
+
   *_da = da;
-  
+
   PetscFunctionReturn(0);
 }

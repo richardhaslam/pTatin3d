@@ -6,7 +6,7 @@ package-inc-y :=
 
 # ----------------------------------------------------------------------------
 # SPMA:
-# Simple C landscape evolution model. 
+# Simple C landscape evolution model.
 # Serves as a template for coupling surface process models. Contained within ptatin3d.
 #
 SPMA_DIR                     = $(PWD)/src/externalpackages/spmA

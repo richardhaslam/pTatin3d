@@ -327,43 +327,43 @@ static inline void _ConstructNi_P1(PetscReal coords[],PetscReal Ni_geom[NQP][Q1_
   PetscReal _xg[3];
   PetscInt i,q,d;
   PetscReal centroid[3],elvert[3*8],Lx[3];
-  
+
   for (d=0; d<3; d++) {
     elvert[3*0+d] = coords[3*0+d];
     elvert[3*1+d] = coords[3*2+d];
     elvert[3*2+d] = coords[3*6+d];
     elvert[3*3+d] = coords[3*8+d];
-    
+
     elvert[3*4+d] = coords[3*18+d];
     elvert[3*5+d] = coords[3*20+d];
     elvert[3*6+d] = coords[3*24+d];
     elvert[3*7+d] = coords[3*26+d];
-    
+
     centroid[d] = coords[3*13+d];
   }
   Lx[0] = coords[3*14  ] - coords[3*12  ];
   Lx[1] = coords[3*16+1] - coords[3*10+1];
   Lx[2] = coords[3*22+2] - coords[3*4 +2];
-  
+
   for (q=0; q<np; q++) {
-    
+
     // init
     for (d=0; d<3; d++) {
       _xg[d] = 0.0;
     }
-    
+
     // interpolate coords
     for (i=0; i<Q1_NODES_PER_EL_3D; i++) {
       for (d=0; d<3; d++) {
         _xg[d] += Ni_geom[q][i] * elvert[3*i+d];
       }
     }
-    
+
     // compute relative position
     for (d=0; d<3; d++) {
       _xg[d] = ( _xg[d] - centroid[d] ) / Lx[d] ;
     }
-    
+
     // define basis
     Ni[q][0] = 1.0;
     for (d=0; d<3; d++) {
@@ -383,12 +383,12 @@ static PetscErrorCode QuadratureAction_A_AVX(const QPntVolCoefStokes *gausspt[],
                                              PetscScalar dv[3][3][NQP][NEV])
 {
   PetscInt i,l,k,e;
-  
+
   for (i=0; i<NQP; i++) {
     PetscScalar Du[6][NEV] ALIGN32,Dv[6][NEV] ALIGN32; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
     __m256d dux[3][3],mhalf = _mm256_set1_pd(0.5),dvx[3][3];
     __m256d mweight = _mm256_mul_pd(_mm256_set1_pd(w[i]),_mm256_load_pd(dxdet[i]));
-    
+
     for (k=0; k<3; k++) { // directions
       __m256d dxk[3] = {_mm256_load_pd(dx[k][0][i]),_mm256_load_pd(dx[k][1][i]),_mm256_load_pd(dx[k][2][i])};
       for (l=0; l<3; l++) { // fields
@@ -403,7 +403,7 @@ static PetscErrorCode QuadratureAction_A_AVX(const QPntVolCoefStokes *gausspt[],
     _mm256_store_pd(Du[3],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[0][1],dux[1][0])));
     _mm256_store_pd(Du[4],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[0][2],dux[2][0])));
     _mm256_store_pd(Du[5],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[1][2],dux[2][1])));
-    
+
     for (e=0; e<NEV; e++) {
       for (k=0; k<6; k++) { /* Stress is coefficient of test function */
         Dv[k][e] = 2 * gausspt[e][i].eta * Du[k][e];
@@ -412,7 +412,7 @@ static PetscErrorCode QuadratureAction_A_AVX(const QPntVolCoefStokes *gausspt[],
         Dv[k][e] -= dp[i][e];
       }
     }
-    
+
     dvx[0][0] = _mm256_load_pd(Dv[0]);
     dvx[0][1] = _mm256_load_pd(Dv[3]);
     dvx[0][2] = _mm256_load_pd(Dv[4]);
@@ -422,7 +422,7 @@ static PetscErrorCode QuadratureAction_A_AVX(const QPntVolCoefStokes *gausspt[],
     dvx[2][0] = _mm256_load_pd(Dv[4]);
     dvx[2][1] = _mm256_load_pd(Dv[5]);
     dvx[2][2] = _mm256_load_pd(Dv[2]);
-    
+
     for (l=0; l<3; l++) { // fields
       for (k=0; k<3; k++) { // directions
         __m256d sum = _mm256_mul_pd(dvx[0][l],_mm256_load_pd(dx[0][k][i]));
@@ -454,7 +454,7 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
   const QPntVolCoefStokes *cell_gausspoints[NEV];
   PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP],xi[NQP][3];
   PetscReal NI_geom[NQP][Q1_NODES_PER_EL_3D],NIp[NEV][NQP][4];
-  
+
   PetscFunctionBegin;
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
@@ -470,13 +470,13 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
       for (k=0; k<3; k++) {
         w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
   }}}
-  
+
   p = 0;
   for (k=0; k<3; k++) {
     for (j=0; j<3; j++) {
       for (i=0; i<3; i++) {
         PetscReal XI[3];
-        
+
         XI[0] = x1[i];
         XI[1] = x1[j];
         XI[2] = x1[k];
@@ -487,17 +487,17 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
         //_w[p] = w1[i] * w1[j] * w1[k];
         p++;
   }}}
-  
+
   /* setup for coords */
   ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-  
+
   ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
   ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
-  
+
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
-  
+
   for (e=0;e<nel;e+=NEV) {
     PetscInt     ee,l;
     PetscScalar  elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
@@ -511,24 +511,24 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
     PetscReal    elp[4][NEV] ALIGN32;
     PetscReal    elq[4][NEV] ALIGN32;
     PetscScalar  dp[NQP][NEV] ALIGN32;
-    
+
     for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
       for (ee=0; ee<NEV; ee++) {
         PetscInt E = elnidx_u[nen_u*PetscMin(e+ee,nel-1)+i]; // Pad up to length NEV by duplicating last element
         for (l=0; l<3; l++) {
           elx[l][i][ee] = LA_gcoords[3*E+l];
           _elx[ee][3*i+l] = LA_gcoords[3*E+l];
-          
+
           elu[l][i][ee] = ufield[3*E+l];
         }
       }
     }
-    
+
     /* pressure */
     for (i=0; i<4; i++) {
       for (ee=0; ee<NEV; ee++) {
         PetscInt E = elnidx_p[nen_p*PetscMin(e+ee,nel-1)+i]; // Pad up to length NEV by duplicating last element
-        
+
         elp[i][ee] = pfield[E];
       }
     }
@@ -543,24 +543,24 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
         ConstructNi_pressure(xi[p],_elx[ee],NIp[ee][p]);
       }
     }
-    
+
     for (ee=0; ee<NEV; ee++) {
       ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,nel-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);CHKERRQ(ierr);
     }
-    
+
     ierr = PetscMemzero(dx,sizeof dx);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);CHKERRQ(ierr);
-    
+
     ierr = JacobianInvertNEV_AVX(dx,dxdet);CHKERRQ(ierr);
-    
+
     // u - momentum
     ierr = PetscMemzero(du,sizeof du);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);CHKERRQ(ierr);
-    
+
     // evaluate p at each quadrature point in each element
     ierr = PetscMemzero(dp,sizeof dp);CHKERRQ(ierr);
     for (p=0; p<NQP; p++) {
@@ -570,23 +570,23 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
         }
       }
     }
-    
+
     ierr = QuadratureAction_A_AVX(cell_gausspoints,dx,dxdet,w,du,dp,dv);CHKERRQ(ierr);
-    
+
     ierr = PetscMemzero(elv,sizeof elv);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);CHKERRQ(ierr);
-    
+
     // p - continuity
     // evaluate -div(u) at each quadrature point in each element
     ierr = PetscMemzero(dp,sizeof dp);CHKERRQ(ierr);
     for (p=0; p<NQP; p++) {
       for (ee=0; ee<NEV; ee++) {
         PetscReal gradx[3];
-        
+
         //dp[p][ee] = -(du[0][0][p][ee] + du[1][1][p][ee] + du[2][2][p][ee]);
-        
+
         for (k=0; k<3; k++) { // directions
           gradx[k] = du[0][k][p][ee] * dx[k][0][p][ee]
                    + du[1][k][p][ee] * dx[k][1][p][ee]
@@ -595,7 +595,7 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
         dp[p][ee] = -(gradx[0] + gradx[1] + gradx[2]);
       }
     }
-    
+
     ierr = PetscMemzero(elq,sizeof elq);CHKERRQ(ierr);
     for (p=0; p<NQP; p++) {
       for (i=0; i<4; i++) {
@@ -604,25 +604,25 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
         }
       }
     }
-    
+
     /* add contibutions */
     for (ee=0; ee<PetscMin(NEV,nel-e); ee++) {
-      
+
       for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
         PetscInt E = elnidx_u[nen_u*(e+ee)+i];
-        
+
         for (l=0; l<3; l++) {
           Yu[3*E+l] += elv[l][i][ee];
         }
       }
-      
+
       for (i=0; i<4; i++) {
         PetscInt E = elnidx_p[nen_p*(e+ee)+i];
-        
+
         Yp[E] += elq[i][ee];
       }
     }
-    
+
   }
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -631,7 +631,7 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
   PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
   PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 3x3 matrix inversion + determinant per element */
   PetscLogFlops(nel*NQP*(5*9+6+6+3+6*9));             /* quadrature action per element */
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -645,28 +645,28 @@ static PetscErrorCode QuadratureAction_A12_AVX(
                                            PetscScalar dv[3][3][NQP][NEV])
 {
   PetscInt i,l,k,e;
-  
+
   for (i=0; i<NQP; i++) {
     PetscScalar Dp[NEV] ALIGN32;
     __m256d dvx[3][3];
     __m256d mweight = _mm256_mul_pd(_mm256_set1_pd(w[i]),_mm256_load_pd(dxdet[i]));
-    
+
     for (e=0; e<NEV; e++) {
       Dp[e] = -dp[i][e];
     }
-    
+
     dvx[0][0] = _mm256_load_pd(Dp);
     dvx[0][1] = _mm256_setzero_pd();//_mm256_load_pd(Dv_z);
     dvx[0][2] = _mm256_setzero_pd();//_mm256_load_pd(Dv_z);
-    
+
     dvx[1][0] = _mm256_setzero_pd();//_mm256_load_pd(Dv_z);
     dvx[1][1] = _mm256_load_pd(Dp);
     dvx[1][2] = _mm256_setzero_pd();//_mm256_load_pd(Dv_z);
-    
+
     dvx[2][0] = _mm256_setzero_pd();//_mm256_load_pd(Dv_z);
     dvx[2][1] = _mm256_setzero_pd();//_mm256_load_pd(Dv_z);
     dvx[2][2] = _mm256_load_pd(Dp);
-    
+
     for (l=0; l<3; l++) { // fields
       for (k=0; k<3; k++) { // directions
         __m256d sum = _mm256_mul_pd(dvx[0][l],_mm256_load_pd(dx[0][k][i]));
@@ -691,7 +691,7 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
   PetscInt nel,nen_u,nen_p,e;
   PetscInt i,j,k,p;
   PetscReal NI_geom[NQP][Q1_NODES_PER_EL_3D],NIp[NEV][NQP][4];
-  
+
   PetscFunctionBegin;
   /* quadrature */
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
@@ -708,14 +708,14 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
       for (k=0; k<3; k++) {
         w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
   }}}
-  
-  
+
+
   p = 0;
   for (k=0; k<3; k++) {
     for (j=0; j<3; j++) {
       for (i=0; i<3; i++) {
         PetscReal XI[3];
-        
+
         XI[0] = x1[i];
         XI[1] = x1[j];
         XI[2] = x1[k];
@@ -725,16 +725,16 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
         P3D_ConstructNi_Q1_3D(XI,NI_geom[p]);
         p++;
   }}}
-  
+
   /* setup for coords */
   ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-  
+
   /* get indices */
   ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
   ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
-  
+
   for (e=0;e<nel;e+=NEV) {
     PetscInt    ee,l;
     PetscReal   elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
@@ -745,28 +745,28 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
     PetscScalar dxdet[NQP][NEV];
     PetscScalar dp[NQP][NEV] ALIGN32;
     PetscScalar dv[3][3][NQP][NEV] ALIGN32;
-    
+
     /* coords */
     for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
       for (ee=0; ee<NEV; ee++) {
         PetscInt E = elnidx_u[nen_u*PetscMin(e+ee,nel-1)+i]; // Pad up to length NEV by duplicating last element
-        
+
         for (l=0; l<3; l++) {
           elx[l][i][ee]   = LA_gcoords[3*E+l];
           _elx[ee][3*i+l] = LA_gcoords[3*E+l];
         }
       }
     }
-    
+
     /* pressure */
     for (i=0; i<4; i++) {
       for (ee=0; ee<NEV; ee++) {
         PetscInt E = elnidx_p[nen_p*PetscMin(e+ee,nel-1)+i]; // Pad up to length NEV by duplicating last element
-        
+
         elp[i][ee] = pfield[E];
       }
     }
-    
+
     /*
     for (ee=0; ee<NEV; ee++) {
       _ConstructNi_P1(_elx[ee],NI_geom,NQP,NIp[ee]);
@@ -777,18 +777,18 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
         ConstructNi_pressure(xi[p],_elx[ee],NIp[ee][p]);
       }
     }
-    
+
     /* compute Jacobian (J) and det(J) */
     ierr = PetscMemzero(dx,sizeof dx);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);CHKERRQ(ierr);
-    
+
     ierr = JacobianInvertNEV_AVX(dx,dxdet);CHKERRQ(ierr);
-    
+
     // evaluate p at each quadrature point in each element
     ierr = PetscMemzero(dp,sizeof dp);CHKERRQ(ierr);
-    
+
     for (p=0; p<NQP; p++) {
       for (i=0; i<4; i++) {
         for (ee=0; ee<NEV; ee++) {
@@ -796,16 +796,16 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
         }
       }
     }
-    
+
     // quadrature action
     ierr = QuadratureAction_A12_AVX(dx,dxdet,w,dp,dv);CHKERRQ(ierr);
-    
+
     // gradient
     ierr = PetscMemzero(elv,sizeof elv);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);CHKERRQ(ierr);
     ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);CHKERRQ(ierr);
-    
+
     /* add values */
     for (ee=0; ee<PetscMin(NEV,nel-e); ee++) {
       for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
@@ -815,11 +815,11 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
         }
       }
     }
-    
+
   }
-  
+
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-  
+
   PetscLogFlops(nel*(3 + NQP*(Q1_NODES_PER_EL_3D*(2*3) + 2*3))); /* pressure basis evaluation */
   PetscLogFlops((nel * 6) * 3*NQP*(6+6+6));           /* 6 tensor contractions per element */
   PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 3x3 matrix inversion + determinant per element */

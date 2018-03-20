@@ -55,7 +55,7 @@ const char *MaterialConst_DensityConst_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_DensityConst */
 /* ===================================== */
-void MaterialConst_DensityConstGetField_density(MaterialConst_DensityConst *point,double *data) 
+void MaterialConst_DensityConstGetField_density(MaterialConst_DensityConst *point,double *data)
 {
   *data = point->density;
 }
@@ -64,7 +64,7 @@ void MaterialConst_DensityConstGetField_density(MaterialConst_DensityConst *poin
 /* ===================================== */
 /* Setters for MaterialConst_DensityConst */
 /* ===================================== */
-void MaterialConst_DensityConstSetField_density(MaterialConst_DensityConst *point,double data) 
+void MaterialConst_DensityConstSetField_density(MaterialConst_DensityConst *point,double data)
 {
   point->density = data;
 }
@@ -86,7 +86,7 @@ void MaterialConst_DensityConstView(MaterialConst_DensityConst *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_DensityConst */
 /* ===================================== */
-void MaterialConst_DensityConstVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_DensityConst points[]) 
+void MaterialConst_DensityConstVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_DensityConst points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"density\" format=\"ascii\">\n");
@@ -100,7 +100,7 @@ void MaterialConst_DensityConstVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,c
 /* ===================================== */
 /* PVTU viewer for MaterialConst_DensityConst */
 /* ===================================== */
-void MaterialConst_DensityConstPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_DensityConstPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"density\" NumberOfComponents=\"1\"/>\n");
 }
@@ -109,7 +109,7 @@ void MaterialConst_DensityConstPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_DensityConst */
 /* ===================================== */
-void MaterialConst_DensityConstVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_DensityConst points[]) 
+void MaterialConst_DensityConstVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_DensityConst points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"density\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -120,7 +120,7 @@ void MaterialConst_DensityConstVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_f
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_DensityConst */
 /* ==================================================== */
-void MaterialConst_DensityConstVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_DensityConst points[]) 
+void MaterialConst_DensityConstVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_DensityConst points[])
 {
   int p,length;
   size_t atomic_size;

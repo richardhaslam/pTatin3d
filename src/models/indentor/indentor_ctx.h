@@ -41,7 +41,7 @@ typedef struct {
 	ModelBC  boundary_conditon_type; /* [ 0 free slip | 1 no slip | 2 free surface + free slip | 3 free surface + no slip ] */
 	PetscReal cutoff_time;
 	PetscReal indentation_velocity;
-	
+
 	PetscBool dimensional;
 	PetscReal density_bar;
 	PetscReal length_bar;

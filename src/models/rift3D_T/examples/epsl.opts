@@ -1,13 +1,13 @@
 
 ##  Using driver     : ./ptatin3d/src/ptatin_driver_nonlinear_ts.app
-## Options file for : 
+## Options file for :
 ##  L. Le Pourhiet, D. May, L. Huille, L. Watremez, and S. Leroy, "A genetic link between transform and hyper-extended margins", EPSL, 2017
-## PHYSICS PARAMETER for model POLC 100 km described in the paper.  
-## For models with spacing of 200 300 and 400 km 
+## PHYSICS PARAMETER for model POLC 100 km described in the paper.
+## For models with spacing of 200 300 and 400 km
 ##  change -model_rift3D_T_notchspace accordingly in meter (2.e5 3.e5 4.e5)
-## FOR model REG 
+## FOR model REG
 ##  change -model_rift3D_Ttheta_1 0.030 to -model_rift3D_Ttheta_1 0.025
-## =============================================================== 
+## ===============================================================
 -nonlinear_driver_v1
 -ptatin_model rift3D_T
 -log_summary
@@ -27,7 +27,7 @@
 -model_rift3D_Ttheta_1 0.030
 -model_rift3D_T_notchspace 1.e5
 ################ SOLVERS ################
-###### MG 
+###### MG
 -A11_operator_type 0,1,1
 -dau_nlevels 3
 -stk_velocity_dm_mat_type aij
@@ -37,7 +37,7 @@
 #-stk_velocity_da_refine_hierarchy_x 4,2
 #-stk_velocity_da_refine_hierarchy_y 2,1
 #-stk_velocity_da_refine_hierarchy_z 4,2
-#### SNES 
+#### SNES
 -newton_its 0
 -snes_atol 1e-2
 -snes_max_it 5
@@ -45,7 +45,7 @@
 -snes_max_linear_solve_fail 10
 -snes_monitor
 -snes_converged_reason
-#####  KSP LAETITIA 
+#####  KSP LAETITIA
 -ksp_max_it 50
 -ksp_rtol 1.0e-3
 -ksp_type fgmres
@@ -100,7 +100,7 @@
     -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_max_it 6
 
 
-#### THERMAL SOLVER 
+#### THERMAL SOLVER
 -T_ksp_atol 1.0e-4
 -T_ksp_monitor
 -T_ksp_rtol 1.0e-10

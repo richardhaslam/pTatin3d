@@ -57,12 +57,12 @@ const char *MaterialConst_PlasticMises_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_PlasticMises */
 /* ===================================== */
-void MaterialConst_PlasticMisesGetField_yield_stress(MaterialConst_PlasticMises *point,double *data) 
+void MaterialConst_PlasticMisesGetField_yield_stress(MaterialConst_PlasticMises *point,double *data)
 {
   *data = point->tau_yield;
 }
 
-void MaterialConst_PlasticMisesGetField_yield_stress_inf(MaterialConst_PlasticMises *point,double *data) 
+void MaterialConst_PlasticMisesGetField_yield_stress_inf(MaterialConst_PlasticMises *point,double *data)
 {
   *data = point->tau_yield_inf;
 }
@@ -71,12 +71,12 @@ void MaterialConst_PlasticMisesGetField_yield_stress_inf(MaterialConst_PlasticMi
 /* ===================================== */
 /* Setters for MaterialConst_PlasticMises */
 /* ===================================== */
-void MaterialConst_PlasticMisesSetField_yield_stress(MaterialConst_PlasticMises *point,double data) 
+void MaterialConst_PlasticMisesSetField_yield_stress(MaterialConst_PlasticMises *point,double data)
 {
   point->tau_yield = data;
 }
 
-void MaterialConst_PlasticMisesSetField_yield_stress_inf(MaterialConst_PlasticMises *point,double data) 
+void MaterialConst_PlasticMisesSetField_yield_stress_inf(MaterialConst_PlasticMises *point,double data)
 {
   point->tau_yield_inf = data;
 }
@@ -103,7 +103,7 @@ void MaterialConst_PlasticMisesView(MaterialConst_PlasticMises *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_PlasticMises */
 /* ===================================== */
-void MaterialConst_PlasticMisesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_PlasticMises points[]) 
+void MaterialConst_PlasticMisesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_PlasticMises points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"tau_yield\" format=\"ascii\">\n");
@@ -122,7 +122,7 @@ void MaterialConst_PlasticMisesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,c
 /* ===================================== */
 /* PVTU viewer for MaterialConst_PlasticMises */
 /* ===================================== */
-void MaterialConst_PlasticMisesPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_PlasticMisesPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"tau_yield\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"tau_yield_inf\" NumberOfComponents=\"1\"/>\n");
@@ -132,7 +132,7 @@ void MaterialConst_PlasticMisesPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_PlasticMises */
 /* ===================================== */
-void MaterialConst_PlasticMisesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_PlasticMises points[]) 
+void MaterialConst_PlasticMisesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_PlasticMises points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"tau_yield\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -146,7 +146,7 @@ void MaterialConst_PlasticMisesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_f
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_PlasticMises */
 /* ==================================================== */
-void MaterialConst_PlasticMisesVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_PlasticMises points[]) 
+void MaterialConst_PlasticMisesVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_PlasticMises points[])
 {
   int p,length;
   size_t atomic_size;

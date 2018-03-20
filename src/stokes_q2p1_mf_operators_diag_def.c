@@ -114,7 +114,7 @@ void MatMultMF_Stokes_MixedFEM3d_diagB(const double FAC,const double eta_gp,cons
   Y[82] += 0.0;
   Y[83] += 0.0;
   Y[84] += 0.0;
-  
+
 // total operations = 1138
 }
 void MatMultMF_Stokes_MixedFEM3d_diagB11(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
@@ -200,7 +200,7 @@ void MatMultMF_Stokes_MixedFEM3d_diagB11(const double FAC,const double eta_gp,co
   Y[78] += FAC*(eta_gp*pow(dNudy[26],2) + eta_gp*pow(dNudz[26],2) + 2.0*eta_gp*pow(dNudx[26],2));
   Y[79] += FAC*(eta_gp*pow(dNudx[26],2) + eta_gp*pow(dNudz[26],2) + 2.0*eta_gp*pow(dNudy[26],2));
   Y[80] += FAC*(eta_gp*pow(dNudx[26],2) + eta_gp*pow(dNudy[26],2) + 2.0*eta_gp*pow(dNudz[26],2));
-  
+
 // total operations = 1134
 }
 void MatMultMF_Stokes_MixedFEM3d_diagBuu(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
@@ -232,7 +232,7 @@ void MatMultMF_Stokes_MixedFEM3d_diagBuu(const double FAC,const double eta_gp,co
   Y[24] += FAC*(eta_gp*pow(dNudy[24],2) + eta_gp*pow(dNudz[24],2) + 2.0*eta_gp*pow(dNudx[24],2));
   Y[25] += FAC*(eta_gp*pow(dNudy[25],2) + eta_gp*pow(dNudz[25],2) + 2.0*eta_gp*pow(dNudx[25],2));
   Y[26] += FAC*(eta_gp*pow(dNudy[26],2) + eta_gp*pow(dNudz[26],2) + 2.0*eta_gp*pow(dNudx[26],2));
-  
+
 // total operations = 378
 }
 void MatMultMF_Stokes_MixedFEM3d_diagBvv(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
@@ -264,7 +264,7 @@ void MatMultMF_Stokes_MixedFEM3d_diagBvv(const double FAC,const double eta_gp,co
   Y[24] += FAC*(eta_gp*pow(dNudx[24],2) + eta_gp*pow(dNudz[24],2) + 2.0*eta_gp*pow(dNudy[24],2));
   Y[25] += FAC*(eta_gp*pow(dNudx[25],2) + eta_gp*pow(dNudz[25],2) + 2.0*eta_gp*pow(dNudy[25],2));
   Y[26] += FAC*(eta_gp*pow(dNudx[26],2) + eta_gp*pow(dNudz[26],2) + 2.0*eta_gp*pow(dNudy[26],2));
-  
+
 // total operations = 378
 }
 void MatMultMF_Stokes_MixedFEM3d_diagBww(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
@@ -296,7 +296,7 @@ void MatMultMF_Stokes_MixedFEM3d_diagBww(const double FAC,const double eta_gp,co
   Y[24] += FAC*(eta_gp*pow(dNudx[24],2) + eta_gp*pow(dNudy[24],2) + 2.0*eta_gp*pow(dNudz[24],2));
   Y[25] += FAC*(eta_gp*pow(dNudx[25],2) + eta_gp*pow(dNudy[25],2) + 2.0*eta_gp*pow(dNudz[25],2));
   Y[26] += FAC*(eta_gp*pow(dNudx[26],2) + eta_gp*pow(dNudy[26],2) + 2.0*eta_gp*pow(dNudz[26],2));
-  
+
 // total operations = 378
 }
 void MatMultMF_Stokes_MixedFEM3d_diagA22(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
@@ -305,6 +305,6 @@ void MatMultMF_Stokes_MixedFEM3d_diagA22(const double FAC,const double eta_gp,co
   Y[1] += 0.0;
   Y[2] += 0.0;
   Y[3] += 0.0;
-  
+
 // total operations = 4
 }

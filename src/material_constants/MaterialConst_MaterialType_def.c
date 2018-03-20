@@ -61,22 +61,22 @@ const char *MaterialConst_MaterialType_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_MaterialType */
 /* ===================================== */
-void MaterialConst_MaterialTypeGetField_visc_type(MaterialConst_MaterialType *point,int *data) 
+void MaterialConst_MaterialTypeGetField_visc_type(MaterialConst_MaterialType *point,int *data)
 {
   *data = point->visc_type;
 }
 
-void MaterialConst_MaterialTypeGetField_plastic_type(MaterialConst_MaterialType *point,int *data) 
+void MaterialConst_MaterialTypeGetField_plastic_type(MaterialConst_MaterialType *point,int *data)
 {
   *data = point->plastic_type;
 }
 
-void MaterialConst_MaterialTypeGetField_softening_type(MaterialConst_MaterialType *point,int *data) 
+void MaterialConst_MaterialTypeGetField_softening_type(MaterialConst_MaterialType *point,int *data)
 {
   *data = point->softening_type;
 }
 
-void MaterialConst_MaterialTypeGetField_density_type(MaterialConst_MaterialType *point,int *data) 
+void MaterialConst_MaterialTypeGetField_density_type(MaterialConst_MaterialType *point,int *data)
 {
   *data = point->density_type;
 }
@@ -85,22 +85,22 @@ void MaterialConst_MaterialTypeGetField_density_type(MaterialConst_MaterialType 
 /* ===================================== */
 /* Setters for MaterialConst_MaterialType */
 /* ===================================== */
-void MaterialConst_MaterialTypeSetField_visc_type(MaterialConst_MaterialType *point,int data) 
+void MaterialConst_MaterialTypeSetField_visc_type(MaterialConst_MaterialType *point,int data)
 {
   point->visc_type = data;
 }
 
-void MaterialConst_MaterialTypeSetField_plastic_type(MaterialConst_MaterialType *point,int data) 
+void MaterialConst_MaterialTypeSetField_plastic_type(MaterialConst_MaterialType *point,int data)
 {
   point->plastic_type = data;
 }
 
-void MaterialConst_MaterialTypeSetField_softening_type(MaterialConst_MaterialType *point,int data) 
+void MaterialConst_MaterialTypeSetField_softening_type(MaterialConst_MaterialType *point,int data)
 {
   point->softening_type = data;
 }
 
-void MaterialConst_MaterialTypeSetField_density_type(MaterialConst_MaterialType *point,int data) 
+void MaterialConst_MaterialTypeSetField_density_type(MaterialConst_MaterialType *point,int data)
 {
   point->density_type = data;
 }
@@ -137,7 +137,7 @@ void MaterialConst_MaterialTypeView(MaterialConst_MaterialType *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_MaterialType */
 /* ===================================== */
-void MaterialConst_MaterialTypeVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_MaterialType points[]) 
+void MaterialConst_MaterialTypeVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_MaterialType points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"visc_type\" format=\"ascii\">\n");
@@ -166,7 +166,7 @@ void MaterialConst_MaterialTypeVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,c
 /* ===================================== */
 /* PVTU viewer for MaterialConst_MaterialType */
 /* ===================================== */
-void MaterialConst_MaterialTypePVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_MaterialTypePVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int32\" Name=\"visc_type\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int32\" Name=\"plastic_type\" NumberOfComponents=\"1\"/>\n");
@@ -178,7 +178,7 @@ void MaterialConst_MaterialTypePVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_MaterialType */
 /* ===================================== */
-void MaterialConst_MaterialTypeVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_MaterialType points[]) 
+void MaterialConst_MaterialTypeVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_MaterialType points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"visc_type\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(int);
@@ -198,7 +198,7 @@ void MaterialConst_MaterialTypeVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_f
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_MaterialType */
 /* ==================================================== */
-void MaterialConst_MaterialTypeVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_MaterialType points[]) 
+void MaterialConst_MaterialTypeVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_MaterialType points[])
 {
   int p,length;
   size_t atomic_size;

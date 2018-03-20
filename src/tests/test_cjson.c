@@ -142,7 +142,7 @@ PetscErrorCode render(void)
   FILE *file;
   cJSON *root,*parent,*item;
   char *j;
-  
+
   root = cJSON_CreateObject();
 
   parent = cJSON_CreateObject();
@@ -153,7 +153,7 @@ PetscErrorCode render(void)
 
   item = cJSON_CreateString("rift3D");  cJSON_AddItemToObject(root,"ptatinModel",item);
 
-  
+
   j = cJSON_Print(root);
   printf("[ptatin state]\n");
   printf("%s\n",j);
@@ -161,9 +161,9 @@ PetscErrorCode render(void)
   fprintf(file,"%s",j);
   fclose(file);
   free(j);
-  
+
   cJSON_Delete(root);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -173,14 +173,14 @@ PetscErrorCode render_units(void)
   FILE *file;
   cJSON *root,*parent,*array,*item;
   char *j;
-  
+
   root = cJSON_CreateObject();
-  
+
   {
     const char *units[] = { "length", "velocity", "viscosity" };
     item = cJSON_CreateStringArray(units,3);  cJSON_AddItemToObject(root,"ptatinReferenceScales",item);
   }
-  
+
   array = cJSON_CreateArray();
   // length
   parent = cJSON_CreateObject();
@@ -194,10 +194,10 @@ PetscErrorCode render_units(void)
   item = cJSON_CreateString("m/s");         cJSON_AddItemToObject(parent,"unit",item);
   item = cJSON_CreateNumber(1.0e-10);       cJSON_AddItemToObject(parent,"scale",item);
   cJSON_AddItemToArray(array,parent);
-  
+
   cJSON_AddItemToObject(root,"ptatinScales",array);
-  
-  
+
+
   j = cJSON_Print(root);
   printf("[ptatin units]\n");
   printf("%s\n",j);
@@ -205,9 +205,9 @@ PetscErrorCode render_units(void)
   fprintf(file,"%s",j);
   fclose(file);
   free(j);
-  
+
   cJSON_Delete(root);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -241,12 +241,12 @@ int main(int argc,char **argv)
       ierr = render();CHKERRQ(ierr);
       ierr = render_units();CHKERRQ(ierr);
       break;
-      
+
     default:
       SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Undefined test id %d\n",test_id);
       break;
     }
-    
+
 	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

@@ -28,8 +28,8 @@ def extract_coords_phase(ug_reader,outfilename):
 	print numpointdatatypes
 	for p in range(0,numpointdatatypes):
 		print 'DataArrayName['+str(p)+']: ' + allpointdata.GetArrayName(p)
-	
-	
+
+
 
 	pointdata = None
 	pointdata = ug_markers.GetPointData().GetArray('phase')
@@ -57,7 +57,7 @@ def extract_coords_phase(ug_reader,outfilename):
 	######################################
 	name1 = 'coords_'+outfilename
 	name2 = 'phase_'+outfilename
-	
+
 	print '# Writing file: ' + name1
 	print '# Writing file: ' + name2
 
@@ -102,7 +102,7 @@ def extract_coords(ug_reader,outfilename):
 
 	######################################
 	name = 'coords_' + outfilename
-	
+
 	print '# Writing file: ' + name
 
 	binfile = open(name,'wb')
@@ -157,9 +157,9 @@ def extract_field(ug_reader,fieldname,outfilename):
 	print '#  Number of data arrays: '+ str(numpointdatatypes)
 	for p in range(0,numpointdatatypes):
 		print '#    DataArrayName['+str(p)+']: ' + allpointdata.GetArrayName(p)
-	
+
 	print '# Looking for datafield name: ' + fieldname
-	
+
 
 	pointdata = None
 	pointdata = ug_markers.GetPointData().GetArray(fieldname)
@@ -171,7 +171,7 @@ def extract_field(ug_reader,fieldname,outfilename):
 		print '# Found datafield name: ' + fieldname
 		print '# Data type index: ' + str( pointdata.GetDataType() )
 
-	
+
 
 	field_list = []
 	for c in range(0,ug_markers.GetNumberOfCells()):
@@ -181,7 +181,7 @@ def extract_field(ug_reader,fieldname,outfilename):
 
 	######################################
 	name = fieldname + '_' + outfilename
-	
+
 	print '# Writing file: ' + name
 
 	binfile = open(name,'wb')
@@ -213,31 +213,31 @@ def extract_field(ug_reader,fieldname,outfilename):
 		sys.exit(1)
 
 	elif datatypeindex == 2:  # VTK_CHAR
-		field_array = array('c', field_list)	
+		field_array = array('c', field_list)
 
 	elif datatypeindex == 3:  # VTK_SIGNED_CHAR
-		field_array = array('b', field_list)	
+		field_array = array('b', field_list)
 
 	elif datatypeindex == 4:  # VTK_SHORT
-		field_array = array('h', field_list)	
+		field_array = array('h', field_list)
 
 	elif datatypeindex == 5:  # VTK_UNSIGNED_SHORT
-		field_array = array('H', field_list)	
+		field_array = array('H', field_list)
 
 	elif datatypeindex == 6:  # VTK_INT
-		field_array = array('i', field_list)	
+		field_array = array('i', field_list)
 
 	elif datatypeindex == 7:  # VTK_UNSIGNED_INT
-		field_array = array('I', field_list)	
+		field_array = array('I', field_list)
 
 	elif datatypeindex == 8:  # VTK_LONG
-		field_array = array('l', field_list)	
+		field_array = array('l', field_list)
 
 	elif datatypeindex == 9:  # VTK_UNSIGNED_LONG
-		field_array = array('L', field_list)	
+		field_array = array('L', field_list)
 
 	elif datatypeindex == 10: # VTK_FLOAT
-		field_array = array('f', field_list)	
+		field_array = array('f', field_list)
 
 	elif datatypeindex == 11: # VTK_DOUBLE
 		field_array = array('d', field_list)
@@ -252,11 +252,11 @@ def extract_field(ug_reader,fieldname,outfilename):
 
 	# write vtk data type index
 	binfile.write( str(datatypeindex) + '\n' )
-	
+
 	# write header - number of points
 	binfile.write( str(ug_markers.GetNumberOfPoints()) + '\n' )
 
-	# write data to file	
+	# write data to file
 	field_array.tofile(binfile)
 
 	binfile.close()
@@ -283,7 +283,7 @@ def extact_field(ug_markers,fieldname,outfilename):
 
 	######################################
 	name = fieldname + '_' + outfilename
-	
+
 	print '  # Writing file: ' + name
 
 	binfile = open(name,'wb')
@@ -300,31 +300,31 @@ def extact_field(ug_markers,fieldname,outfilename):
 		sys.exit(1)
 
 	elif datatypeindex == 2:  # VTK_CHAR
-		field_array = array('c', field_list)	
+		field_array = array('c', field_list)
 
 	elif datatypeindex == 3:  # VTK_SIGNED_CHAR
-		field_array = array('b', field_list)	
+		field_array = array('b', field_list)
 
 	elif datatypeindex == 4:  # VTK_SHORT
-		field_array = array('h', field_list)	
+		field_array = array('h', field_list)
 
 	elif datatypeindex == 5:  # VTK_UNSIGNED_SHORT
-		field_array = array('H', field_list)	
+		field_array = array('H', field_list)
 
 	elif datatypeindex == 6:  # VTK_INT
-		field_array = array('i', field_list)	
+		field_array = array('i', field_list)
 
 	elif datatypeindex == 7:  # VTK_UNSIGNED_INT
-		field_array = array('I', field_list)	
+		field_array = array('I', field_list)
 
 	elif datatypeindex == 8:  # VTK_LONG
-		field_array = array('l', field_list)	
+		field_array = array('l', field_list)
 
 	elif datatypeindex == 9:  # VTK_UNSIGNED_LONG
-		field_array = array('L', field_list)	
+		field_array = array('L', field_list)
 
 	elif datatypeindex == 10: # VTK_FLOAT
-		field_array = array('f', field_list)	
+		field_array = array('f', field_list)
 
 	elif datatypeindex == 11: # VTK_DOUBLE
 		field_array = array('d', field_list)
@@ -339,11 +339,11 @@ def extact_field(ug_markers,fieldname,outfilename):
 
 	# write vtk data type index
 	binfile.write( str(datatypeindex) + '\n' )
-	
+
 	# write header - number of points
 	binfile.write( str(ug_markers.GetNumberOfPoints()) + '\n' )
 
-	# write data to file	
+	# write data to file
 	field_array.tofile(binfile)
 
 	binfile.close()
@@ -364,7 +364,7 @@ def extract_field_prompt(ug_reader,outfilename):
 	for p in range(0,numpointdatatypes):
 		print '#    DataArrayName['+str(p)+']: ' + allpointdata.GetArrayName(p)
 	print ''
-		
+
 	fieldname = None
 	while True:
 		fieldname = raw_input("  Select a field to extract... (or exit to quit) ")
@@ -387,7 +387,7 @@ def main():
 
 	optparser=OptionParser(usage='usage: %prog -i <filename1> -o <filename2>',
 												 add_help_option=True,
-												 description="""Read particle vtu file """ + 
+												 description="""Read particle vtu file """ +
 												 """and write data to a single binary file.""")
 
 	optparser.add_option( "-i", "--input", dest="opt_inputfile",
@@ -417,7 +417,7 @@ def main():
 	if os.path.splitext(infilename)[1]=='.vtu':
 		outfilename = os.path.splitext(infilename)[0] + "_bin.dat"
 
-	
+
 # DEPRECIATED
 #	extract_coords_phase(reader,options.opt_outputfile)
 
@@ -440,7 +440,7 @@ def main():
 		# DUMP FIELDS VIA PROMPT
 		extract_field_prompt(reader,outfilename)
 
-		
+
 if __name__ == '__main__':
 	main()
 

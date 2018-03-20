@@ -40,37 +40,37 @@ const char *EnergyMaterialConstants_member_names[] = {
 /* ================================================================= */
 /*   Getters for EnergyMaterialConstants */
 /* ================================================================= */
-void EnergyMaterialConstantsGetField_ThermalExpansivity(EnergyMaterialConstants *point,double *data) 
+void EnergyMaterialConstantsGetField_ThermalExpansivity(EnergyMaterialConstants *point,double *data)
 {
   *data = point->alpha;
 }
 
-void EnergyMaterialConstantsGetField_Compressibility(EnergyMaterialConstants *point,double *data) 
+void EnergyMaterialConstantsGetField_Compressibility(EnergyMaterialConstants *point,double *data)
 {
   *data = point->beta;
 }
 
-void EnergyMaterialConstantsGetField_ReferenceDensity(EnergyMaterialConstants *point,double *data) 
+void EnergyMaterialConstantsGetField_ReferenceDensity(EnergyMaterialConstants *point,double *data)
 {
   *data = point->rho_ref;
 }
 
-void EnergyMaterialConstantsGetField_SpecificHeat(EnergyMaterialConstants *point,double *data) 
+void EnergyMaterialConstantsGetField_SpecificHeat(EnergyMaterialConstants *point,double *data)
 {
   *data = point->Cp;
 }
 
-void EnergyMaterialConstantsGetField_DensityMethod(EnergyMaterialConstants *point,int *data) 
+void EnergyMaterialConstantsGetField_DensityMethod(EnergyMaterialConstants *point,int *data)
 {
   *data = point->density_type;
 }
 
-void EnergyMaterialConstantsGetField_ConductivityMethod(EnergyMaterialConstants *point,int *data) 
+void EnergyMaterialConstantsGetField_ConductivityMethod(EnergyMaterialConstants *point,int *data)
 {
   *data = point->conductivity_type;
 }
 
-void EnergyMaterialConstantsGetField_SourceMethod(EnergyMaterialConstants *point,int *data[]) 
+void EnergyMaterialConstantsGetField_SourceMethod(EnergyMaterialConstants *point,int *data[])
 {
   *data = point->source_type;
 }
@@ -79,37 +79,37 @@ void EnergyMaterialConstantsGetField_SourceMethod(EnergyMaterialConstants *point
 /* ================================================================= */
 /*   Setters for EnergyMaterialConstants */
 /* ================================================================= */
-void EnergyMaterialConstantsSetField_ThermalExpansivity(EnergyMaterialConstants *point,double data) 
+void EnergyMaterialConstantsSetField_ThermalExpansivity(EnergyMaterialConstants *point,double data)
 {
   point->alpha = data;
 }
 
-void EnergyMaterialConstantsSetField_Compressibility(EnergyMaterialConstants *point,double data) 
+void EnergyMaterialConstantsSetField_Compressibility(EnergyMaterialConstants *point,double data)
 {
   point->beta = data;
 }
 
-void EnergyMaterialConstantsSetField_ReferenceDensity(EnergyMaterialConstants *point,double data) 
+void EnergyMaterialConstantsSetField_ReferenceDensity(EnergyMaterialConstants *point,double data)
 {
   point->rho_ref = data;
 }
 
-void EnergyMaterialConstantsSetField_SpecificHeat(EnergyMaterialConstants *point,double data) 
+void EnergyMaterialConstantsSetField_SpecificHeat(EnergyMaterialConstants *point,double data)
 {
   point->Cp = data;
 }
 
-void EnergyMaterialConstantsSetField_DensityMethod(EnergyMaterialConstants *point,int data) 
+void EnergyMaterialConstantsSetField_DensityMethod(EnergyMaterialConstants *point,int data)
 {
   point->density_type = data;
 }
 
-void EnergyMaterialConstantsSetField_ConductivityMethod(EnergyMaterialConstants *point,int data) 
+void EnergyMaterialConstantsSetField_ConductivityMethod(EnergyMaterialConstants *point,int data)
 {
   point->conductivity_type = data;
 }
 
-void EnergyMaterialConstantsSetField_SourceMethod(EnergyMaterialConstants *point,int data[]) 
+void EnergyMaterialConstantsSetField_SourceMethod(EnergyMaterialConstants *point,int data[])
 {
   memcpy( &point->source_type[0], data, sizeof(int)*7 );
 }
@@ -183,45 +183,45 @@ void EnergyMaterialConstantsView(EnergyMaterialConstants *point)
 /* ================================================================= */
 /*   Getters for default parameters (EnergyMaterialConstants) */
 /* ================================================================= */
-void EnergyMaterialConstantsGetDefault_ThermalExpansivity(double *data) 
+void EnergyMaterialConstantsGetDefault_ThermalExpansivity(double *data)
 {
   *data = (double)0.0;
 }
 
-void EnergyMaterialConstantsGetDefault_Compressibility(double *data) 
+void EnergyMaterialConstantsGetDefault_Compressibility(double *data)
 {
   *data = (double)0.0;
 }
 
-void EnergyMaterialConstantsGetDefault_ReferenceDensity(double *data) 
+void EnergyMaterialConstantsGetDefault_ReferenceDensity(double *data)
 {
   *data = (double)0.0;
 }
 
-void EnergyMaterialConstantsGetDefault_SpecificHeat(double *data) 
+void EnergyMaterialConstantsGetDefault_SpecificHeat(double *data)
 {
   *data = (double)1.0;
 }
 
-void EnergyMaterialConstantsGetDefault_DensityMethod(int *data) 
+void EnergyMaterialConstantsGetDefault_DensityMethod(int *data)
 {
   *data = (int)0;
 }
 
-void EnergyMaterialConstantsGetDefault_ConductivityMethod(int *data) 
+void EnergyMaterialConstantsGetDefault_ConductivityMethod(int *data)
 {
   *data = (int)0;
 }
 
-void EnergyMaterialConstantsGetDefault_SourceMethod(int *data) 
+void EnergyMaterialConstantsGetDefault_SourceMethod(int *data)
 {
   *data = (int)0;
 }
 
-void MaterialConstantsSetDefaultAll_EnergyMaterialConstants( 
+void MaterialConstantsSetDefaultAll_EnergyMaterialConstants(
     int nr,EnergyMaterialConstants _data[])
 {
-  int r; 
+  int r;
 
   for (r=0; r<nr; r++) {
     { double value;
@@ -267,7 +267,7 @@ void MaterialConstantsSetDefaultAll_EnergyMaterialConstants(
 
   }
 
-} 
+}
 
 PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const char model_name[],const int region_id,EnergyMaterialConstants _data[],PetscBool essential)
 {
@@ -361,9 +361,9 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   }}
 
   PetscFunctionReturn(0);
-} 
+}
 
-PetscErrorCode MaterialConstantsPrintValues_EnergyMaterialConstants(const char model_name[],const int region_id,EnergyMaterialConstants _data[]) 
+PetscErrorCode MaterialConstantsPrintValues_EnergyMaterialConstants(const char model_name[],const int region_id,EnergyMaterialConstants _data[])
 {
   EnergyMaterialConstants *data = &_data[region_id];
   char   opt_name[PETSC_MAX_PATH_LEN];
@@ -374,48 +374,48 @@ PetscErrorCode MaterialConstantsPrintValues_EnergyMaterialConstants(const char m
   sprintf(opt_name,"-%s_ThermalExpansivity_%d", model_name,region_id);
   { double value;
     EnergyMaterialConstantsGetField_ThermalExpansivity(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    ThermalExpansivity = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    ThermalExpansivity = %1.4e (%s) \n", value,opt_name);
   }
 
   /* options for Compressibility ==>> beta */
   sprintf(opt_name,"-%s_Compressibility_%d", model_name,region_id);
   { double value;
     EnergyMaterialConstantsGetField_Compressibility(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    Compressibility = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    Compressibility = %1.4e (%s) \n", value,opt_name);
   }
 
   /* options for ReferenceDensity ==>> rho_ref */
   sprintf(opt_name,"-%s_ReferenceDensity_%d", model_name,region_id);
   { double value;
     EnergyMaterialConstantsGetField_ReferenceDensity(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    ReferenceDensity = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    ReferenceDensity = %1.4e (%s) \n", value,opt_name);
   }
 
   /* options for SpecificHeat ==>> Cp */
   sprintf(opt_name,"-%s_SpecificHeat_%d", model_name,region_id);
   { double value;
     EnergyMaterialConstantsGetField_SpecificHeat(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    SpecificHeat = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    SpecificHeat = %1.4e (%s) \n", value,opt_name);
   }
 
   /* options for DensityMethod ==>> density_type */
   sprintf(opt_name,"-%s_DensityMethod_%d", model_name,region_id);
   { int value;
     EnergyMaterialConstantsGetField_DensityMethod(data,(int*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    DensityMethod = %d (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    DensityMethod = %d (%s) \n", value,opt_name);
   }
 
   /* options for ConductivityMethod ==>> conductivity_type */
   sprintf(opt_name,"-%s_ConductivityMethod_%d", model_name,region_id);
   { int value;
     EnergyMaterialConstantsGetField_ConductivityMethod(data,(int*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    ConductivityMethod = %d (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    ConductivityMethod = %d (%s) \n", value,opt_name);
   }
 
   /* options for SourceMethod ==>> source_type */
   sprintf(opt_name,"-%s_SourceMethod_%d", model_name,region_id);
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsSetValues_EnergyMaterialConstants(const int region_id,EnergyMaterialConstants _data[],
     double alpha,
@@ -437,7 +437,7 @@ PetscErrorCode MaterialConstantsSetValues_EnergyMaterialConstants(const int regi
     memcpy(&data->source_type,source_type,7*sizeof(int));
   }
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsScaleValues_EnergyMaterialConstants(const int region_id,EnergyMaterialConstants _data[],
     double alpha,
@@ -472,5 +472,5 @@ PetscErrorCode MaterialConstantsScaleValues_EnergyMaterialConstants(const int re
   }
 
   PetscFunctionReturn(0);
-} 
+}
 

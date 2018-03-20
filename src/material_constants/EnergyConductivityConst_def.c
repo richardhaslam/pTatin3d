@@ -29,7 +29,7 @@ const char *EnergyConductivityConst_member_names[] = {
 /* ================================================================= */
 /*   Getters for EnergyConductivityConst */
 /* ================================================================= */
-void EnergyConductivityConstGetField_k0(EnergyConductivityConst *point,double *data) 
+void EnergyConductivityConstGetField_k0(EnergyConductivityConst *point,double *data)
 {
   *data = point->k0;
 }
@@ -38,7 +38,7 @@ void EnergyConductivityConstGetField_k0(EnergyConductivityConst *point,double *d
 /* ================================================================= */
 /*   Setters for EnergyConductivityConst */
 /* ================================================================= */
-void EnergyConductivityConstSetField_k0(EnergyConductivityConst *point,double data) 
+void EnergyConductivityConstSetField_k0(EnergyConductivityConst *point,double data)
 {
   point->k0 = data;
 }
@@ -60,15 +60,15 @@ void EnergyConductivityConstView(EnergyConductivityConst *point)
 /* ================================================================= */
 /*   Getters for default parameters (EnergyConductivityConst) */
 /* ================================================================= */
-void EnergyConductivityConstGetDefault_k0(double *data) 
+void EnergyConductivityConstGetDefault_k0(double *data)
 {
   *data = (double)0.0;
 }
 
-void MaterialConstantsSetDefaultAll_ConductivityConst( 
+void MaterialConstantsSetDefaultAll_ConductivityConst(
     int nr,EnergyConductivityConst _data[])
 {
-  int r; 
+  int r;
 
   for (r=0; r<nr; r++) {
     { double value;
@@ -78,7 +78,7 @@ void MaterialConstantsSetDefaultAll_ConductivityConst(
 
   }
 
-} 
+}
 
 PetscErrorCode MaterialConstantsSetFromOptions_ConductivityConst(const char model_name[],const int region_id,EnergyConductivityConst _data[],PetscBool essential)
 {
@@ -99,9 +99,9 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityConst(const char mode
   }}
 
   PetscFunctionReturn(0);
-} 
+}
 
-PetscErrorCode MaterialConstantsPrintValues_ConductivityConst(const char model_name[],const int region_id,EnergyConductivityConst _data[]) 
+PetscErrorCode MaterialConstantsPrintValues_ConductivityConst(const char model_name[],const int region_id,EnergyConductivityConst _data[])
 {
   EnergyConductivityConst *data = &_data[region_id];
   char   opt_name[PETSC_MAX_PATH_LEN];
@@ -112,11 +112,11 @@ PetscErrorCode MaterialConstantsPrintValues_ConductivityConst(const char model_n
   sprintf(opt_name,"-%s_k0_%d", model_name,region_id);
   { double value;
     EnergyConductivityConstGetField_k0(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    k0 = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    k0 = %1.4e (%s) \n", value,opt_name);
   }
 
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsSetValues_ConductivityConst(const int region_id,EnergyConductivityConst _data[],
     double k0)
@@ -124,7 +124,7 @@ PetscErrorCode MaterialConstantsSetValues_ConductivityConst(const int region_id,
   EnergyConductivityConst *data = &_data[region_id];
   data->k0 =  k0;
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsScaleValues_ConductivityConst(const int region_id,EnergyConductivityConst _data[],
     double k0)
@@ -138,5 +138,5 @@ PetscErrorCode MaterialConstantsScaleValues_ConductivityConst(const int region_i
   }
 
   PetscFunctionReturn(0);
-} 
+}
 

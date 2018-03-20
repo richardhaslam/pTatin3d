@@ -1,6 +1,6 @@
 #  -- pTatin Optimization flags --
 
-# Set your own PETSC_DIR and PETSC_ARCH 
+# Set your own PETSC_DIR and PETSC_ARCH
 ifndef PETSC_DIR
   $(error PETSC_DIR must be defined as an environment variable)
 endif

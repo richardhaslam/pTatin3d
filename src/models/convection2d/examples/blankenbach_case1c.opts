@@ -4,7 +4,7 @@
 -mx 32
 -my 32
 -mz 1
--nsteps 20000 
+-nsteps 20000
 
 -output_path convection2d_case1c
 
@@ -68,7 +68,7 @@
 # use aij with coarse (direct)
 -stk_velocity_dm_mat_type aij
 
--ksp_monitor 
+-ksp_monitor
 -ksp_converged_reason
 
 -T_ksp_monitor_true_residual

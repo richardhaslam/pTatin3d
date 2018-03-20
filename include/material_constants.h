@@ -43,7 +43,7 @@
 #include "material_constants/MaterialConst_SoftLin_def.h"
 #include "material_constants/MaterialConst_SoftExpo_def.h"
 
-typedef enum { 
+typedef enum {
 	VISCOUS_CONSTANT=0,
 	VISCOUS_FRANKK,
     VISCOUS_Z,
@@ -51,7 +51,7 @@ typedef enum {
 	VISCOUS_ARRHENIUS_2
 } ViscousType;
 
-typedef enum { 
+typedef enum {
 	PLASTIC_NONE      =0,
 	PLASTIC_MISES     =1,
 	PLASTIC_DP        =2,
@@ -59,13 +59,13 @@ typedef enum {
 	PLASTIC_DP_H      =4,
 } PlasticType;
 
-typedef enum { 
+typedef enum {
 	SOFTENING_NONE=0,
 	SOFTENING_LINEAR,
 	SOFTENING_EXPONENTIAL
 } SofteningType;
 
-typedef enum { 
+typedef enum {
 	DENSITY_CONSTANT=0,
 	DENSITY_BOUSSINESQ
 } DensityType;
@@ -89,7 +89,7 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityFK(DataBucket db,const int re
 PetscErrorCode MaterialConstantsScaleValues_ViscosityFK(DataBucket db,const int region_id,PetscReal eta_star);
 PetscErrorCode MaterialConstantsPrintValues_ViscosityFK(DataBucket db,const int region_id);
 
-/* Viscosity Arrh has no scaling function */ 
+/* Viscosity Arrh has no scaling function */
 PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
 PetscErrorCode MaterialConstantsSetValues_ViscosityArrh(DataBucket db,const int region_id,PetscReal preexpA,PetscReal Ascale,PetscReal entalpy,PetscReal Vmol,PetscReal nexp,PetscReal Tref);
 PetscErrorCode MaterialConstantsScaleValues_ViscosityArrh(DataBucket db,const int region_id,PetscReal eta_star,PetscReal sigma_star);

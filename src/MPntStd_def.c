@@ -66,27 +66,27 @@ const char *MPntStd_member_names[] = {
 /* ===================================== */
 /* Getters for MPntStd */
 /* ===================================== */
-void MPntStdGetField_point_index(MPntStd *point,long int *data) 
+void MPntStdGetField_point_index(MPntStd *point,long int *data)
 {
   *data = point->pid;
 }
 
-void MPntStdGetField_global_coord(MPntStd *point,double *data[]) 
+void MPntStdGetField_global_coord(MPntStd *point,double *data[])
 {
   *data = point->coor;
 }
 
-void MPntStdGetField_local_coord(MPntStd *point,double *data[]) 
+void MPntStdGetField_local_coord(MPntStd *point,double *data[])
 {
   *data = point->xi;
 }
 
-void MPntStdGetField_phase_index(MPntStd *point,int *data) 
+void MPntStdGetField_phase_index(MPntStd *point,int *data)
 {
   *data = point->phase;
 }
 
-void MPntStdGetField_local_element_index(MPntStd *point,int *data) 
+void MPntStdGetField_local_element_index(MPntStd *point,int *data)
 {
   *data = point->wil;
 }
@@ -95,27 +95,27 @@ void MPntStdGetField_local_element_index(MPntStd *point,int *data)
 /* ===================================== */
 /* Setters for MPntStd */
 /* ===================================== */
-void MPntStdSetField_point_index(MPntStd *point,long int data) 
+void MPntStdSetField_point_index(MPntStd *point,long int data)
 {
   point->pid = data;
 }
 
-void MPntStdSetField_global_coord(MPntStd *point,double data[]) 
+void MPntStdSetField_global_coord(MPntStd *point,double data[])
 {
   memcpy( &point->coor[0], data, sizeof(double)*3 );
 }
 
-void MPntStdSetField_local_coord(MPntStd *point,double data[]) 
+void MPntStdSetField_local_coord(MPntStd *point,double data[])
 {
   memcpy( &point->xi[0], data, sizeof(double)*3 );
 }
 
-void MPntStdSetField_phase_index(MPntStd *point,int data) 
+void MPntStdSetField_phase_index(MPntStd *point,int data)
 {
   point->phase = data;
 }
 
-void MPntStdSetField_local_element_index(MPntStd *point,int data) 
+void MPntStdSetField_local_element_index(MPntStd *point,int data)
 {
   point->wil = data;
 }
@@ -161,7 +161,7 @@ void MPntStdView(MPntStd *point)
 /* ===================================== */
 /* VTK viewer for MPntStd */
 /* ===================================== */
-void MPntStdVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntStd points[]) 
+void MPntStdVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntStd points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int64\" Name=\"pid\" format=\"ascii\">\n");
@@ -185,7 +185,7 @@ void MPntStdVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntStd points
 /* ===================================== */
 /* PVTU viewer for MPntStd */
 /* ===================================== */
-void MPntStdPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MPntStdPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int64\" Name=\"pid\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int32\" Name=\"phase\" NumberOfComponents=\"1\"/>\n");
@@ -196,7 +196,7 @@ void MPntStdPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MPntStd */
 /* ===================================== */
-void MPntStdVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MPntStd points[]) 
+void MPntStdVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MPntStd points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int64\" Name=\"pid\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(long int);
@@ -217,7 +217,7 @@ void MPntStdVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const
 /* ================================================== */
 /* VTK binary (appended data) viewer for MPntStd */
 /* ==================================================== */
-void MPntStdVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MPntStd points[]) 
+void MPntStdVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MPntStd points[])
 {
   int p,length;
   size_t atomic_size;

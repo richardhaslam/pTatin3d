@@ -8,11 +8,11 @@
  If we only want to go the next item in the list (in sequence),
  it is pointless to use the function cJSON_GetArrayItem().
  This function traverses the entire tree from the root upon each call.
- 
+
  Usage:
  gobject = cJSON_GetObjectItem(jfile,"GeometryObjectList");
  ngobj = cJSON_GetArraySize(gobject);
- 
+
  gobj_k = cJSON_GetArrayItemRoot(gobject);
  for (k=0; k<ngobj; k++) {
    gobj_k = cJSON_GetArrayItemNext(gobj_k);
@@ -42,40 +42,40 @@ void cJSON_FileView(const char filename[],cJSON **jf)
   char  *data;
   long  len;
   cJSON *jfile;
-  
+
   fp = fopen(filename,"rb");
   if (!fp) {
     *jf = NULL;
     return;
   }
-  
+
   fseek(fp,0,SEEK_END);
-  
+
   len = ftell(fp);
   fseek(fp,0,SEEK_SET);
-  
+
   data = malloc(sizeof(char)*(len+1));
   if (fread(data,1,len,fp) != len) {
     printf("fread error (%s:%d). Exiting ungracefully.\n",__FILE__,__LINE__);
     exit(1);
   }
   fclose(fp);
-  
+
   jfile = NULL;
   jfile = cJSON_Parse(data);
   free(data);
-  
+
   if (!jfile) {
     printf("***************************** cJSON PARSING ERROR *****************************\n%s\n**********************************************************\n",cJSON_GetErrorPtr());
   }
-  
+
   *jf = jfile;
 }
 
 void cJSON_GetObjectValue_bool(cJSON *cj,const char name[],int *found,int *val)
 {
   cJSON *obj = NULL;
-  
+
   *found = cJSON_True;
   obj = cJSON_GetObjectItem(cj,name);
   if (!obj) {
@@ -83,14 +83,14 @@ void cJSON_GetObjectValue_bool(cJSON *cj,const char name[],int *found,int *val)
     *found = cJSON_False;
     return;
   }
-  
+
   *val = (int)obj->type;
 }
 
 void cJSON_GetObjectValue_int(cJSON *cj,const char name[],int *found,int *val)
 {
   cJSON *obj = NULL;
-  
+
   *found = cJSON_True;
   obj = cJSON_GetObjectItem(cj,name);
   if (!obj) {
@@ -98,7 +98,7 @@ void cJSON_GetObjectValue_int(cJSON *cj,const char name[],int *found,int *val)
     *found = cJSON_False;
     return;
   }
-  
+
   *val = obj->valueint;
 }
 
@@ -106,7 +106,7 @@ void cJSON_GetObjectValue_intarray(cJSON *cj,const char name[],int *found,int *n
 {
   cJSON *list = NULL;
   int   k,len;
-  
+
   *found = cJSON_True;
   list = cJSON_GetObjectItem(cj,name);
   if (!list) {
@@ -114,22 +114,22 @@ void cJSON_GetObjectValue_intarray(cJSON *cj,const char name[],int *found,int *n
     *found = cJSON_False;
     return;
   }
-  
+
   len = cJSON_GetArraySize(list);
   for (k=0; k<len; k++) {
     cJSON *list_entry;
-    
+
     list_entry = cJSON_GetArrayItem(list,k);
     vals[k] = list_entry->valueint;
   }
-  
+
   *nv = len;
 }
 
 void cJSON_GetObjectValue_double(cJSON *cj,const char name[],int *found,double *val)
 {
   cJSON *obj = NULL;
-  
+
   *found = cJSON_True;
   obj = cJSON_GetObjectItem(cj,name);
   if (!obj) {
@@ -137,7 +137,7 @@ void cJSON_GetObjectValue_double(cJSON *cj,const char name[],int *found,double *
     *found = cJSON_False;
     return;
   }
-  
+
   *val = obj->valuedouble;
 }
 
@@ -145,7 +145,7 @@ void cJSON_GetObjectValue_doublearray(cJSON *cj,const char name[],int *found,int
 {
   cJSON *list = NULL;
   int   k,len;
-  
+
   *found = cJSON_True;
   list = cJSON_GetObjectItem(cj,name);
   if (!list) {
@@ -153,22 +153,22 @@ void cJSON_GetObjectValue_doublearray(cJSON *cj,const char name[],int *found,int
     *found = cJSON_False;
     return;
   }
-  
+
   len = cJSON_GetArraySize(list);
   for (k=0; k<len; k++) {
     cJSON *list_entry;
-    
+
     list_entry = cJSON_GetArrayItem(list,k);
     vals[k] = list_entry->valuedouble;
   }
-  
+
   *nv = len;
 }
 
 void cJSON_GetObjectValue_char(cJSON *cj,const char name[],int *found,char **val)
 {
   cJSON *obj = NULL;
-  
+
   *found = cJSON_True;
   obj = cJSON_GetObjectItem(cj,name);
   if (!obj) {
@@ -182,7 +182,7 @@ void cJSON_GetObjectValue_char(cJSON *cj,const char name[],int *found,char **val
 cJSON *cJSON_CreateInt(int num)
 {
   cJSON *blob;
-  
+
   blob = cJSON_CreateNumber((double)num);
   return(blob);
 }
@@ -190,7 +190,7 @@ cJSON *cJSON_CreateInt(int num)
 cJSON *cJSON_CreateDouble(double num)
 {
   cJSON *blob;
-  
+
   blob = cJSON_CreateNumber((double)num);
   return(blob);
 }
@@ -199,7 +199,7 @@ void cJSON_GetObjectValue_arraylength(cJSON *cj,const char name[],int *found,int
 {
   cJSON *list = NULL;
   int   len;
-  
+
   *found = cJSON_True;
   list = cJSON_GetObjectItem(cj,name);
   if (!list) {
@@ -207,7 +207,7 @@ void cJSON_GetObjectValue_arraylength(cJSON *cj,const char name[],int *found,int
     *found = cJSON_False;
     return;
   }
-  
+
   len = cJSON_GetArraySize(list);
   *nv = len;
 }
@@ -218,7 +218,7 @@ PetscErrorCode cJSONGetPetscInt(MPI_Comm comm,cJSON *cj,const char name[],PetscI
   int cfound = cJSON_False;
   int ival = 0;
   PetscErrorCode ierr;
-  
+
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
   *found = PETSC_FALSE;
@@ -241,7 +241,7 @@ PetscErrorCode cJSONGetPetscReal(MPI_Comm comm,cJSON *cj,const char name[],Petsc
   int cfound = cJSON_False;
   double dval = 0.0;
   PetscErrorCode ierr;
-  
+
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
   *found = PETSC_FALSE;
@@ -266,12 +266,12 @@ PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],
   double *dvals = NULL;
   PetscReal *_values = NULL;
   PetscErrorCode ierr;
-  
+
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
   *found = PETSC_FALSE;
   if (commrank == 0) {
-    
+
     cJSON_GetObjectValue_arraylength(cj,name,&cfound,&nvals);
     dvals = (double*)malloc(sizeof(double)*(nvals + 1));
     if (cfound == cJSON_True) {
@@ -282,10 +282,10 @@ PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],
   /* broadcast nvals,ivals, and found */
   ierr = MPI_Bcast(&nvals,1,MPI_INT,0,comm);CHKERRQ(ierr);
   *nvalues = (PetscInt)nvals;
-  
+
   ierr = PetscMalloc1(*nvalues,&_values);CHKERRQ(ierr);
   ierr = PetscMemzero(_values,sizeof(PetscReal)*(*nvalues));CHKERRQ(ierr);
-  
+
   if (commrank == 0) {
     for (k=0; k<nvals; k++) {
       _values[k] = (PetscReal)dvals[k];
@@ -293,11 +293,11 @@ PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],
   }
   ierr = MPI_Bcast(_values,*nvalues,MPIU_REAL,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&cfound,1,MPI_INT,0,comm);CHKERRQ(ierr);
-  
+
   *values = _values;
   if (cfound == cJSON_True) { *found  = PETSC_TRUE; }
   if (dvals) { free(dvals); }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -309,7 +309,7 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
   int *ivals = NULL;
   PetscInt *_values = NULL;
   PetscErrorCode ierr;
-  
+
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
   *found = PETSC_FALSE;
@@ -317,7 +317,7 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
 
     cJSON_GetObjectValue_arraylength(cj,name,&cfound,&nvals);
     ivals = (int*)malloc(sizeof(int)*(nvals + 1));
-    
+
     if (cfound == cJSON_True) {
       cJSON_GetObjectValue_intarray(cj,name,&cfound,&nvals,ivals);
     }
@@ -337,7 +337,7 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
   }
   ierr = MPI_Bcast(_values,*nvalues,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&cfound,1,MPI_INT,0,comm);CHKERRQ(ierr);
-  
+
   *values = _values;
   if (cfound == cJSON_True) { *found  = PETSC_TRUE; }
   if (ivals) { free(ivals); }
@@ -354,7 +354,7 @@ PetscErrorCode cJSONGetPetscString(MPI_Comm comm,cJSON *cj,const char name[],cha
   int cfound = cJSON_False;
   PetscInt k;
   PetscErrorCode ierr;
-  
+
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
   *found = PETSC_FALSE;
@@ -384,7 +384,7 @@ PetscErrorCode cJSONGetPetscBool(MPI_Comm comm,cJSON *cj,const char name[],Petsc
   int cfound = cJSON_False;
   int ival = 0;
   PetscErrorCode ierr;
-  
+
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
   *found = PETSC_FALSE;

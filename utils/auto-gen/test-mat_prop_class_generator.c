@@ -28,14 +28,14 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 /*
  Protoytpe for material properties
- 
- 
+
+
  1/ python mat_prop_class_generator.py
  2/ Edit files generated, remove #error() macro from each file
  3/ gcc -g -O0 -c MaterialConst_ViscosityArrhenius_def.c
  4/ gcc -g -O0 -o main.app main.c MaterialConst_ViscosityArrhenius_def.o
  5/ ./main.app
- 
+
  */
 
 #include "stdio.h"
@@ -58,16 +58,16 @@ void MatPropProcessOptions(const char   prefix[],
 	int f;
 	void *offset;
 	double *mydata;
-	
+
 	printf("Region: %d \n", regionid );
 	printf("Class: %s \n", classname );
 
 	data = (void*)( (char*)dataarray + regionid * class_size );
-	
+
 	for (f=0; f<nmembers; f++) {
 		//printf("member_offsets = %zd \n", member_offsets[f] );
 		offset = (void*)( (char*)data + member_offsets[f] );
-		
+
 		if (prefix) {
 			printf("option: -%s_%s_%s_%d\n",prefix,classname,membernames[f],regionid);
 		} else {
@@ -77,7 +77,7 @@ void MatPropProcessOptions(const char   prefix[],
 		//printf("mydata %p \n", mydata);
 		printf("  data value = %1.4e \n",*mydata);
 	}
-	
+
 }
 
 
@@ -85,11 +85,11 @@ int main(void)
 {
 	int f;
 	MaterialConst_ViscosityArrhenius data[5];
-	
-	
+
+
 	for (f=0; f<5; f++) {
 		MaterialConst_ViscosityArrhenius *me;
-		
+
 		data[f].enthalpy = 10.0 + (double)f;
 		data[f].preexpA = (double)(20.0 + (double)f);
 		data[f].nexp = 30.0 + (double)f;
@@ -101,8 +101,8 @@ int main(void)
 		printf("&data[f] = %p, (%p %p %p %p %p) \n", me,((char*)me+0),((char*)me+8),((char*)me+16),((char*)me+24),((char*)me+32) );
 		printf("e,A,n,V,T %p %p %p %p %p \n", &data[f].enthalpy,&data[f].preexpA,&data[f].nexp,&data[f].Vmol,&data[f].Tref );
 	}
-	
-	
+
+
 	MatPropProcessOptions(		"GENE",
 											 3,
 											 (void*)data,
@@ -112,7 +112,7 @@ int main(void)
 											 MaterialConst_ViscosityArrhenius_member_names_short, /* or MaterialConst_ViscosityArrhenius_member_names for more descriptive option names */
 											 MaterialConst_ViscosityArrhenius_member_sizes,
 											 MaterialConst_ViscosityArrhenius_member_byte_offset);
-											 
-	
+
+
 	return 0;
 }

@@ -1,15 +1,15 @@
 ##
 ###  Using driver     : ./ptatin3d/src/ptatin_driver_nonlinear_ts.app
-### Options file for : 
+### Options file for :
 ###  L. Le Pourhiet, N. Chamot-Rooke, M. Delescluse, D. May, L. Watremez, and M. Pubellier,
 ###  "Stalled continental break-up explains the width of the South China Sea", submitted, 2017
-### PHYSICS PARAMETER for model POLC 100 km described in the paper.  
+### PHYSICS PARAMETER for model POLC 100 km described in the paper.
 ### For model with out of plane compression
-### To reproduce FREES-SLIP model 
+### To reproduce FREES-SLIP model
 ### -model_rift3D_T_vz 0.0
-### To reproduce model with Out of plane Extension 
+### To reproduce model with Out of plane Extension
 ### -model_rift3D_T_vz -7.85e-11
-### =============================================================== 
+### ===============================================================
 -nonlinear_driver_v1
 -ptatin_model rift3D_T
 -log_summary
@@ -27,7 +27,7 @@
 -model_rift3D_T_vz 7.85e-11
 -model_rift3D_Ttheta_1 0.030
 ################ SOLVERS ################
-###### MG 
+###### MG
 -A11_operator_type 0,1,1
 -dau_nlevels 3
 -stk_velocity_dm_mat_type aij
@@ -38,7 +38,7 @@
 #-stk_velocity_da_refine_hierarchy_x 4,2
 #-stk_velocity_da_refine_hierarchy_y 2,1
 #-stk_velocity_da_refine_hierarchy_z 4,2
-#### SNES 
+#### SNES
 -newton_its 0
 -snes_atol 1e-2
 -snes_max_it 5
@@ -46,7 +46,7 @@
 -snes_max_linear_solve_fail 10
 -snes_monitor
 -snes_converged_reason
-#####  KSP 
+#####  KSP
 -ksp_max_it 50
 -ksp_rtol 1.0e-3
 -ksp_type fgmres
@@ -101,7 +101,7 @@
     -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_max_it 6
 
 
-#### THERMAL SOLVER 
+#### THERMAL SOLVER
 -T_ksp_atol 1.0e-4
 -T_ksp_monitor
 -T_ksp_rtol 1.0e-10

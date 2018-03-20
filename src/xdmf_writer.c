@@ -54,7 +54,7 @@ PetscErrorCode _XDMFMeta_DomainOpenClose(PetscViewer v,const char name[],PetscBo
 PetscErrorCode _XDMFMeta_GridOpenClose_DMDA(PetscViewer v,DM da,const char suffix[],const char meshname[],XDMFDataItemFormat format,PetscBool open)
 {
     PetscErrorCode ierr;
-    
+
     if (open) {
         PetscInt M,N,P;
 
@@ -117,18 +117,18 @@ PetscErrorCode _XDMFMeta_GridOpenClose_DMDA(PetscViewer v,DM da,const char suffi
 }
 
 /*
- 
+
  Notes:
- 
+
  [1] A PETSc Vec allows only contains PetscScalar data.
  Thus, when writing a vector into an xdmf file, the data item is assumed to be
  NumberType=Float Precision=8 <default>
  NumberType=Float Precision=4 <if petsc compiled with single precision>
- 
+
  [2] PetscBinaryWrite performs byte swapping and writes all data as big-endian.
  Hence, when writing binary we must specify that the data item uses
  format=Binary Endian=Big
- 
+
 */
 PetscErrorCode _XDMFMeta_AddAttributeField_DMDA(PetscViewer v,DM da,Vec x,
                                                const char suffix[],const char meshname[],const char fieldname[],

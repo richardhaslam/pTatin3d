@@ -25,10 +25,10 @@ def test() :
 
     key = re.escape("(r) max(x)")
     t.compareFloatingPoint(key,0.0)
-    
+
     #t.compareLiteral(re.escape("Processor [0] M 10 N 10 P 10 m 1 n 1 p 1 w 6 s 1"))
     #t.compareLiteral(re.escape("X range of indices: 0 10, Y range of indices: 0 10, Z range of indices: 0 10"))
-  
+
     # This comparison attempt results in the error that the string isn't in the expected file - why??
     #t.compareLiteral(re.escape("Lower left corner -10. -20. -30. : Upper right 10. 20. 30."))
 

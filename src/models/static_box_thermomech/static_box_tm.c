@@ -58,35 +58,35 @@ PetscErrorCode ModelInitialize_StaticBoxTM_variant1(pTatinCtx c,void *ctx)
   int                     regionidx;
   double                  rho_ref,Cp;
   PetscErrorCode          ierr;
-  
+
   PetscFunctionBegin;
   ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
   rheology->rheology_type = RHEOLOGY_VISCOUS;
-  
+
   ierr = PetscOptionsInsertString(NULL,"-activate_energy true");CHKERRQ(ierr);
-  
+
   ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
   ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
-  
+
   DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField); DataFieldGetEntries(PField,(void**)&matconstants_e);
-  
+
   regionidx = 0;
   rho_ref = 1.0;
   Cp = 1.0;
   ierr = MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,0.0,0.0,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE,NULL);CHKERRQ(ierr);
   EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
   EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_USE_MATERIALPOINT_VALUE);
-  
+
   ierr = PSwarmCreate(PETSC_COMM_WORLD,&pswarm);CHKERRQ(ierr);
   ierr = PSwarmSetOptionsPrefix(pswarm,"passive_");CHKERRQ(ierr);
   ierr = PSwarmSetPtatinCtx(pswarm,c);CHKERRQ(ierr);
   ierr = PSwarmSetTransportModeType(pswarm,PSWARM_TM_EULERIAN);CHKERRQ(ierr);
   ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
-  
+
   if (c->mx != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Model only valid for -mx 4");
   if (c->my != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Model only valid for -my 4");
   if (c->mz != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Model only valid for -mz 4");
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -104,19 +104,19 @@ PetscErrorCode ModelInitialize_StaticBoxTM_variant2(pTatinCtx c,void *ctx)
   double                  rho,eta,k,Cp,Q;
   PetscBool               use_source = PETSC_FALSE;
   PetscErrorCode          ierr;
-  
+
   PetscFunctionBegin;
   ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
   rheology->rheology_type  = RHEOLOGY_VP_STD;
   rheology->nphases_active = 1;
-  
+
   ierr = PetscOptionsInsertString(NULL,"-activate_energy true");CHKERRQ(ierr);
-  
+
   ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
   ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
-  
+
   DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField); DataFieldGetEntries(PField,(void**)&matconstants_e);
-  
+
   regionidx = 0;
   rho = 2.0;
   eta = 10.0;
@@ -127,11 +127,11 @@ PetscErrorCode ModelInitialize_StaticBoxTM_variant2(pTatinCtx c,void *ctx)
   if (use_source) {
     Q = 1000.0;
   }
-  
+
   ierr = MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,0.0,0.0,rho,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,NULL);CHKERRQ(ierr);
   EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
   EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_CONSTANT);
-  
+
   {
     EnergyConductivityConst *data;
     DataField               PField_;
@@ -148,22 +148,22 @@ PetscErrorCode ModelInitialize_StaticBoxTM_variant2(pTatinCtx c,void *ctx)
     DataFieldGetEntries(PField_,(void**)&data);
     EnergySourceConstSetField_HeatSource(&data[regionidx],Q);
   }
-  
+
   ierr = MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);CHKERRQ(ierr);
   ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,eta);CHKERRQ(ierr);
   ierr = MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,rho);CHKERRQ(ierr);
 
-  
+
   ierr = PSwarmCreate(PETSC_COMM_WORLD,&pswarm);CHKERRQ(ierr);
   ierr = PSwarmSetOptionsPrefix(pswarm,"passive_");CHKERRQ(ierr);
   ierr = PSwarmSetPtatinCtx(pswarm,c);CHKERRQ(ierr);
   ierr = PSwarmSetTransportModeType(pswarm,PSWARM_TM_EULERIAN);CHKERRQ(ierr);
   ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
-  
+
   if (c->mx != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Model only valid for -mx 4");
   if (c->my != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Model only valid for -my 4");
   if (c->mz != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Model only valid for -mz 4");
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -171,32 +171,32 @@ PetscErrorCode ModelApplyBoundaryCondition_StaticBoxTM(pTatinCtx c,void *ctx)
 {
   PetscScalar    zero = 0.0;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   /* Impose zero Neumann conditions (sigma.n = 0, sigma.t = 0) on top face */
   /* Impose freeslip conditions (u.n = 0, tau.t = 0) on left/right/front/back/bottom faces */
   ierr = DMDABCListTraverse3d(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
   ierr = DMDABCListTraverse3d(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-  
+
   ierr = DMDABCListTraverse3d(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-  
+
   ierr = DMDABCListTraverse3d(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
   ierr = DMDABCListTraverse3d(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-  
+
   /* Impose Dirichlet conditions on bottom/top faces */
   {
     PetscReal      val_T;
     PhysCompEnergy energy;
     BCList         bclist;
     DM             daT;
-    
+
     ierr   = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
     daT    = energy->daT;
     bclist = energy->T_bclist;
-    
+
     val_T = 273.0;
     ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
-    
+
     val_T = 1000.0 + 273.0;
     ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
   }
@@ -208,18 +208,18 @@ PetscErrorCode ModelApplyBoundaryConditionMG_StaticBoxTM(PetscInt nl,BCList bcli
   PetscScalar    zero = 0.0;
   PetscInt       n;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   for (n=0; n<nl; n++) {
     ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
     ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-    
+
     ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-    
+
     ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
     ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -228,7 +228,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_StaticBoxTM(pTatinCtx c,void *ctx)
   PetscReal      Lx,Ly,Lz;
   PetscReal      gvec[] = { 0.0, -10.0, 0.0 };
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
   Lx = 6.0;
@@ -247,46 +247,46 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_StaticBoxTM_variant1(pTatinCtx 
   PetscReal      Q;
   PetscBool      use_source = PETSC_FALSE;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
-  
+
   Q = 0.0;
   ierr = PetscOptionsGetBool(NULL,NULL,"-nonzero_source",&use_source,NULL);CHKERRQ(ierr);
   if (use_source) {
     Q = 1000.0;
   }
-  
+
   /* define properties on material points */
   ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
   DataBucketGetSizes(db,&npoints,0,0);
   ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
-  
+
   for (p=0; p<npoints; p++) {
     double *position;
     double eta,rho,kappa,H;
     int    phase;
-    
+
     /* Access using the getter function provided for you (recommeneded for beginner user) */
     ierr = MaterialPointGet_global_coord(mpX,p,&position);CHKERRQ(ierr);
-    
+
     phase = 0;
-    
+
     eta = 10.0;
     rho = 2.0;
-    
+
     kappa = 2.0e1/(rho * 1.0);
     H     = Q/(rho * 1.0);
-    
+
     ierr = MaterialPointSet_phase_index(mpX,p,phase);CHKERRQ(ierr);
-    
+
     ierr = MaterialPointSet_viscosity(mpX,p,eta);CHKERRQ(ierr);
     ierr = MaterialPointSet_density(mpX,p,rho);CHKERRQ(ierr);
-    
+
     ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
     ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
   }
   ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -296,21 +296,21 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_StaticBoxTM_variant2(pTatinCtx 
   DataBucket     db;
   MPAccess       mpX;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   /* define properties on material points */
   ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
   DataBucketGetSizes(db,&npoints,0,0);
   ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
-  
+
   for (p=0; p<npoints; p++) {
     int    phase;
-    
+
     phase = 0;
     ierr = MaterialPointSet_phase_index(mpX,p,phase);CHKERRQ(ierr);
   }
   ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +327,7 @@ static PetscErrorCode ComputeHydrostaticPressure(PetscReal depth,PetscReal rho0,
   PetscFunctionReturn(0);
 }
 
-/* 
+/*
  Evaluates analytic solution of
    0 = k d^T/dt^2 + Q
  or
@@ -341,13 +341,13 @@ static PetscErrorCode ComputeHydrostaticPressure(PetscReal depth,PetscReal rho0,
 static PetscErrorCode Compute1DTemperature(PetscReal y,PetscReal Q,PetscReal *t,PetscReal *dtdy)
 {
   PetscReal k,T0,T1,y1,gamma,A,B;
-  
+
   PetscFunctionBegin;
   y1 = 6.0;
   T0 = 1273.0;
   T1 = 273.0;
   k = 2.0e1;
-  
+
   gamma = Q/k;
   B = T0;
   A = (T1 - B + 0.5 * (gamma) * y1*y1)/y1;
@@ -364,7 +364,7 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
   DM             stokes;
   PetscInt       k;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
   /*ierr = PSwarmViewInfo(pswarm);CHKERRQ(ierr);*/
@@ -377,7 +377,7 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
   {
     PhysCompEnergy energy;
     Vec            temperature;
-    
+
     ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
     ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
     ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
@@ -385,7 +385,7 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
   */
 
   if (c->step != c->nsteps) { PetscFunctionReturn(0); }
-  
+
   /* examine max magnitude of vx,vy,vz */
   ierr = pTatinGetStokesContext(c,&stokes_ctx);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMComposite(stokes_ctx,&stokes);CHKERRQ(ierr);
@@ -401,7 +401,7 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
       PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||v%D - v%D_exact||_inf <= 1.0e-11 <pass>\n",k,k);
     }
   }
-  
+
   /* Compare computed pressure with rho.g.z */
   {
     DataBucket pdb;
@@ -411,32 +411,32 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
     double     *tracer_pressure;
     PetscReal  rho0;
     PetscReal  max_abs_delta_p,max_abs_delta_p_g;
-    
+
     ierr = PSwarmGetDataBucket(pswarm,&pdb);CHKERRQ(ierr);
     DataBucketGetSizes(pdb,&npoints,0,0);
-    
+
     DataBucketGetDataFieldByName(pdb,MPntStd_classname,&datafield_tracers); DataFieldGetEntries(datafield_tracers,(void**)&tracer);
     DataBucketGetDataFieldByName(pdb,"pressure",&datafield);       DataFieldGetEntries(datafield,(void**)&tracer_pressure);
-    
+
     max_abs_delta_p = 0.0;
     rho0 = 2.0;
-    
+
     for (p=0; p<npoints; p++) {
       PetscReal depth,p_hydrostatic,delta;
-      
+
       depth = 6.0 - (PetscReal)tracer[p].coor[1];
       ierr = ComputeHydrostaticPressure(depth,rho0,&p_hydrostatic);CHKERRQ(ierr);
-      
+
       delta = PetscAbsReal(tracer_pressure[p] - p_hydrostatic);
       /*PetscPrintf(PETSC_COMM_SELF,"delta %+1.12e : numeric %+1.12e : exact %+1.12e\n",delta,tracer_pressure[p],p_hydrostatic);*/
       if (delta > max_abs_delta_p) {
         max_abs_delta_p = delta;
       }
     }
-    
+
     DataFieldRestoreEntries(datafield_tracers,(void**)&tracer);
     DataFieldRestoreEntries(datafield,(void**)&tracer_pressure);
-    
+
     ierr = MPI_Allreduce(&max_abs_delta_p,&max_abs_delta_p_g,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
     if (max_abs_delta_p_g > 1.0e-11) {
       PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||p - p_exact||_inf = %+1.12e <fail>\n",max_abs_delta_p_g);
@@ -444,7 +444,7 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
       PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||p - p_exact||_inf <= 1.0e-11 <pass>\n");
     }
   }
-  
+
   /* Compare computed temperature with rho.g.z */
   {
     PhysCompEnergy energy;
@@ -475,11 +475,11 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
       for (j=sj; j<(sj+mj); j++) {
         for (i=si; i<(si+mi); i++) {
           PetscReal y,T_numeric,T_exact,gradT_exact;
-          
+
           y = nodecoor[k][j][i][1];
           ierr = Compute1DTemperature(y,Q,&T_exact,&gradT_exact);CHKERRQ(ierr);
           T_numeric = T[k][j][i];
-          
+
           /*PetscPrintf(PETSC_COMM_WORLD,"%D %+1.12e %+1.12e %+1.12e\n",j,y,T_numeric,T_exact);*/
           delta = PetscAbsReal(T_numeric - T_exact);
           if (delta > max_abs_delta_t) {
@@ -490,7 +490,7 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
     }
     ierr = DMDAVecRestoreArrayDOF(daC,coor,&nodecoor);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(daT,temperature,&T);CHKERRQ(ierr);
-    
+
     ierr = MPI_Allreduce(&max_abs_delta_t,&max_abs_delta_t_g,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
     if (max_abs_delta_t_g > 1.0e-11) {
       PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||T - T_exact||_inf = %+1.12e <fail>\n",max_abs_delta_t_g);
@@ -499,7 +499,7 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
     }
     PetscPrintf(PETSC_COMM_WORLD,"[staticBox] Q = %+1.2e\n",Q);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -510,7 +510,7 @@ PetscErrorCode ModelInitialCondition_StaticBoxTM(pTatinCtx c,Vec X,void *ctx)
   Vec            velocity,pressure;
   PetscBool      phys_component_energy_valid;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = pTatinGetStokesContext(c,&stokes_ctx);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMComposite(stokes_ctx,&stokes_pack);CHKERRQ(ierr);
@@ -519,26 +519,26 @@ PetscErrorCode ModelInitialCondition_StaticBoxTM(pTatinCtx c,Vec X,void *ctx)
   ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
   ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-  
+
   ierr = pTatinContextValid_Energy(c,&phys_component_energy_valid);CHKERRQ(ierr);
   if (phys_component_energy_valid) {
     PhysCompEnergy energy;
     Vec            temperature;
-    
+
     ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
     ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
     ierr = VecSet(temperature,273.0);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Model only valid if option -activate_energy true is used");
 
   ierr = PSwarmAttachStateVecVelocityPressure(pswarm,X);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelDestroy_StaticBoxTM(pTatinCtx c,void *ctx)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[ModelDestroy_StaticBoxTM]]\n");
   ierr = PSwarmDestroy(&pswarm);CHKERRQ(ierr);
@@ -549,14 +549,14 @@ PetscErrorCode pTatinModelCreate_StaticBoxTM(pTatinModel m)
 {
   PetscBool use_v1 = PETSC_FALSE;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
-  
+
   /* Allocate memory for the data structure for this model */
-  
+
   /* Set model data */
   ierr = pTatinModelSetUserData(m,NULL);CHKERRQ(ierr);
-  
+
   /* Set function pointers */
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelInitialCondition_StaticBoxTM);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_StaticBoxTM);CHKERRQ(ierr);

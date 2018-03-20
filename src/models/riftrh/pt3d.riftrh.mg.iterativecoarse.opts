@@ -1,4 +1,4 @@
-## =============================================================== 
+## ===============================================================
 ##
 ##   pTatin options file
 ##
@@ -7,7 +7,7 @@
 ##   Machine          : eduroam-nw-dock-1-226.ethz.ch
 ##   Using driver     : ./ptatin_driver_linear_ts.app
 ##
-## =============================================================== 
+## ===============================================================
 
 # --------------------
 # model configuration
@@ -50,17 +50,17 @@
 
 		-pc_fieldsplit_type                     schur
 		-pc_fieldsplit_schur_fact_type upper
-		
+
 	# ---- configuration for pressure split ----
 	-fieldsplit_p_ksp_type preonly
 	-fieldsplit_p_pc_type  jacobi
-	
+
 	# ---- configuration for velocity split ----
 	-fieldsplit_u_ksp_type    fgmres
 	-fieldsplit_u_ksp_max_it  100
 	-fieldsplit_u_ksp_rtol    1.0e-3
 	-fieldsplit_u_pc_type     mg
-		
+
 
 	# multigrid coarse grid geometry
 	-dau_nlevels               3
@@ -78,7 +78,7 @@
 	-fieldsplit_u_mg_levels_ksp_type   fgmres
 	-fieldsplit_u_mg_levels_ksp_max_it 10
 	-fieldsplit_u_mg_levels_pc_type    jacobi
-		
+
 	# Multigrid coarse grid solver
 	! sparse direct (serial)
 	!-fieldsplit_u_mg_coarse_pc_type lu
@@ -101,7 +101,7 @@
 # --------------------
 # Monitors / logging
 
-	# solver 
+	# solver
 	-snes_monitor
 	-fieldsplit_u_ksp_monitor
 		 !! *** IMPORTANT - IF YOU WANT TO PROFILE GMG dau_nlevels and fieldsplit_u_pc_mg_levels MUST MATCH ***

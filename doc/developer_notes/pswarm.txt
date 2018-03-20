@@ -6,14 +6,14 @@ ______________________________
 ______________________________
 ______________________________
 
-* The deformation grid reference file (deformation_grid_ref.vts) is not prefixed 
+* The deformation grid reference file (deformation_grid_ref.vts) is not prefixed
 with the PSwarm options prefix.
 
 * deformation_grid_ref.vts uses ascii format -- gasp --
 
 * PSwarmSetUpCoords_FillBox() does not support using -pswarm_box_nx 1,1,1
 
-* Add UpdateMethods for Temperature, and e_plastic. 
+* Add UpdateMethods for Temperature, and e_plastic.
 
 * Add support for filling GeometryObject with points
 

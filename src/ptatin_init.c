@@ -43,9 +43,9 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 {
 	char *loc = NULL;
 	int throw_warning = 0;
-	
+
 	PetscFunctionBegin;
-	
+
 	loc = strstr(flags,"-O0");
 	if (loc != NULL) {
 		throw_warning = 1;
@@ -57,7 +57,7 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 		PetscPrintf(PETSC_COMM_WORLD,"** Adjust TATIN_CFLAGS to include aggressive compiler optimizations \n");
 		PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	}
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -65,22 +65,22 @@ PetscErrorCode pTatinWritePreamble(void)
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
-	PetscPrintf(PETSC_COMM_WORLD,"**\n");	
+	PetscPrintf(PETSC_COMM_WORLD,"**\n");
 	PetscPrintf(PETSC_COMM_WORLD,"**             ___________                          _______\n");
 	PetscPrintf(PETSC_COMM_WORLD,"**     _______/          /_____ ________ __ _   ___/       \\ ____\n");
 	PetscPrintf(PETSC_COMM_WORLD,"**    /      /___    ___/      /__   __/  /  \\ /  /\\__ _   /     \\\n");
 	PetscPrintf(PETSC_COMM_WORLD,"**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /\n");
 	PetscPrintf(PETSC_COMM_WORLD,"**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /\n");
 	PetscPrintf(PETSC_COMM_WORLD,"** /__/       /___/  /__//__/  /__/ /__/__/ \\__//_______/______/\n");
-	PetscPrintf(PETSC_COMM_WORLD,"**\n");	
+	PetscPrintf(PETSC_COMM_WORLD,"**\n");
 	PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (david.may@earth.ox.ac.uk)        \n");
 	PetscPrintf(PETSC_COMM_WORLD,"**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    \n");
 	PetscPrintf(PETSC_COMM_WORLD,"**           Jed Brown            (jed.brown@colorado.edu)          \n");
 	PetscPrintf(PETSC_COMM_WORLD,"**           Patrick Sanan        (patrick.sanan@erdw.ethz.ch)      \n");
 	PetscPrintf(PETSC_COMM_WORLD,"**\n");
-	
+
 	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REPO);
 #ifdef PTATIN_DEVELOPMENT_VERSION
 	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
@@ -93,7 +93,7 @@ PetscErrorCode pTatinWritePreamble(void)
 	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
 	PetscPrintf(PETSC_COMM_WORLD,"** Release v%d.%d-p%d \n", PTATIN_VERSION_MAJOR,PTATIN_VERSION_MINOR,PTATIN_VERSION_PATCH);
 #endif
-  
+
 #ifdef COMPFLAGS
 	#define STR_ARG_NAME STRINGIFY_ARG(COMPFLAGS)
 	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
@@ -110,7 +110,7 @@ PetscErrorCode pTatinWritePreamble(void)
   PetscPrintf(PETSC_COMM_WORLD,"** e.g. -march=native, to TATIN_CFLAGS in makefile.arch\n");
 #endif
 	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
-				 
+
 	PetscFunctionReturn(0);
 }
 
@@ -134,7 +134,7 @@ extern PetscLogEvent MAT_MultMFA; /* stokes operator */
 extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient operator */
 extern PetscLogEvent MAT_MultMFA21; /* stokes operator - divergence operator */
 
-extern PetscLogEvent MAT_MultMFA_QuasiNewtonX; 
+extern PetscLogEvent MAT_MultMFA_QuasiNewtonX;
 extern PetscLogEvent MAT_MultMFA11_QuasiNewtonX;
 extern PetscLogEvent MAT_MultMFA12_QuasiNewtonX;
 extern PetscLogEvent MAT_MultMFA21_QuasiNewtonX;
@@ -171,7 +171,7 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	PetscErrorCode ierr;
   PetscBool      supress = PETSC_FALSE;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscInitialize(argc,args,file,help);CHKERRQ(ierr);
 
   ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
@@ -215,20 +215,20 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("ModelMatBC",     PTATIN_CLASSID,&PTATIN_ModelApplyMaterialBoundaryCondition);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("ModelUpdateMesh",PTATIN_CLASSID,&PTATIN_ModelUpdateMeshGeometry);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("ModelOutput",    PTATIN_CLASSID,&PTATIN_ModelOutput);CHKERRQ(ierr);
-	
+
 	ierr = PetscLogEventRegister("MPAdvGCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvGlobalCoordUpdate);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MPAdvLCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvLocalCoordUpdate);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MPAdvComm",   PTATIN_CLASSID,&PTATIN_MaterialPointAdvCommunication);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MPAdvRemove", PTATIN_CLASSID,&PTATIN_MaterialPointAdvRemoval);CHKERRQ(ierr);
-	
+
 	ierr = PetscLogEventRegister("MPPCInsert", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlInsert);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MPPCRemove", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlRemove);CHKERRQ(ierr);
-	
+
   ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_supress_preamble",&supress,NULL);CHKERRQ(ierr);
   if (!supress) {
     ierr = pTatinWritePreamble();CHKERRQ(ierr);
   }
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -236,10 +236,10 @@ PetscErrorCode pTatinFinalize(void)
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
   ierr = pTatinModelDeRegisterAll();CHKERRQ(ierr);
 	ierr = PetscFinalize();CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 

@@ -39,7 +39,7 @@
 #include "material_constants/EnergyConductivityThreshold_def.h"
 
 
-typedef enum { 
+typedef enum {
   ENERGYSOURCE_NONE = 0,
 	ENERGYSOURCE_USE_MATERIALPOINT_VALUE,
 	ENERGYSOURCE_CONSTANT ,

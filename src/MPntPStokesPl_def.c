@@ -57,12 +57,12 @@ const char *MPntPStokesPl_member_names[] = {
 /* ===================================== */
 /* Getters for MPntPStokesPl */
 /* ===================================== */
-void MPntPStokesPlGetField_plastic_strain(MPntPStokesPl *point,float *data) 
+void MPntPStokesPlGetField_plastic_strain(MPntPStokesPl *point,float *data)
 {
   *data = point->e_plastic;
 }
 
-void MPntPStokesPlGetField_yield_indicator(MPntPStokesPl *point,short *data) 
+void MPntPStokesPlGetField_yield_indicator(MPntPStokesPl *point,short *data)
 {
   *data = point->is_yielding;
 }
@@ -71,12 +71,12 @@ void MPntPStokesPlGetField_yield_indicator(MPntPStokesPl *point,short *data)
 /* ===================================== */
 /* Setters for MPntPStokesPl */
 /* ===================================== */
-void MPntPStokesPlSetField_plastic_strain(MPntPStokesPl *point,float data) 
+void MPntPStokesPlSetField_plastic_strain(MPntPStokesPl *point,float data)
 {
   point->e_plastic = data;
 }
 
-void MPntPStokesPlSetField_yield_indicator(MPntPStokesPl *point,short data) 
+void MPntPStokesPlSetField_yield_indicator(MPntPStokesPl *point,short data)
 {
   point->is_yielding = data;
 }
@@ -103,7 +103,7 @@ void MPntPStokesPlView(MPntPStokesPl *point)
 /* ===================================== */
 /* VTK viewer for MPntPStokesPl */
 /* ===================================== */
-void MPntPStokesPlVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPStokesPl points[]) 
+void MPntPStokesPlVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPStokesPl points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float32\" Name=\"e_plastic\" format=\"ascii\">\n");
@@ -122,7 +122,7 @@ void MPntPStokesPlVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPSto
 /* ===================================== */
 /* PVTU viewer for MPntPStokesPl */
 /* ===================================== */
-void MPntPStokesPlPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MPntPStokesPlPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float32\" Name=\"e_plastic\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int16\" Name=\"is_yielding\" NumberOfComponents=\"1\"/>\n");
@@ -132,7 +132,7 @@ void MPntPStokesPlPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MPntPStokesPl */
 /* ===================================== */
-void MPntPStokesPlVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MPntPStokesPl points[]) 
+void MPntPStokesPlVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MPntPStokesPl points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float32\" Name=\"e_plastic\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(float);
@@ -146,7 +146,7 @@ void MPntPStokesPlVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset
 /* ================================================== */
 /* VTK binary (appended data) viewer for MPntPStokesPl */
 /* ==================================================== */
-void MPntPStokesPlVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MPntPStokesPl points[]) 
+void MPntPStokesPlVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MPntPStokesPl points[])
 {
   int p,length;
   size_t atomic_size;

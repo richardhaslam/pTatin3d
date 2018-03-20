@@ -49,7 +49,7 @@ PetscErrorCode QuantityCreate(Quantity *q)
 {
   Quantity       qq;
   PetscErrorCode ierr;
-  
+
   ierr = PetscMalloc1(1,&qq);CHKERRQ(ierr);
   ierr = PetscMemzero(qq,sizeof(struct _p_Quantity));
   qq->magnitude = 1.0;
@@ -231,50 +231,50 @@ inline PetscErrorCode pQConvert_ModelUnits2SIUnits_Array(QuantityType type,Petsc
 PetscErrorCode ptatinQuantitySetupSIUnitList_UsingLVEScales(PetscReal LengScale,PetscReal VeloScale,PetscReal ViscScale)
 {
   PetscReal Tstar;
-  
+
   // geo scales //
   QuantitySetMagnitude(PTATIN_SI_QLIST[QLength],LengScale);
   QuantitySetMagnitude(PTATIN_SI_QLIST[QVelocity],VeloScale);
   QuantitySetMagnitude(PTATIN_SI_QLIST[QViscosity],ViscScale);
-  
+
   QuantitySetMagnitude(PTATIN_SI_QLIST[QTime],      LengScale/VeloScale);
   QuantitySetMagnitude(PTATIN_SI_QLIST[QStrainRate],VeloScale/LengScale);
   QuantitySetMagnitude(PTATIN_SI_QLIST[QStress],    ViscScale/QuantityGetMagnitude(PTATIN_SI_QLIST[QTime]));
-  
+
   // stress = F/m^2 = (kg.m/s^2) / m^2 = kg.m^3/s^2 //
   Tstar = QuantityGetMagnitude(PTATIN_SI_QLIST[QTime]);
   //QuantitySetMagnitude(list[QDensity],     QuantityGetMagnitude(list[QStress])*Tstar*Tstar/(LengScale*LengScale*LengScale * LengScale*LengScale*LengScale) );
   //QuantitySetMagnitude(list[QAcceleration],VeloScale/QuantityGetMagnitude(list[QTime]));
-  
+
   QuantitySetMagnitude(PTATIN_SI_QLIST[QAcceleration],VeloScale / QuantityGetMagnitude(PTATIN_SI_QLIST[QTime]));
   QuantitySetMagnitude(PTATIN_SI_QLIST[QDensity],     ViscScale * Tstar / (LengScale * LengScale) );
-  
+
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ptatinQuantitySetupGeoUnitList(void)
 {
   PetscReal secondsPerYear,secondsPerkyr;
-  
+
   /* geo units */
   /* reset scale factors */
   QuantitySetMagnitude(PTATIN_GEO_QLIST[QLength],QuantityGetMagnitude(PTATIN_SI_QLIST[QLength])/1.0e3);
   QuantitySetUnit(PTATIN_GEO_QLIST[QLength],"[km]");
-  
+
   secondsPerYear = 60.0 * 60.0 * 24.0 * 365.0;
   secondsPerkyr = secondsPerYear * 1.0e3;
   QuantitySetMagnitude(PTATIN_GEO_QLIST[QTime],QuantityGetMagnitude(PTATIN_SI_QLIST[QTime])/secondsPerkyr);
   QuantitySetUnit(PTATIN_GEO_QLIST[QTime],"[kyr]");
-  
+
   QuantitySetMagnitude(PTATIN_GEO_QLIST[QVelocity],QuantityGetMagnitude(PTATIN_SI_QLIST[QVelocity])/(1.0e-2/secondsPerYear));
   QuantitySetUnit(PTATIN_GEO_QLIST[QVelocity],"[cm/yr]");
-  
+
   QuantitySetMagnitude(PTATIN_GEO_QLIST[QStress],QuantityGetMagnitude(PTATIN_SI_QLIST[QStress])/1.0e6);
   QuantitySetUnit(PTATIN_GEO_QLIST[QStress],"[MPa]");
-  
+
   QuantitySetMagnitude(PTATIN_GEO_QLIST[QStrainRate],QuantityGetMagnitude(PTATIN_SI_QLIST[QStrainRate]) * secondsPerkyr);
   QuantitySetUnit(PTATIN_GEO_QLIST[QStrainRate],"[1/kyr]");
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +284,7 @@ PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
   PetscReal      Ls,Vs,Es,geo_time,geo_length;
   PetscReal      secondsPerYear,secondsPerkyr;
   PetscErrorCode ierr;
-  
+
   if (units == UNITS_GEO) PetscPrintf(PETSC_COMM_WORLD,"pTatin: \"geo\" units are <length, velocity, time, stress, strain-rate> are <km, cm/yr, kyr, MPa, 1/kyr>\n");
   Ls = 1.0;
   Vs = 1.0;
@@ -298,7 +298,7 @@ PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
   geo_time = secondsPerkyr; /* kyr */
 
   geo_length = 1.0e3; /* km */
-  
+
   switch (units) {
     case UNITS_NATIVE:
       Ls = 1.0;
@@ -315,11 +315,11 @@ PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
       /* convert input velocty to SI (cm/yr -> m/s) */
       Vs = Vs * 1.0e-2 / geo_time;
       break;
-      
+
     default:
       break;
   }
-  
+
   ierr = ptatinQuantitySetupSIUnitList_UsingLVEScales(Ls,Vs,Es);CHKERRQ(ierr);
   if (units != UNITS_NATIVE) {
     ierr = ptatinQuantitySetupGeoUnitList();CHKERRQ(ierr);
@@ -330,12 +330,12 @@ PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
   for (i=0; i<n; i++) {
     ierr = QuantityView(PTATIN_SI_QLIST[i]);CHKERRQ(ierr);
   }
-  
+
   PetscPrintf(PETSC_COMM_WORLD,"[ptatin Quantities (geo units)]\n");
   for (i=0; i<n; i++) {
     ierr = QuantityView(PTATIN_GEO_QLIST[i]);CHKERRQ(ierr);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -345,7 +345,7 @@ PetscErrorCode ptatinQuantityCreate(void)
   Quantity         *si_list,*geo_list;
   ptatinInputUnits value;
   PetscErrorCode   ierr;
-  
+
   n = (PetscInt)QNull;
   ierr = PetscMalloc1(n,&si_list);CHKERRQ(ierr);
   ierr = PetscMalloc1(n,&geo_list);CHKERRQ(ierr);
@@ -361,10 +361,10 @@ PetscErrorCode ptatinQuantityCreate(void)
     ierr = QuantityCreate(&geo_list[i]);CHKERRQ(ierr);
     ierr = QuantitySetValues(geo_list[i],QuantityTypeNames[i],QuantityTypeUnits[i],1.0);CHKERRQ(ierr);
   }
-  
+
   PTATIN_SI_QLIST = si_list;
   PTATIN_GEO_QLIST = geo_list;
-  
+
   value = UNITS_NATIVE;
   ierr = PetscOptionsGetEnum(NULL,NULL,"-ptatin_input_units",ptatinInputUnitsNames,(PetscEnum*)&value,NULL);CHKERRQ(ierr);
   if (value == UNITS_NATIVE) PetscPrintf(PETSC_COMM_WORLD,"pTatin: Using \"native\" units for input parameters\n");
@@ -372,7 +372,7 @@ PetscErrorCode ptatinQuantityCreate(void)
   if (value == UNITS_GEO) PetscPrintf(PETSC_COMM_WORLD,"pTatin: Using \"geo\" units for input parameters\n");
 
   ierr = ptatinQuantitySetup_UsingLVEScales(value);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -395,7 +395,7 @@ PetscErrorCode ptatinQuantityDestroy(void)
     PetscFree(PTATIN_GEO_QLIST);
     PTATIN_GEO_QLIST = NULL;
   }
-  
+
   PetscFunctionReturn(0);
 }
 

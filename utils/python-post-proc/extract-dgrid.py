@@ -19,7 +19,7 @@ def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
 		tracer_ug = simple.XMLUnstructuredGridReader( FileName=inputfile )
 	else:
 		tracer_ug = simple.XMLPartitionedUnstructuredGridReader( FileName=inputfile )
-  
+
 	tracer_ug.UpdatePipeline()
 	tracer_ug.UpdatePipelineInformation()
 
@@ -40,7 +40,7 @@ def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
 	rawdata_defmesh = simple.servermanager.Fetch(defmesh_ug)
 	rawdata_defmesh = dsa.WrapDataObject(rawdata_defmesh)
 
-	npoints_defmesh = rawdata_defmesh.GetNumberOfPoints() 
+	npoints_defmesh = rawdata_defmesh.GetNumberOfPoints()
 
 	print('# points from input vtu file: ' + str(npoints_tracer))
 	print('# mesh nodes from base vts file: ' + str(npoints_defmesh))
@@ -70,11 +70,11 @@ def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
 
 
 def main():
-	
+
 	# parse command line options
 	optparser=OptionParser(usage='usage: %prog -i <filename1> -b <filename2> -o <filename3>',
 			add_help_option=True,
-			description="""Example of reading a VTU file """ + 
+			description="""Example of reading a VTU file """ +
 			"""and extracting a deformed mesh.""")
 
 	optparser.add_option( 	"-i", "--input", dest="opt_inputfile",
@@ -99,7 +99,7 @@ def main():
 	if options.opt_outputfile == None:
 		optparser.print_help()
 		sys.exit(1)
-	
+
 	infilename     = options.opt_inputfile
 	inbasefilename = options.opt_inputbasefile
 	outputfilename = options.opt_outputfile
@@ -124,7 +124,7 @@ def main():
 		print('Warning: Found output filename: ' + outputfilename)
 		optparser.print_help()
 		sys.exit(1)
-	
+
 
 	print('[Reading VTU file: ' + infilename + ']')
 	print('[Reading VTS base file: ' + inbasefilename + ']')
@@ -143,5 +143,5 @@ if __name__ == "__main__":
     if minorV < 3:
       print('VersionError: Script is not tested for ParaView versions < v4.3')
       sys.exit(1)
-  
+
   main()

@@ -60,12 +60,12 @@ const char *MPntPStokes_member_names[] = {
 /* ===================================== */
 /* Getters for MPntPStokes */
 /* ===================================== */
-void MPntPStokesGetField_eta_effective(MPntPStokes *point,double *data) 
+void MPntPStokesGetField_eta_effective(MPntPStokes *point,double *data)
 {
   *data = point->eta;
 }
 
-void MPntPStokesGetField_density(MPntPStokes *point,double *data) 
+void MPntPStokesGetField_density(MPntPStokes *point,double *data)
 {
   *data = point->rho;
 }
@@ -74,12 +74,12 @@ void MPntPStokesGetField_density(MPntPStokes *point,double *data)
 /* ===================================== */
 /* Setters for MPntPStokes */
 /* ===================================== */
-void MPntPStokesSetField_eta_effective(MPntPStokes *point,double data) 
+void MPntPStokesSetField_eta_effective(MPntPStokes *point,double data)
 {
   point->eta = data;
 }
 
-void MPntPStokesSetField_density(MPntPStokes *point,double data) 
+void MPntPStokesSetField_density(MPntPStokes *point,double data)
 {
   point->rho = data;
 }
@@ -106,7 +106,7 @@ void MPntPStokesView(MPntPStokes *point)
 /* ===================================== */
 /* VTK viewer for MPntPStokes */
 /* ===================================== */
-void MPntPStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPStokes points[]) 
+void MPntPStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPStokes points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta\" format=\"ascii\">\n");
@@ -125,7 +125,7 @@ void MPntPStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPStoke
 /* ===================================== */
 /* PVTU viewer for MPntPStokes */
 /* ===================================== */
-void MPntPStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MPntPStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eta\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"rho\" NumberOfComponents=\"1\"/>\n");
@@ -135,7 +135,7 @@ void MPntPStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MPntPStokes */
 /* ===================================== */
-void MPntPStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MPntPStokes points[]) 
+void MPntPStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MPntPStokes points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -149,7 +149,7 @@ void MPntPStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,c
 /* ================================================== */
 /* VTK binary (appended data) viewer for MPntPStokes */
 /* ==================================================== */
-void MPntPStokesVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MPntPStokes points[]) 
+void MPntPStokesVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MPntPStokes points[])
 {
   int p,length;
   size_t atomic_size;

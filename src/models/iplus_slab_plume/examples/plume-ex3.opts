@@ -1,13 +1,13 @@
 #
 # NOTES
-# a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed  
+# a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed
 # b) Fixed time is used
-# c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping 
+# c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping
 #    condition on the Stokes part of the problem, or on the SNES stopping condition.
 # d) This solver configuration appears to be stable and robust
 #
 
-## =============================================================== 
+## ===============================================================
 ##
 ##   pTatin options file
 ##
@@ -16,7 +16,7 @@
 ##   Machine          : otsu.local
 ##   Using driver     : ./ptatin_driver_nonlinear_ts.app
 ##
-## =============================================================== 
+## ===============================================================
 #PETSc Option Table entries:
 -A11_operator_type 0,1,1
 -constant_dt 1.5

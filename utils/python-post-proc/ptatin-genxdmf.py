@@ -1,10 +1,10 @@
-# 
+#
 # XDMF PV 4.3.1 Notes
 #
-# [1] Defining a temporal collection appears uncessary to have a time series displayed in PV 
+# [1] Defining a temporal collection appears uncessary to have a time series displayed in PV
 # [2] Combining many grids into a spatial collection is impractical, users have only access to blocks per time step
 # [3] Result of [1] and [2] is that if a temporal collection is desired, different meshes have to be inserted in different root xmf files
-# 
+#
 
 import re
 import os
@@ -203,7 +203,7 @@ def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, act
 	f.write('      <Time Type="Single" Value="' + str(time_value) + '"/>\n')
 	f.write('      <Topology TopologyType="3DSMesh" Dimensions="' + nodesize + '"/>\n')
 	f.write('      <Geometry GeometryType="XYZ">\n')
-	
+
 	scale = length_scale['Scale']
 	f.write('        <DataItem ItemType="Function" Function="' + str(scale) + ' * $0" Dimensions="' + nodesize + ' 3">\n')
 	f.write('          <DataItem Format="Binary" DataType="Float" Precision="8" Endian="Big" Seek="8" Dimensions="' + nodesize + ' 3">\n')
@@ -219,7 +219,7 @@ def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, act
 			if active_variables[var]['Active'] is True:
 				list.append('%s [%s]'%(var,active_variables[var]['Unit']))
 				scale.append(active_variables[var]['Scale'])
-		
+
 	index = 0
 	for member in list:
 		scale_member = scale[index]
@@ -249,7 +249,7 @@ def pTatinXDMF_FilterPVDContents(filename):
 	# for each time/name pair
 	#	write three xdmf files
 	#	include names in Temporal collection
-	
+
 	timeseries = []
 
 	file = open(filename,'r')
@@ -266,7 +266,7 @@ def pTatinXDMF_FilterPVDContents(filename):
 			continue
 
 		time_value = res[0]
-		step_value = -1		
+		step_value = -1
 
 		matchObj = re.match( r'(.*)step([0-9]{6})(.*)', res[1] )
 		if matchObj:
@@ -373,77 +373,77 @@ def pTatinCreateUnitDictionary():
 	P = E/T
 	D = L*L/T
 	RHO = -100000.0 #P * T*T/L
-	
+
 	quantities = [
 	# ------------------------------------
 	            { 'Quantity': 'length',
 	              'Unit':     'm',
-	              'Scale':    '%e'%L, 
+	              'Scale':    '%e'%L,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'velocity',
 	              'Unit':     'm/s',
-	              'Scale':    '%e'%V, 
+	              'Scale':    '%e'%V,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'viscosity',
 	              'Unit':     'Pa.s',
-	              'Scale':    '%e'%E, 
+	              'Scale':    '%e'%E,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'time',
 	              'Unit':     's',
-	              'Scale':    '%e'%T, 
+	              'Scale':    '%e'%T,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'stress',
 	              'Unit':     'Pa',
-	              'Scale':    '%e'%P, 
+	              'Scale':    '%e'%P,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'density',
 	              'Unit':     'kg/m^3',
-	              'Scale':    '%e'%RHO, 
+	              'Scale':    '%e'%RHO,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'strain-rate',
         	      'Unit':     '1/s',
-        	      'Scale':    '%e'%STR, 
+        	      'Scale':    '%e'%STR,
 	              'Active':	   True },
 	# ------------------------------------
         	    { 'Quantity': 'diffusivity',
         	      'Unit':     'm^2/s',
-        	      'Scale':    '%e'%D, 
+        	      'Scale':    '%e'%D,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'temperature',
 	              'Unit':     'degC',
-	              'Scale':    1.0, 
+	              'Scale':    1.0,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'energy_source',
 	              'Unit':     'K/s',
-	              'Scale':    '%e'%(1.0/T), 
+	              'Scale':    '%e'%(1.0/T),
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'heat-flux',
 	              'Unit':     'W/m^2',
-	              'Scale':    1.0, 
+	              'Scale':    1.0,
 	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'region',
 	              'Unit':     '-',
-	              'Scale':    1.0, 
-	              'Active':	   True },	
+	              'Scale':    1.0,
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'plastic_strain',
 	              'Unit':     '-',
-	              'Scale':    1.0, 
+	              'Scale':    1.0,
 	              'Active':	   True },
 	# ------------------------------------
 				{ 'Quantity': 'yield_indicator',
 	              'Unit':     '-',
-	              'Scale':    1.0, 
+	              'Scale':    1.0,
 	              'Active':	   True },
 	]
 
@@ -452,7 +452,7 @@ def pTatinCreateUnitDictionary():
 	# for explaination
 
 	units = {x['Quantity']: x for x in quantities}
-	
+
 	#X = units['velocity']
 	#print(units['length'])
 	print(units)
@@ -464,7 +464,7 @@ def pTatinCreateUnitDictionary():
 #   "stress"   MPa
 #   "time"     kyr
 #   "velocity" cm/yr
-#   "length"   km       
+#   "length"   km
 def pTatinCreateGeodynamicUnitDictionary(unit):
 
 	# Convert units into km,cm/kyr,yr
@@ -476,7 +476,7 @@ def pTatinCreateGeodynamicUnitDictionary(unit):
 
 	X = units_geo['time']
 	sec_p_yr = 60.0 * 60.0 * 24.0 * 365.0
-	sec_p_kyr = sec_p_yr * 1000.0 	
+	sec_p_kyr = sec_p_yr * 1000.0
 	X['Scale'] = float(X['Scale']) / sec_p_kyr
 	X['Unit'] = 'kyr'
 

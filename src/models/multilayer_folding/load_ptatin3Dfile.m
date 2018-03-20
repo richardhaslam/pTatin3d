@@ -9,4 +9,3 @@ function strucdata = load_ptatin3Dfile(dire,filename, m)
     strucdata.x = reshape(strucdata.x, m(1), m(2), m(3));
     strucdata.y = reshape(strucdata.y, m(1), m(2), m(3));
     strucdata.z = reshape(strucdata.z, m(1), m(2), m(3));
-     

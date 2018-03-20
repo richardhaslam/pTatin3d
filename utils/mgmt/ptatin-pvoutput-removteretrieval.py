@@ -21,7 +21,7 @@ def main():
 		print 'Error: Unknown option provided'
 		usage()
 		sys.exit(2)
-	
+
 	if len(opts) == 0:
 		print 'Error: No options provided'
 		usage()
@@ -30,7 +30,7 @@ def main():
 	timestep = 0
 	path = 0
 	machine = "dmay@musashi.ethz.ch"
-	
+
 	for opt, arg in opts:
 		if opt in ("-t", "--timestep"):
 			timestep = arg
@@ -45,8 +45,8 @@ def main():
 	print '  Fetching timestep:', timestep
 	print '  From:', machine, '-->>', path
 
-	
-	files_to_fetch =                  path + "/" + "step" + timestep + "* " 
+
+	files_to_fetch =                  path + "/" + "step" + timestep + "* "
 	files_to_fetch = files_to_fetch + path + "/*.pvts "
 	files_to_fetch = files_to_fetch + path + "/*.pvtu "
 	files_to_fetch = files_to_fetch + path + "/*.pvd "
@@ -55,7 +55,7 @@ def main():
 	files_to_fetch = files_to_fetch + path + "/ptatin.petsc.log_summary* "
 	#print files_to_fetch
 
-	cmd = 'scp ' + machine + ':\"' + files_to_fetch + '\" .' 
+	cmd = 'scp ' + machine + ':\"' + files_to_fetch + '\" .'
 	#print cmd
 	os.system(cmd)
 

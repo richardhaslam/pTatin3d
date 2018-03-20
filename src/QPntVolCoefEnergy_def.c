@@ -57,12 +57,12 @@ const char *QPntVolCoefEnergy_member_names[] = {
 /* ===================================== */
 /* Getters for QPntVolCoefEnergy */
 /* ===================================== */
-void QPntVolCoefEnergyGetField_diffusivity(QPntVolCoefEnergy *point,double *data) 
+void QPntVolCoefEnergyGetField_diffusivity(QPntVolCoefEnergy *point,double *data)
 {
   *data = point->diffusivity;
 }
 
-void QPntVolCoefEnergyGetField_heat_source(QPntVolCoefEnergy *point,double *data) 
+void QPntVolCoefEnergyGetField_heat_source(QPntVolCoefEnergy *point,double *data)
 {
   *data = point->heat_source;
 }
@@ -71,12 +71,12 @@ void QPntVolCoefEnergyGetField_heat_source(QPntVolCoefEnergy *point,double *data
 /* ===================================== */
 /* Setters for QPntVolCoefEnergy */
 /* ===================================== */
-void QPntVolCoefEnergySetField_diffusivity(QPntVolCoefEnergy *point,double data) 
+void QPntVolCoefEnergySetField_diffusivity(QPntVolCoefEnergy *point,double data)
 {
   point->diffusivity = data;
 }
 
-void QPntVolCoefEnergySetField_heat_source(QPntVolCoefEnergy *point,double data) 
+void QPntVolCoefEnergySetField_heat_source(QPntVolCoefEnergy *point,double data)
 {
   point->heat_source = data;
 }
@@ -103,7 +103,7 @@ void QPntVolCoefEnergyView(QPntVolCoefEnergy *point)
 /* ===================================== */
 /* VTK viewer for QPntVolCoefEnergy */
 /* ===================================== */
-void QPntVolCoefEnergyVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPntVolCoefEnergy points[]) 
+void QPntVolCoefEnergyVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPntVolCoefEnergy points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"diffusivity\" format=\"ascii\">\n");
@@ -122,7 +122,7 @@ void QPntVolCoefEnergyVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPnt
 /* ===================================== */
 /* PVTU viewer for QPntVolCoefEnergy */
 /* ===================================== */
-void QPntVolCoefEnergyPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void QPntVolCoefEnergyPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"diffusivity\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"heat_source\" NumberOfComponents=\"1\"/>\n");
@@ -132,7 +132,7 @@ void QPntVolCoefEnergyPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for QPntVolCoefEnergy */
 /* ===================================== */
-void QPntVolCoefEnergyVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const QPntVolCoefEnergy points[]) 
+void QPntVolCoefEnergyVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const QPntVolCoefEnergy points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"diffusivity\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -146,7 +146,7 @@ void QPntVolCoefEnergyVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *of
 /* ================================================== */
 /* VTK binary (appended data) viewer for QPntVolCoefEnergy */
 /* ==================================================== */
-void QPntVolCoefEnergyVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const QPntVolCoefEnergy points[]) 
+void QPntVolCoefEnergyVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const QPntVolCoefEnergy points[])
 {
   int p,length;
   size_t atomic_size;

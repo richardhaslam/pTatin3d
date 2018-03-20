@@ -23,7 +23,7 @@ def main():
 
 	optparser=OptionParser(usage='usage: %prog -i <filename1>',
 			add_help_option=True,
-			description="""Read parallel vtu (PVTU) file """ + 
+			description="""Read parallel vtu (PVTU) file """ +
 			"""and write data to a single binary VTU file.""")
 
 	optparser.add_option( "-i", "--input", dest="opt_inputfile",
@@ -37,7 +37,7 @@ def main():
 
 
 	infilename = options.opt_inputfile
-	
+
 	if os.path.splitext(infilename)[1]=='.pvtu':
 		vts_name = os.path.splitext(infilename)[0] + ".vtu"
 
@@ -63,5 +63,5 @@ if __name__ == '__main__':
     if minorV < 3:
       print('VersionError: Script is not tested for ParaView versions < v4.3')
       sys.exit(1)
-  
+
   main()

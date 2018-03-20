@@ -53,7 +53,7 @@ struct _p_SurfaceQuadrature {
 	PetscInt    nfaces;
 	PetscInt    *element_list; /* list of cells connected to the face */
 	DataBucket  properties_db;
-};	
+};
 
 
 #endif

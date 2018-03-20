@@ -14,27 +14,27 @@ def main():
                          add_help_option=True,
                          description="""Read JSON metadata for """ +
                          """the DataBucket object.""")
-    
+
   optparser.add_option( "-i", "--input", dest="opt_inputfile",
                        help="Input file name", metavar="FILE")
 
   (options, argv) = optparser.parse_args()
-        
+
   if options.opt_inputfile == None:
     optparser.print_help()
     sys.exit(1)
-      
+
 
   infilename = options.opt_inputfile
-        
+
   if os.path.splitext(infilename)[1]=='.json':
 
     print('Reading: ' + infilename)
-  
+
     databucket = db.loadDataBucket(infilename)
 
     print(databucket)
-    
+
     # Demonstrate how to access known ptatin structs
     try:
       print(databucket["MPntStd"].getValues(1))

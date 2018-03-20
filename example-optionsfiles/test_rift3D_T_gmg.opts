@@ -1,4 +1,4 @@
-## =============================================================== 
+## ===============================================================
 ##
 ##   pTatin options file
 ##
@@ -7,7 +7,7 @@
 ##   Machine          : geop-086.ethz.ch
 ##   Using driver     : ./ptatin_driver_asmsolve.app
 ##
-## =============================================================== 
+## ===============================================================
 #PETSc Option Table entries:
 -A11_operator_type 0,1,1,1,1
 #-da_processors_x 1
@@ -36,21 +36,21 @@
 -snes_view
 -snes_monitor
 -stk_velocity_dm_mat_type aij
--ptatin_model rift3D_T 
+-ptatin_model rift3D_T
 -output_path test01-02
 -mx 32
--my 8 
+-my 8
 -mz 32
--newton_its 0 
+-newton_its 0
 -ksp_rtol 1e-2
--model_rift3D_T_vis_bar 1.e22 
--dau_nlevels 2 
--snes_rtol 1e-3 
--picard_its 5 
+-model_rift3D_T_vis_bar 1.e22
+-dau_nlevels 2
+-snes_rtol 1e-3
+-picard_its 5
 -fieldsplit_u_ksp_max_it 10
--ksp_rtol 5e-2 
--model_rift3D_T_wz 0.5 
--model_rift3D_T_wx 2. 
--model_rift3D_T_vis_bar 1e22 
--model_rift3D_Ttheta_0 0.025 
+-ksp_rtol 5e-2
+-model_rift3D_T_wz 0.5
+-model_rift3D_T_wx 2.
+-model_rift3D_T_vis_bar 1e22
+-model_rift3D_Ttheta_0 0.025
 -model_rift3D_Ttheta_1 0.025

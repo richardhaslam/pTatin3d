@@ -2,7 +2,7 @@
 #  The model defined here is described in the following publication:
 #
 #    "Kinematics and flow patterns in deep mantle and upper mantle subduction models: Influence of the mantle depth and slab to mantle viscosity ratio"
-#    Wouter P. Schellart, 
+#    Wouter P. Schellart,
 #    Geochemistry, Geophysics, Geosystems
 #    Volume 9, Number 3, 19 March 2008
 #    Q03014, doi:10.1029/2007/GC001656
@@ -11,14 +11,14 @@
 #
 #
 # NOTES
-# a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed  
+# a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed
 # b) Fixed time is used
-# c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping 
+# c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping
 #    condition on the Stokes part of the problem, or on the SNES stopping condition.
 # d) This solver configuration appears to be stable and robust
 #
 
-## =============================================================== 
+## ===============================================================
 ##
 ##   pTatin options file
 ##
@@ -27,7 +27,7 @@
 ##   Machine          : otsu.local
 ##   Using driver     : ./ptatin_driver_nonlinear_ts.app
 ##
-## =============================================================== 
+## ===============================================================
 #PETSc Option Table entries:
 
 -iplus_slab_eta  25250.0

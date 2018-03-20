@@ -100,7 +100,7 @@ if sample_range == True:
 	list = linspace(l1,l2,nsample)
 	for r in list:
 		mag_to_target = math.pow(10.0,r)
-		#print r,math.pow(10.0,r) 
+		#print r,math.pow(10.0,r)
 
 		cmd = cmd_basic + ' -eps_nev 10 -eps_target_magnitude -eps_target ' + str(mag_to_target) + ' > ' + output_file + '_mag_' + str(mag_to_target)
 		print 'Executing... ' + cmd

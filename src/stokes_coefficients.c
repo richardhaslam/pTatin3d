@@ -32,8 +32,8 @@
  Functionality to define the following coefficents
 
  \int_V eta grad(u) : grad(v) dV + \int_V q . grad(p) = \int_V v . F dV = \int_S v . (T . n) dS
- 
- where 
+
+ where
  eta = shear viscosity
  F   = body force
  T   = traction (shear stress)

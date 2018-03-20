@@ -32,9 +32,9 @@
  - In general, this interface could be used with all SPM's
  - FastScape specific calls should be embedded inside the
   #ifdef PTATIN_HAVE_FASTSCAPE_V3
- 
+
   #endif
- 
+
 */
 
 #include "ptatin3d.h"
@@ -71,15 +71,15 @@ PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
 	PetscErrorCode ierr;
 #endif
-	
+
 	PetscFunctionBegin;
-	
+
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
 	ierr = _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pctx,X,refinement_factor,Lstar,Vstar,dt_mechanical,dt_spm,_law,_m,_kf,_kd,_bc);CHKERRQ(ierr);
 #else
 	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatind3D must be compiled with external package <FastScape_V3_lib: Landscape evolution model of Jean Braun>");
 #endif
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -99,10 +99,10 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 	PetscLogDouble  t0,t1;
 	PetscBool       flg;
 	PetscErrorCode  ierr;
-	
-	
+
+
 	PetscFunctionBegin;
-	
+
 	/* parse parameters */
 	flg = PETSC_FALSE;
 	PetscOptionsGetInt(NULL,NULL,"-fastscape_refinement_factor",&refinement_factor,&flg);
@@ -111,18 +111,18 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 	flg = PETSC_FALSE;
 	PetscOptionsGetReal(NULL,NULL,"-fastscape_dt",&dt_spm,&flg);
 	if (flg) { PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Using dt %1.4e\n",dt_spm); }
-	
+
 	if (dt_spm > dt_mechanical) {
 		dt_spm = dt_mechanical;
 	}
-	
+
 	ierr = pTatinGetStokesContext(pctx,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
 	ierr = DMDAGetSizeElementQ2(dav,&mx,&my,&mz);CHKERRQ(ierr);
 	ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
-	
+
 	/* scatter parallel surface onto rank 0 */
 	ierr = DMDAGatherIKRedundantSurfaceDMDA(dav,&dm_spmsurf0);CHKERRQ(ierr);
 	/* debug - write out extracted surface */
@@ -136,7 +136,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 	PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Mechanical my: %D \n",my);
 	PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Mechanical mz: %D \n",mz);
 	PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Mechanical dt: %1.4e \n",dt_mechanical);
-	
+
 	if (dm_spmsurf0) {
 		double *sheight;
 		int    snx,sny;
@@ -150,14 +150,14 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
         char *outputpath;
         int slen;
 #endif
-		
+
 		/* generate regular 2d mesh */
 		smx = mx * refinement_factor;
 		smy = mz * refinement_factor;
-		
+
 		snx = (int)smx + 1;
 		sny = (int)smy + 1;
-		
+
 		/* FastScape requires nx,ny be a multiple of 4.... Beware! */
 		if ((snx/4)*4 != snx) {
 			snx=(snx/4)*4;
@@ -167,23 +167,23 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 		}
 		smx = snx - 1;
 		smy = sny - 1;
-		
+
 		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM snx: %d \n",snx);
 		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM sny: %d \n",sny);
 
 		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM smx: %d \n",smx);
 		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM smy: %d \n",smy);
 		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM dt: %1.4e \n",dt_spm);
-		
+
 		PetscMalloc(sizeof(PetscReal)*2*snx*sny,&scoord);
 		PetscMalloc(sizeof(double)*snx*sny,&sheight);
-		
+
 		Lx = gmax[0] - gmin[0];
 		Ly = gmax[2] - gmin[2];
-		
+
 		dx = Lx/((double)snx);
 		dy = Ly/((double)sny);
-		
+
 		/* generate coordinates for interpolation */
 		for (jj=0; jj<sny; jj++) {
 			for (ii=0; ii<snx; ii++) {
@@ -195,7 +195,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 
 		/* interpolate topo: da_spmsurf0 -> 2d mesh */
 		ierr = InterpolateMSurf0ToSPMSurfIKGrid(dm_spmsurf0,(PetscInt)smx,(PetscInt)smy,scoord,sheight);CHKERRQ(ierr);
-		
+
 		PetscTime(&t0);
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
 		/* scale topo */
@@ -211,7 +211,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 		dt_spm = dt_mechanical/(PetscReal)nsteps;
 		/* scale dt */
 		dt = dt_spm * (Lstar/Vstar);
-		
+
 		/* assign */
 		nsteps = dt_mechanical / dt_spm;
 		nfreq = 1;
@@ -223,7 +223,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
         outputpath = pctx->outputpath;
         slen = strlen(outputpath);
 		fastscape_(outputpath,&slen,sheight,&snx,&sny,&dx,&dy,&nsteps,&nfreq,&dt,&law,&m,&kf,&kd,&bc);
-		
+
 		/* unscale topo */
 		for (k=0; k<snx*sny; k++) {
 			sheight[k] = sheight[k] / Lstar;
@@ -237,7 +237,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 		if (debug) {
 			ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
 		}
-		
+
 		PetscFree(sheight);
 		PetscFree(scoord);
 	}
@@ -252,6 +252,6 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 	ierr = DMDAGetInfo(dav,0,0,&JMAX,0,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
 	ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }

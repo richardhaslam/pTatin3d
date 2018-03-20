@@ -57,12 +57,12 @@ const char *MPntPEnergy_member_names[] = {
 /* ===================================== */
 /* Getters for MPntPEnergy */
 /* ===================================== */
-void MPntPEnergyGetField_diffusivity(MPntPEnergy *point,double *data) 
+void MPntPEnergyGetField_diffusivity(MPntPEnergy *point,double *data)
 {
   *data = point->diffusivity;
 }
 
-void MPntPEnergyGetField_heat_source(MPntPEnergy *point,double *data) 
+void MPntPEnergyGetField_heat_source(MPntPEnergy *point,double *data)
 {
   *data = point->heat_source;
 }
@@ -71,12 +71,12 @@ void MPntPEnergyGetField_heat_source(MPntPEnergy *point,double *data)
 /* ===================================== */
 /* Setters for MPntPEnergy */
 /* ===================================== */
-void MPntPEnergySetField_diffusivity(MPntPEnergy *point,double data) 
+void MPntPEnergySetField_diffusivity(MPntPEnergy *point,double data)
 {
   point->diffusivity = data;
 }
 
-void MPntPEnergySetField_heat_source(MPntPEnergy *point,double data) 
+void MPntPEnergySetField_heat_source(MPntPEnergy *point,double data)
 {
   point->heat_source = data;
 }
@@ -103,7 +103,7 @@ void MPntPEnergyView(MPntPEnergy *point)
 /* ===================================== */
 /* VTK viewer for MPntPEnergy */
 /* ===================================== */
-void MPntPEnergyVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPEnergy points[]) 
+void MPntPEnergyVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPEnergy points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"diffusivity\" format=\"ascii\">\n");
@@ -122,7 +122,7 @@ void MPntPEnergyVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MPntPEnerg
 /* ===================================== */
 /* PVTU viewer for MPntPEnergy */
 /* ===================================== */
-void MPntPEnergyPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MPntPEnergyPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"diffusivity\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"heat_source\" NumberOfComponents=\"1\"/>\n");
@@ -132,7 +132,7 @@ void MPntPEnergyPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MPntPEnergy */
 /* ===================================== */
-void MPntPEnergyVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MPntPEnergy points[]) 
+void MPntPEnergyVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MPntPEnergy points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"diffusivity\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -146,7 +146,7 @@ void MPntPEnergyVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,c
 /* ================================================== */
 /* VTK binary (appended data) viewer for MPntPEnergy */
 /* ==================================================== */
-void MPntPEnergyVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MPntPEnergy points[]) 
+void MPntPEnergyVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MPntPEnergy points[])
 {
   int p,length;
   size_t atomic_size;

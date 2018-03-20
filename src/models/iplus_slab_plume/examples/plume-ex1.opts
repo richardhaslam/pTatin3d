@@ -2,11 +2,11 @@
 # NOTES
 # a) Preliminary, low resolution test to verify functionality and check multi-grid preconditioner settings
 # b) Two time step model
-# c) I notice that the characteristic velocities generated are small, ~O(1e-5), 
+# c) I notice that the characteristic velocities generated are small, ~O(1e-5),
 #    thus to ensure a converged solution one should use aggresive options for -ksp_rtol -ksp_atol
 #
 
-## =============================================================== 
+## ===============================================================
 ##
 ##   pTatin options file
 ##
@@ -15,7 +15,7 @@
 ##   Machine          : otsu.ethz.ch
 ##   Using driver     : ./ptatin_driver_linear_ts.app
 ##
-## =============================================================== 
+## ===============================================================
 #PETSc Option Table entries:
 -A11_operator_type 0,1,1
 -dau_nlevels 3

@@ -2,7 +2,7 @@
 -ptatin_model subduction_initiation2d
 #-output_path SI
 
--nsteps 20000 
+-nsteps 20000
 #-restart
 
 -da_processors_x 4
@@ -95,7 +95,7 @@
 -ksp_atol 1.e-7
 -ksp_rtol 1.0e-7
 -ksp_type fgmres
--ksp_monitor 
+-ksp_monitor
 
 #-ksp_gmres_restart 300
 

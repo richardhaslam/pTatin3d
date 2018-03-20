@@ -1,13 +1,13 @@
 #
 # NOTES
-# a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed  
+# a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed
 # b) Fixed time is used
-# c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping 
+# c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping
 #    condition on the Stokes part of the problem, or on the SNES stopping condition.
 # d) This solver configuration appears to be stable and robust
 #
 
-## =============================================================== 
+## ===============================================================
 ##
 ##   pTatin options file
 ##
@@ -16,16 +16,16 @@
 ##   Machine          : otsu.local
 ##   Using driver     : ./ptatin_driver_nonlinear_ts.app
 ##
-## =============================================================== 
+## ===============================================================
 #PETSc Option Table entries:
 
 # No mesh refinment
 #  -iplus_mesh_refinement_type 0
 
-# Factor four resolution increase center line within x-z plane 
+# Factor four resolution increase center line within x-z plane
   -iplus_mesh_refinement_type 1
 
-# Factor eight resolution increase center line within x-z plane 
+# Factor eight resolution increase center line within x-z plane
 #  -iplus_mesh_refinement_type 2
 
 -A11_operator_type 0,1,1

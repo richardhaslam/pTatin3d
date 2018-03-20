@@ -57,12 +57,12 @@ const char *MaterialConst_ViscosityFK_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_ViscosityFK */
 /* ===================================== */
-void MaterialConst_ViscosityFKGetField_eta0(MaterialConst_ViscosityFK *point,double *data) 
+void MaterialConst_ViscosityFKGetField_eta0(MaterialConst_ViscosityFK *point,double *data)
 {
   *data = point->eta0;
 }
 
-void MaterialConst_ViscosityFKGetField_theta(MaterialConst_ViscosityFK *point,double *data) 
+void MaterialConst_ViscosityFKGetField_theta(MaterialConst_ViscosityFK *point,double *data)
 {
   *data = point->theta;
 }
@@ -71,12 +71,12 @@ void MaterialConst_ViscosityFKGetField_theta(MaterialConst_ViscosityFK *point,do
 /* ===================================== */
 /* Setters for MaterialConst_ViscosityFK */
 /* ===================================== */
-void MaterialConst_ViscosityFKSetField_eta0(MaterialConst_ViscosityFK *point,double data) 
+void MaterialConst_ViscosityFKSetField_eta0(MaterialConst_ViscosityFK *point,double data)
 {
   point->eta0 = data;
 }
 
-void MaterialConst_ViscosityFKSetField_theta(MaterialConst_ViscosityFK *point,double data) 
+void MaterialConst_ViscosityFKSetField_theta(MaterialConst_ViscosityFK *point,double data)
 {
   point->theta = data;
 }
@@ -103,7 +103,7 @@ void MaterialConst_ViscosityFKView(MaterialConst_ViscosityFK *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_ViscosityFK */
 /* ===================================== */
-void MaterialConst_ViscosityFKVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityFK points[]) 
+void MaterialConst_ViscosityFKVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityFK points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta0\" format=\"ascii\">\n");
@@ -122,7 +122,7 @@ void MaterialConst_ViscosityFKVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,co
 /* ===================================== */
 /* PVTU viewer for MaterialConst_ViscosityFK */
 /* ===================================== */
-void MaterialConst_ViscosityFKPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_ViscosityFKPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eta0\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"theta\" NumberOfComponents=\"1\"/>\n");
@@ -132,7 +132,7 @@ void MaterialConst_ViscosityFKPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_ViscosityFK */
 /* ===================================== */
-void MaterialConst_ViscosityFKVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_ViscosityFK points[]) 
+void MaterialConst_ViscosityFKVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_ViscosityFK points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta0\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -146,7 +146,7 @@ void MaterialConst_ViscosityFKVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_ViscosityFK */
 /* ==================================================== */
-void MaterialConst_ViscosityFKVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityFK points[]) 
+void MaterialConst_ViscosityFKVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityFK points[])
 {
   int p,length;
   size_t atomic_size;

@@ -48,7 +48,7 @@ PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
 {
 	int       nregions;
   DataField dfield;
-  
+
 	DataBucketGetSizes(db,&nregions,NULL,NULL);
   {
     EnergyMaterialConstants *data;
@@ -61,7 +61,7 @@ PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
   /* conductivity */
   {
     EnergyConductivityConst *data;
-    
+
     DataBucketGetDataFieldByName(db,EnergyConductivityConst_classname,&dfield);
     DataFieldGetEntries(dfield,(void**)&data);
     MaterialConstantsSetDefaultAll_ConductivityConst(nregions,data);
@@ -69,16 +69,16 @@ PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
 
   {
     EnergyConductivityThreshold *data;
-    
+
     DataBucketGetDataFieldByName(db,EnergyConductivityThreshold_classname,&dfield);
     DataFieldGetEntries(dfield,(void**)&data);
     MaterialConstantsSetDefaultAll_ConductivityThreshold(nregions,data);
   }
-  
+
   /* sources */
   {
     EnergySourceConst *data;
-    
+
     DataBucketGetDataFieldByName(db,EnergySourceConst_classname,&dfield);
     DataFieldGetEntries(dfield,(void**)&data);
     MaterialConstantsSetDefaultAll_SourceConst(nregions,data);
@@ -86,7 +86,7 @@ PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
 
   {
     EnergySourceDecay *data;
-    
+
     DataBucketGetDataFieldByName(db,EnergySourceDecay_classname,&dfield);
     DataFieldGetEntries(dfield,(void**)&data);
     MaterialConstantsSetDefaultAll_SourceDecay(nregions,data);
@@ -94,7 +94,7 @@ PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
 
   {
     EnergySourceAdiabaticAdvection *data;
-    
+
     DataBucketGetDataFieldByName(db,EnergySourceAdiabaticAdvection_classname,&dfield);
     DataFieldGetEntries(dfield,(void**)&data);
     MaterialConstantsSetDefaultAll_SourceAdiabaticAdv(nregions,data);
@@ -113,63 +113,63 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
   EnergyMaterialConstants *mdata;
   int st,type;
   PetscReal k_scale,H_scale,Cp_scale,density_scale;
-  
+
   density_scale = pressure_scale * (time_scale*time_scale) / (length_scale*length_scale);
-  
+
   k_scale = pressure_scale * length_scale * length_scale / time_scale;  /* W/(m.K) = kg.m.s^-3.K^-1 = (kg/m^3).m^4.s^-3 */
   H_scale = pressure_scale / time_scale; /* W/m^3 */
   Cp_scale = pressure_scale /(density_scale); /* J / (kg.K) = m^2.kg.s^-2.K^-1 = (kg/m^3).m^5.s^-2 . K^-1 */
-  
+
 	DataBucketGetDataFieldByName(db,EnergyMaterialConstants_classname,&dfield);
   DataFieldGetEntries(dfield,(void**)&mdata);
-  
+
   /* NOTE: beta has units of 1/Pa, so scale by reciprocal */
   MaterialConstantsScaleValues_EnergyMaterialConstants(region_id,mdata,
                                                        1.0,                // alpha0
                                                        1.0/pressure_scale, // beta0,
                                                        density_scale,      // rho
                                                        Cp_scale);          // Cp0
- 
-  
+
+
   type = mdata[region_id].density_type;
   switch (type) {
 
     case ENERGYDENSITY_NONE:
       break;
-    
+
     case ENERGYDENSITY_USE_MATERIALPOINT_VALUE:
       /* NOTE: I expect the user set the correct scaled values of the material point */
       break;
-      
+
     case ENERGYDENSITY_CONSTANT:
       /* Nothing to do: rho is already scaled by MaterialConstantsScaleValues_EnergyMaterialConstants */
       break;
-      
+
     case ENERGYDENSITY_BOUSSINESQ:
       break;
   }
-  
+
 
   type = mdata[region_id].conductivity_type;
   switch (type) {
 
     case ENERGYCONDUCTIVITY_NONE:
       break;
-    
+
     case ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE:
       /* NOTE: I expect the user set the correct scaled values of the material point */
       break;
-      
+
     case ENERGYCONDUCTIVITY_CONSTANT: {
       EnergyConductivityConst *data;
-      
+
       DataBucketGetDataFieldByName(db,EnergyConductivityConst_classname,&dfield);
       DataFieldGetEntries(dfield,(void**)&data);
-      
+
       MaterialConstantsScaleValues_ConductivityConst(region_id,data,k_scale);
     }
       break;
-      
+
     case ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD: {
     	EnergyConductivityThreshold *data;
 
@@ -180,63 +180,63 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
     }
       break;
   }
-  
+
   for (st=0; st<7; st++) {
     type = mdata[region_id].source_type[st];
 
     switch (type) {
-        
+
       case ENERGYSOURCE_NONE:
         break;
 
       case ENERGYSOURCE_USE_MATERIALPOINT_VALUE:
         /* NOTE: I expect the user set the correct scaled values of the material point */
         break;
-        
+
       case ENERGYSOURCE_CONSTANT: {
         EnergySourceConst *data;
-        
+
         DataBucketGetDataFieldByName(db,EnergySourceConst_classname,&dfield);
         DataFieldGetEntries(dfield,(void**)&data);
-        
+
         MaterialConstantsScaleValues_SourceConst(region_id,data,H_scale);
       }
-        
+
         break;
-        
+
       case ENERGYSOURCE_SHEAR_HEATING:
         /* Nothing to scale - all interntal to EnergyEvaluateCoefficients_MaterialPoints */
         break;
-        
+
       case ENERGYSOURCE_DECAY: {
         EnergySourceDecay *data;
-        
+
         DataBucketGetDataFieldByName(db,EnergySourceDecay_classname,&dfield);
         DataFieldGetEntries(dfield,(void**)&data);
-        
+
         /* NOTE: lambda has units of 1/s, so scale by reciprocal */
         MaterialConstantsScaleValues_SourceDecay(region_id,data,H_scale,1.0/time_scale);
       }        break;
-        
+
       case ENERGYSOURCE_ADIABATIC:
         /* Nothing to scale - all interntal to EnergyEvaluateCoefficients_MaterialPoints */
         break;
-        
+
       case ENERGYSOURCE_ADIABATIC_ADVECTION: {
         EnergySourceAdiabaticAdvection *data;
-        
+
         DataBucketGetDataFieldByName(db,EnergySourceAdiabaticAdvection_classname,&dfield);
         DataFieldGetEntries(dfield,(void**)&data);
-       
+
         /* NOTE: dT/dy has units of K/m scale by 1/m */
         MaterialConstantsScaleValues_SourceAdiabaticAdv(region_id,data,1.0/length_scale);
       }
-        
-        
+
+
         break;
     }
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -244,11 +244,11 @@ PetscErrorCode MaterialConstantsEnergyPrintAll(DataBucket db,const int region_id
 {
   DataField dfield;
   EnergyMaterialConstants *data;
-  
+
 	DataBucketGetDataFieldByName(db,EnergyMaterialConstants_classname,&dfield);
   DataFieldGetEntries(dfield,(void**)&data);
-  
+
   MaterialConstantsPrintValues_EnergyMaterialConstants(NULL,region_id,data);
-  
+
   PetscFunctionReturn(0);
 }

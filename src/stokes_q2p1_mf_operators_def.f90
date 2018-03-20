@@ -5,7 +5,7 @@ SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dN
 	! input
   DOUBLE PRECISION, INTENT(IN) :: FAC
   DOUBLE PRECISION, INTENT(IN) :: eta_gp
-	
+
   DOUBLE PRECISION,  DIMENSION(0:80), INTENT(OUT) ::  Y
   DOUBLE PRECISION,  DIMENSION(0:26), INTENT(IN)  ::  Ux
   DOUBLE PRECISION,  DIMENSION(0:26), INTENT(IN)  ::  Uy
@@ -17,13 +17,13 @@ SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dN
   DOUBLE PRECISION,  DIMENSION(0:26), INTENT(IN)  ::  dNudz
   DOUBLE PRECISION,  DIMENSION(0:3),  INTENT(IN)  ::  Np
 
-  ! local variables 
+  ! local variables
   DOUBLE PRECISION,  DIMENSION(0:5)  ::  strain_rate_gp
   DOUBLE PRECISION,  DIMENSION(0:5)  ::  tau_gp
   DOUBLE PRECISION  ::  div_gp
 
 
-  ! strain-rate (e_xx,e_yy,e_zz,2.e_xy,2.e_xz,2.e_yz) at gauss point 
+  ! strain-rate (e_xx,e_yy,e_zz,2.e_xy,2.e_xz,2.e_yz) at gauss point
   strain_rate_gp(0) = Ux(0)*dNudx(0) + Ux(10)*dNudx(10) + Ux(11)*dNudx(11) + Ux(12)*dNudx(12) + Ux(13)*dNudx(13) + Ux(14)*dNudx(14) + Ux(15)*dNudx(15) + Ux(16)*dNudx(16) + Ux(17)*dNudx(17) + Ux(18)*dNudx(18) + Ux(19)*dNudx(19) + Ux(1)*dNudx(1) + Ux(20)*dNudx(20) + Ux(21)*dNudx(21) + Ux(22)*dNudx(22) + Ux(23)*dNudx(23) + Ux(24)*dNudx(24) + Ux(25)*dNudx(25) + Ux(26)*dNudx(26) + Ux(2)*dNudx(2) + Ux(3)*dNudx(3) + Ux(4)*dNudx(4) + Ux(5)*dNudx(5) + Ux(6)*dNudx(6) + Ux(7)*dNudx(7) + Ux(8)*dNudx(8) + Ux(9)*dNudx(9)
   strain_rate_gp(1) = Uy(0)*dNudy(0) + Uy(10)*dNudy(10) + Uy(11)*dNudy(11) + Uy(12)*dNudy(12) + Uy(13)*dNudy(13) + Uy(14)*dNudy(14) + Uy(15)*dNudy(15) + Uy(16)*dNudy(16) + Uy(17)*dNudy(17) + Uy(18)*dNudy(18) + Uy(19)*dNudy(19) + Uy(1)*dNudy(1) + Uy(20)*dNudy(20) + Uy(21)*dNudy(21) + Uy(22)*dNudy(22) + Uy(23)*dNudy(23) + Uy(24)*dNudy(24) + Uy(25)*dNudy(25) + Uy(26)*dNudy(26) + Uy(2)*dNudy(2) + Uy(3)*dNudy(3) + Uy(4)*dNudy(4) + Uy(5)*dNudy(5) + Uy(6)*dNudy(6) + Uy(7)*dNudy(7) + Uy(8)*dNudy(8) + Uy(9)*dNudy(9)
   strain_rate_gp(2) = Uz(0)*dNudz(0) + Uz(10)*dNudz(10) + Uz(11)*dNudz(11) + Uz(12)*dNudz(12) + Uz(13)*dNudz(13) + Uz(14)*dNudz(14) + Uz(15)*dNudz(15) + Uz(16)*dNudz(16) + Uz(17)*dNudz(17) + Uz(18)*dNudz(18) + Uz(19)*dNudz(19) + Uz(1)*dNudz(1) + Uz(20)*dNudz(20) + Uz(21)*dNudz(21) + Uz(22)*dNudz(22) + Uz(23)*dNudz(23) + Uz(24)*dNudz(24) + Uz(25)*dNudz(25) + Uz(26)*dNudz(26) + Uz(2)*dNudz(2) + Uz(3)*dNudz(3) + Uz(4)*dNudz(4) + Uz(5)*dNudz(5) + Uz(6)*dNudz(6) + Uz(7)*dNudz(7) + Uz(8)*dNudz(8) + Uz(9)*dNudz(9)
@@ -31,7 +31,7 @@ SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dN
   strain_rate_gp(4) = Ux(0)*dNudz(0) + Ux(10)*dNudz(10) + Ux(11)*dNudz(11) + Ux(12)*dNudz(12) + Ux(13)*dNudz(13) + Ux(14)*dNudz(14) + Ux(15)*dNudz(15) + Ux(16)*dNudz(16) + Ux(17)*dNudz(17) + Ux(18)*dNudz(18) + Ux(19)*dNudz(19) + Ux(1)*dNudz(1) + Ux(20)*dNudz(20) + Ux(21)*dNudz(21) + Ux(22)*dNudz(22) + Ux(23)*dNudz(23) + Ux(24)*dNudz(24) + Ux(25)*dNudz(25) + Ux(26)*dNudz(26) + Ux(2)*dNudz(2) + Ux(3)*dNudz(3) + Ux(4)*dNudz(4) + Ux(5)*dNudz(5) + Ux(6)*dNudz(6) + Ux(7)*dNudz(7) + Ux(8)*dNudz(8) + Ux(9)*dNudz(9) + Uz(0)*dNudx(0) + Uz(10)*dNudx(10) + Uz(11)*dNudx(11) + Uz(12)*dNudx(12) + Uz(13)*dNudx(13) + Uz(14)*dNudx(14) + Uz(15)*dNudx(15) + Uz(16)*dNudx(16) + Uz(17)*dNudx(17) + Uz(18)*dNudx(18) + Uz(19)*dNudx(19) + Uz(1)*dNudx(1) + Uz(20)*dNudx(20) + Uz(21)*dNudx(21) + Uz(22)*dNudx(22) + Uz(23)*dNudx(23) + Uz(24)*dNudx(24) + Uz(25)*dNudx(25) + Uz(26)*dNudx(26) + Uz(2)*dNudx(2) + Uz(3)*dNudx(3) + Uz(4)*dNudx(4) + Uz(5)*dNudx(5) + Uz(6)*dNudx(6) + Uz(7)*dNudx(7) + Uz(8)*dNudx(8) + Uz(9)*dNudx(9)
   strain_rate_gp(5) = Uy(0)*dNudz(0) + Uy(10)*dNudz(10) + Uy(11)*dNudz(11) + Uy(12)*dNudz(12) + Uy(13)*dNudz(13) + Uy(14)*dNudz(14) + Uy(15)*dNudz(15) + Uy(16)*dNudz(16) + Uy(17)*dNudz(17) + Uy(18)*dNudz(18) + Uy(19)*dNudz(19) + Uy(1)*dNudz(1) + Uy(20)*dNudz(20) + Uy(21)*dNudz(21) + Uy(22)*dNudz(22) + Uy(23)*dNudz(23) + Uy(24)*dNudz(24) + Uy(25)*dNudz(25) + Uy(26)*dNudz(26) + Uy(2)*dNudz(2) + Uy(3)*dNudz(3) + Uy(4)*dNudz(4) + Uy(5)*dNudz(5) + Uy(6)*dNudz(6) + Uy(7)*dNudz(7) + Uy(8)*dNudz(8) + Uy(9)*dNudz(9) + Uz(0)*dNudy(0) + Uz(10)*dNudy(10) + Uz(11)*dNudy(11) + Uz(12)*dNudy(12) + Uz(13)*dNudy(13) + Uz(14)*dNudy(14) + Uz(15)*dNudy(15) + Uz(16)*dNudy(16) + Uz(17)*dNudy(17) + Uz(18)*dNudy(18) + Uz(19)*dNudy(19) + Uz(1)*dNudy(1) + Uz(20)*dNudy(20) + Uz(21)*dNudy(21) + Uz(22)*dNudy(22) + Uz(23)*dNudy(23) + Uz(24)*dNudy(24) + Uz(25)*dNudy(25) + Uz(26)*dNudy(26) + Uz(2)*dNudy(2) + Uz(3)*dNudy(3) + Uz(4)*dNudy(4) + Uz(5)*dNudy(5) + Uz(6)*dNudy(6) + Uz(7)*dNudy(7) + Uz(8)*dNudy(8) + Uz(9)*dNudy(9)
 
-  ! deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point 
+  ! deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point
   tau_gp(0) = 2.0*eta_gp*strain_rate_gp(0)
   tau_gp(1) = 2.0*eta_gp*strain_rate_gp(1)
   tau_gp(2) = 2.0*eta_gp*strain_rate_gp(2)
@@ -39,9 +39,9 @@ SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dN
   tau_gp(4) = eta_gp*strain_rate_gp(4)
   tau_gp(5) = eta_gp*strain_rate_gp(5)
 
-  ! y = A11.u at gauss point 
-  ! y = A12.p at gauss point 
-  ! divergence at gauss point 
+  ! y = A11.u at gauss point
+  ! y = A12.p at gauss point
+  ! divergence at gauss point
   div_gp = strain_rate_gp(0) + strain_rate_gp(1) + strain_rate_gp(2)
 
   ! y = A21.u at gauss point
@@ -99,7 +99,7 @@ SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dN
   Y(47) = Y(47) + FAC*(dNudx(15)*tau_gp(4) + dNudy(15)*tau_gp(5) + dNudz(15)*tau_gp(2))
   Y(48) = Y(48) + FAC*(dNudx(16)*tau_gp(0) + dNudy(16)*tau_gp(3) + dNudz(16)*tau_gp(4))
   Y(49) = Y(49) + FAC*(dNudx(16)*tau_gp(3) + dNudy(16)*tau_gp(1) + dNudz(16)*tau_gp(5))
-	
+
   Y(50) = Y(50) + FAC*(dNudx(16)*tau_gp(4) + dNudy(16)*tau_gp(5) + dNudz(16)*tau_gp(2))
   Y(51) = Y(51) + FAC*(dNudx(17)*tau_gp(0) + dNudy(17)*tau_gp(3) + dNudz(17)*tau_gp(4))
   Y(52) = Y(52) + FAC*(dNudx(17)*tau_gp(3) + dNudy(17)*tau_gp(1) + dNudz(17)*tau_gp(5))
@@ -111,7 +111,7 @@ SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dN
   Y(58) = Y(58) + FAC*(dNudx(19)*tau_gp(3) + dNudy(19)*tau_gp(1) + dNudz(19)*tau_gp(5))
   Y(59) = Y(59) + FAC*(dNudx(19)*tau_gp(4) + dNudy(19)*tau_gp(5) + dNudz(19)*tau_gp(2))
 
-  Y(60) = Y(60) + FAC*(dNudx(20)*tau_gp(0) + dNudy(20)*tau_gp(3) + dNudz(20)*tau_gp(4))	
+  Y(60) = Y(60) + FAC*(dNudx(20)*tau_gp(0) + dNudy(20)*tau_gp(3) + dNudz(20)*tau_gp(4))
   Y(61) = Y(61) + FAC*(dNudx(20)*tau_gp(3) + dNudy(20)*tau_gp(1) + dNudz(20)*tau_gp(5))
   Y(62) = Y(62) + FAC*(dNudx(20)*tau_gp(4) + dNudy(20)*tau_gp(5) + dNudz(20)*tau_gp(2))
   Y(63) = Y(63) + FAC*(dNudx(21)*tau_gp(0) + dNudy(21)*tau_gp(3) + dNudz(21)*tau_gp(4))
@@ -133,7 +133,7 @@ SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dN
   Y(78) = Y(78) + FAC*(dNudx(26)*tau_gp(0) + dNudy(26)*tau_gp(3) + dNudz(26)*tau_gp(4))
   Y(79) = Y(79) + FAC*(dNudx(26)*tau_gp(3) + dNudy(26)*tau_gp(1) + dNudz(26)*tau_gp(5))
   Y(80) = Y(80) + FAC*(dNudx(26)*tau_gp(4) + dNudy(26)*tau_gp(5) + dNudz(26)*tau_gp(2))
-  
+
 	! total operations = 1058
-	
+
 END

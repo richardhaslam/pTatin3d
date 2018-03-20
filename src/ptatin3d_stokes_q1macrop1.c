@@ -47,7 +47,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,const Pet
 	const PetscInt *lxp,*lyp,*lzp;
 	PetscInt MX,MY,MZ,Mp,Np,Pp,*lxv,*lyv,*lzv;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
 	MX = mx;
 	MY = my;
@@ -58,25 +58,25 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,const Pet
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, vbasis_dofs,1, NULL,NULL,NULL, &dav );CHKERRQ(ierr);
   ierr = DMSetUp(dav);CHKERRQ(ierr);
 	ierr = DMDAESetType_Q1Macro(dav);CHKERRQ(ierr);
-	
+
 	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
-	
+
 	/* pressure */
 	pbasis_dofs = P_BASIS_FUNCTIONS;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
   ierr = DMSetUp(dap);CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
-	
+
 	/* set an initial geometry */
 	ierr = DMDASetUniformCoordinates(dav,0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr);
-	
+
 	/* stokes */
 	ierr = DMCompositeCreate(PETSC_COMM_WORLD,&multipys_pack);CHKERRQ(ierr);
-	ierr = DMCompositeAddDM(multipys_pack,dav);CHKERRQ(ierr);	
-	ierr = DMCompositeAddDM(multipys_pack,dap);CHKERRQ(ierr);	
-	
+	ierr = DMCompositeAddDM(multipys_pack,dav);CHKERRQ(ierr);
+	ierr = DMCompositeAddDM(multipys_pack,dap);CHKERRQ(ierr);
+
 	ierr = DMDASetFieldName(dav,0,"ux");CHKERRQ(ierr);
 	ierr = DMDASetFieldName(dav,1,"uy");CHKERRQ(ierr);
 	ierr = DMDASetFieldName(dav,2,"uz");CHKERRQ(ierr);
@@ -97,24 +97,24 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,const Pet
   ierr = PetscObjectSetOptionsPrefix((PetscObject)dav,"stk_velocity_");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)dap,"stk_pressure_");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)multipys_pack,"stk_pack_");CHKERRQ(ierr);
-	
+
 	ctx->dav  = dav;
 	ctx->dap  = dap;
 	ctx->stokes_pack = multipys_pack;
-	
+
 	ierr = PetscFree(lxv);CHKERRQ(ierr);
 	ierr = PetscFree(lyv);CHKERRQ(ierr);
 	ierr = PetscFree(lzv);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
-/* 
- For efficiency, i need a special quadrature rule to evaluate the weak form 
+/*
+ For efficiency, i need a special quadrature rule to evaluate the weak form
  associated with the mixed terms involving u,p.
  The special rule consists of mapping the 2x2x2 quadrature rule used on the
  velocity cells into the local coordinate system used by the macro element.
- 
+
 */
 PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes_Q1MacroP1(PhysCompStokes ctx)
 {
@@ -122,7 +122,7 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes_Q1MacroP1(PhysCompStokes ct
 	PetscInt lmx,lmy,lmz;
 	PetscInt np_per_dim,ncells;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
 
 	dav = ctx->dav;
@@ -131,7 +131,7 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes_Q1MacroP1(PhysCompStokes ct
   ierr = DMDAEQ1Macro_NaturalSpace_GetLocalSizeElement(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 	ncells = lmx * lmy * lmz;
 	ierr = VolumeQuadratureCreate_GaussLegendreStokes(3,np_per_dim,ncells,&ctx->volQ);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 

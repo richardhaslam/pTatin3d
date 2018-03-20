@@ -10,7 +10,7 @@ from paraview import vtkConstants
 from paraview.vtk import *
 from paraview.vtk import io
 
-# 
+#
 #
 #
 #
@@ -28,7 +28,7 @@ def compute_E_from_L(ncells,grad_v_cell_data):
 		for j in xrange(3):
 			ee[i].append(0)
 			ll[i].append(0)
-	
+
 
 	#print grad_v_cell_data.GetNumberOfTuples()
 	#print grad_v_cell_data.GetNumberOfComponents()
@@ -108,7 +108,7 @@ def generate_strain_rate(infilename,outfilename):
 
 #	points = mesh_in.GetPoints()
 #
-#	
+#
 #	mesh_out = vtk.vtkStructuredGrid()
 #
 #	mesh_out.SetNumberOfPoints(  mesh_in.GetNumberOfPoints() )
@@ -118,7 +118,7 @@ def generate_strain_rate(infilename,outfilename):
 #
 #	mesh_out.GetPointData().AddArray( vel_nodal_data )
 #	mesh_out.GetCellData().AddArray( sr_cell_data )
-#	
+#
 #	writer = io.vtkXMLStructuredGridWriter()
 #	compressor = io.vtkZLibDataCompressor()
 #	writer.SetCompressor(compressor)
@@ -133,7 +133,7 @@ def main():
 
 	optparser=OptionParser(usage='usage: %prog -i <filename1>',
 												 add_help_option=True,
-												 description="""Read vtu file with velocity and grad(V)""" + 
+												 description="""Read vtu file with velocity and grad(V)""" +
 												 """and generate strain rates.""")
 
 	optparser.add_option( "-i", "--input", dest="opt_inputfile",
@@ -149,7 +149,7 @@ def main():
 	infilename = options.opt_inputfile
 	if os.path.splitext(infilename)[1]=='.vts':
 		vts_name = os.path.splitext(infilename)[0] + "_sr.vts"
-	
+
 		print 'Reading: ' + infilename
 		print 'Writing: ' + vts_name
 		generate_strain_rate(infilename,vts_name)

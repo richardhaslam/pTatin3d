@@ -48,17 +48,17 @@ PetscErrorCode test_DMDAUpdateGhostedCoordinates(PetscInt nx,PetscInt ny,PetscIn
 	DM da;
 	Vec coords,x;
 	PetscViewer vv;
-	
-	
+
+
 	PetscFunctionBegin;
-	
+
 	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
   ierr = DMSetUp(da);CHKERRQ(ierr);
-	
+
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
 	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
-	
+
 	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 
 //	ierr = VecScale(coords,10.0);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ PetscErrorCode test_DMDAUpdateGhostedCoordinates(PetscInt nx,PetscInt ny,PetscIn
 	ierr = VecStrideScale(coords,2,30.0);CHKERRQ(ierr);
 
 	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
-	
+
 	/* output */
 	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test1.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -78,9 +78,9 @@ PetscErrorCode test_DMDAUpdateGhostedCoordinates(PetscInt nx,PetscInt ny,PetscIn
   ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
 	ierr = VecDestroy(&x);CHKERRQ(ierr);
-	
+
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
-	
+
   PetscFunctionReturn(0);
 }
 
@@ -89,14 +89,14 @@ int main( int argc,char **argv )
 {
 	PetscErrorCode ierr;
 	PetscInt mx,my,mz;
-	
+
 	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
-	
+
 	mx = my = mz = 10;
 	PetscOptionsGetInt(NULL, NULL, "-mx", &mx, 0 );
 	PetscOptionsGetInt(NULL, NULL, "-my", &my, 0 );
 	PetscOptionsGetInt(NULL, NULL, "-mz", &mz, 0 );
-	
+
 	ierr = test_DMDAUpdateGhostedCoordinates(mx,my,mz);CHKERRQ(ierr);
 	/* todo */
 	/*

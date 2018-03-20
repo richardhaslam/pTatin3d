@@ -25,18 +25,18 @@
 # ------------------------------------
 -newton_its 0
 -snes_converged_reason
--snes_rtol 1e-2 
+-snes_rtol 1e-2
 -snes_atol 1e-1
--snes_max_linear_solve_fail 10 
--snes_max_it 5  
+-snes_max_linear_solve_fail 10
+-snes_max_it 5
 
 # ---------------------------------
 #   Stokes solver specification
 # ---------------------------------
 -ksp_type  fgmres
--ksp_rtol  1e-2 
+-ksp_rtol  1e-2
 -pc_type   fieldsplit
--ksp_max_it 50 
+-ksp_max_it 50
 
 -pc_fieldsplit_type                     schur
 -pc_fieldsplit_schur_fact_type upper
@@ -64,7 +64,7 @@
 #   GMG solver specification
 # ---------------------------------
 # *** IMPORTANT - IF YOU WANT TO PROFILE GMG dau_nlevels and fieldsplit_u_pc_mg_levels MUST MATCH ***
--dau_nlevels               3 
+-dau_nlevels               3
 -fieldsplit_u_pc_mg_levels 3
 
 -A11_operator_type 0,1,1,1,1
@@ -92,7 +92,7 @@
 
 ! --------------------------------------------------
 # COARSE - iterative
--fieldsplit_u_mg_coarse_ksp_type       cg 
+-fieldsplit_u_mg_coarse_ksp_type       cg
 -fieldsplit_u_mg_coarse_ksp_max_it     25
 -fieldsplit_u_mg_coarse_ksp_rtol       1.0e-4
 -fieldsplit_u_mg_coarse_pc_type        asm
@@ -111,7 +111,7 @@
 -snes_monitor
 #-snes_view
 
--monitor_stages 
+-monitor_stages
 -fieldsplit_u_pc_mg_log
 -fieldsplit_u_ksp_monitor
 #-fieldsplit_u_mg_coarse_ksp_converged_reason
@@ -122,18 +122,18 @@
 # -----------------------
 # geomod2008 tuning
 # -----------------------
--ksp_monitor 
--ksp_converged_reason 
--snes_rtol 1.0e-2 
--snes_atol 1.0e-12 
--ksp_rtol 1.0e-10 
--constant_dt 3.6e-6 
--fieldsplit_u_ksp_max_it 1 
--fieldsplit_u_ksp_rtol 1.0e-2 
--snes_rtol 1.0e-2 
--snes_atol 1.0e-10 
--ksp_atol 1.0e-15 
+-ksp_monitor
+-ksp_converged_reason
+-snes_rtol 1.0e-2
+-snes_atol 1.0e-12
 -ksp_rtol 1.0e-10
--ksp_max_it 150 
+-constant_dt 3.6e-6
+-fieldsplit_u_ksp_max_it 1
+-fieldsplit_u_ksp_rtol 1.0e-2
+-snes_rtol 1.0e-2
+-snes_atol 1.0e-10
+-ksp_atol 1.0e-15
+-ksp_rtol 1.0e-10
+-ksp_max_it 150
 -snes_ls basic
 

@@ -29,7 +29,7 @@ const char *EnergySourceConst_member_names[] = {
 /* ================================================================= */
 /*   Getters for EnergySourceConst */
 /* ================================================================= */
-void EnergySourceConstGetField_HeatSource(EnergySourceConst *point,double *data) 
+void EnergySourceConstGetField_HeatSource(EnergySourceConst *point,double *data)
 {
   *data = point->H;
 }
@@ -38,7 +38,7 @@ void EnergySourceConstGetField_HeatSource(EnergySourceConst *point,double *data)
 /* ================================================================= */
 /*   Setters for EnergySourceConst */
 /* ================================================================= */
-void EnergySourceConstSetField_HeatSource(EnergySourceConst *point,double data) 
+void EnergySourceConstSetField_HeatSource(EnergySourceConst *point,double data)
 {
   point->H = data;
 }
@@ -60,15 +60,15 @@ void EnergySourceConstView(EnergySourceConst *point)
 /* ================================================================= */
 /*   Getters for default parameters (EnergySourceConst) */
 /* ================================================================= */
-void EnergySourceConstGetDefault_HeatSource(double *data) 
+void EnergySourceConstGetDefault_HeatSource(double *data)
 {
   *data = (double)0.0;
 }
 
-void MaterialConstantsSetDefaultAll_SourceConst( 
+void MaterialConstantsSetDefaultAll_SourceConst(
     int nr,EnergySourceConst _data[])
 {
-  int r; 
+  int r;
 
   for (r=0; r<nr; r++) {
     { double value;
@@ -78,7 +78,7 @@ void MaterialConstantsSetDefaultAll_SourceConst(
 
   }
 
-} 
+}
 
 PetscErrorCode MaterialConstantsSetFromOptions_SourceConst(const char model_name[],const int region_id,EnergySourceConst _data[],PetscBool essential)
 {
@@ -97,9 +97,9 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceConst(const char model_name
   }}
 
   PetscFunctionReturn(0);
-} 
+}
 
-PetscErrorCode MaterialConstantsPrintValues_SourceConst(const char model_name[],const int region_id,EnergySourceConst _data[]) 
+PetscErrorCode MaterialConstantsPrintValues_SourceConst(const char model_name[],const int region_id,EnergySourceConst _data[])
 {
   EnergySourceConst *data = &_data[region_id];
   char   opt_name[PETSC_MAX_PATH_LEN];
@@ -110,11 +110,11 @@ PetscErrorCode MaterialConstantsPrintValues_SourceConst(const char model_name[],
   sprintf(opt_name,"-%s_HeatSource_%d", model_name,region_id);
   { double value;
     EnergySourceConstGetField_HeatSource(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    HeatSource = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    HeatSource = %1.4e (%s) \n", value,opt_name);
   }
 
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsSetValues_SourceConst(const int region_id,EnergySourceConst _data[],
     double H)
@@ -122,7 +122,7 @@ PetscErrorCode MaterialConstantsSetValues_SourceConst(const int region_id,Energy
   EnergySourceConst *data = &_data[region_id];
   data->H =  H;
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsScaleValues_SourceConst(const int region_id,EnergySourceConst _data[],
     double H)
@@ -136,5 +136,5 @@ PetscErrorCode MaterialConstantsScaleValues_SourceConst(const int region_id,Ener
   }
 
   PetscFunctionReturn(0);
-} 
+}
 

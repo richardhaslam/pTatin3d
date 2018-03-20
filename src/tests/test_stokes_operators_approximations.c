@@ -56,17 +56,17 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
     ISLocalToGlobalMapping ltog;
 	PetscInt NUM_GINDICES;
 	const PetscInt *GINDICES;
-	
-	
-	
+
+
+
     ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
-	
+
 	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
 	ierr = DMGetCoordinatesLocal(da,&tmp);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p);CHKERRQ(ierr);
-	
+
 	ierr = DMDAVecGetArray(cda,tmp,&coors);CHKERRQ(ierr);
 	for (i=mstart; i<mstart+m; i++) {
 		for (j=nstart; j<nstart+n; j++) {
@@ -74,21 +74,21 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 				PetscInt LIDX = (i-mstart) + (j-nstart)*m + (k-pstart)*m*n;
 				PetscInt GIDX = GINDICES[ dofs*LIDX + index ];
 				PetscScalar f,XX,YY,ZZ;
-				
+
 				XX = coors[k][j][i].x;
 				YY = coors[k][j][i].y;
 				ZZ = coors[k][j][i].z;
-				
+
 				f = XX + YY + ZZ + (PetscScalar)index + 3.0;
-				
+
 				ierr = VecSetValue(x,GIDX,f,INSERT_VALUES);CHKERRQ(ierr);
 			}}}
 	ierr = DMDAVecRestoreArray(cda,tmp,&coors);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
-	
+
 	ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
 	ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -106,8 +106,8 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	PetscLogDouble t0,t1;
 	double tl,timeMIN,timeMAX;
 	PetscErrorCode ierr;
-	
-	
+
+
 	PetscFunctionBegin;
 
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", PETSC_FUNCTION_NAME,user->mx,user->my,user->mz );
@@ -117,7 +117,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	ierr = MatStokesMFCreate(&StkCtx);CHKERRQ(ierr);
 	ierr = MatStokesMFSetup(StkCtx,user);CHKERRQ(ierr);
 	ierr = MatCopy_StokesMF_A11MF(StkCtx,&A11Ctx);CHKERRQ(ierr);
-	
+
 	ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 
 	/* create the mf operators */
@@ -126,19 +126,19 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	ierr = MatStokesMFSetup(StkCtx2x2x2,user);CHKERRQ(ierr);
 	ierr = MatCopy_StokesMF_A11MF(StkCtx2x2x2,&A11Ctx2x2x2);CHKERRQ(ierr);
 	A11Ctx2x2x2->volQ = volQ_2x2x2;
-	
+
 	ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx2x2x2,&Auu2x2x2);CHKERRQ(ierr);
-	
-	
-	
+
+
+
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-	
+
 	ierr = VecSet(x,0.0);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,0,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
-	
+
 	/* matrix free */
 	PetscTime(&t0);
 	ierr = MatMult(Auu,x,y);CHKERRQ(ierr);
@@ -157,7 +157,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11_2x2x2(MF): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
-	
+
 
 	/* assembled */
 	ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
-	
+
 	PetscTime(&t0);
 	ierr = MatMult(B,x,y2);CHKERRQ(ierr);
 	PetscTime(&t1);
@@ -186,13 +186,13 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	PetscPrintf(PETSC_COMM_WORLD,"y_asm\n");
 	ierr = VecView(y2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	*/
-	
+
 	/* compare result */
 	ierr = VecDot(y,y,&cmp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  y.y    = %+1.8e [mfo]\n", cmp );
 	ierr = VecDot(y2,y2,&cmp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
-		
+
 	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
 	ierr = VecMin(y2,NULL,&min);CHKERRQ(ierr);
 	ierr = VecMax(y2,NULL,&max);CHKERRQ(ierr);
@@ -203,17 +203,17 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	ierr = VecDestroy(&y);CHKERRQ(ierr);
 	ierr = VecDestroy(&y2);CHKERRQ(ierr);
 
-	
-	
+
+
 	ierr = MatA11MFDestroy(&A11Ctx2x2x2);CHKERRQ(ierr);
 	ierr = MatStokesMFDestroy(&StkCtx2x2x2);CHKERRQ(ierr);
 	ierr = MatDestroy(&Auu2x2x2);CHKERRQ(ierr);
-	
+
 	ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	ierr = MatDestroy(&Auu);CHKERRQ(ierr);
 	ierr = MatDestroy(&B);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -223,9 +223,9 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	DM              dav;
 	pTatinCtx       user;
 	Quadrature			volQ_2x2x2;
-	
+
 	PetscFunctionBegin;
-	
+
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
@@ -233,9 +233,9 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
-	
+
 	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
-	
+
 	/* Generate physics modules */
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 
@@ -246,12 +246,12 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 
 	/* fetch some local variables */
 	dav           = user->stokes_ctx->dav;
-	
+
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
-	
+
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
-	
+
 	/* interpolate point coordinates (needed if mesh was modified) */
 	//ierr = QuadratureStokesCoordinateSetUp(user->stokes_ctx->Q,dav);CHKERRQ(ierr);
 	//for (e=0; e<QUAD_EDGES; e++) {
@@ -259,10 +259,10 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	//}
 	/* interpolate material point coordinates (needed if mesh was modified) */
 	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
-	
+
 	/* material geometry */
 	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
-	
+
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
 
@@ -274,14 +274,14 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 		DataField         PField_stokes;
 		MPntStd           *mp_std;
 		MPntPStokes       *mp_stokes;
-		
+
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
-		
+
 		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
-		
+
 		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,user->stokes_ctx->dav,user->stokes_ctx->volQ);CHKERRQ(ierr);
 	}
 
@@ -289,7 +289,7 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
   {
 		PetscInt ncells;
 		PetscInt lmx,lmy,lmz;
-		
+
 		ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 		ncells = lmx * lmy * lmz;
 		ierr = VolumeQuadratureCreate_GaussLegendreStokes(3,2,ncells,&volQ_2x2x2);CHKERRQ(ierr);
@@ -301,24 +301,24 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 		DataField         PField_stokes;
 		MPntStd           *mp_std;
 		MPntPStokes       *mp_stokes;
-		
+
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
-		
+
 		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
-		
+
 		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,user->stokes_ctx->dav,volQ_2x2x2);CHKERRQ(ierr);
 	}
-	
-	
-	
+
+
+
 	/* perform tests */
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
-	
+
 	ierr = compare_mf_A11(user->stokes_ctx,volQ_2x2x2);CHKERRQ(ierr);
-	
+
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
 
 
@@ -330,11 +330,11 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
-	
+
 	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-	
+
 	ierr = pTatin3d_assemble_stokes(argc,argv);CHKERRQ(ierr);
-	
+
 	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

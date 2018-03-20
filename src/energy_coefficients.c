@@ -61,10 +61,10 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
   PetscReal *grav_vec;
 
 	PetscFunctionBegin;
-	
+
 	/* Get bucket of material constants */
 	ierr = pTatinGetMaterialConstants(user,&material_constants);CHKERRQ(ierr);
-  
+
   ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	grav_vec = stokes->gravity_vector;
 
@@ -85,11 +85,11 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 	DataFieldGetEntries(PField_ConductivityConst,(void**)&k_const);
 	DataBucketGetDataFieldByName(material_constants, EnergyConductivityThreshold_classname, &PField_ConductivityThreshold );
 	DataFieldGetEntries(PField_ConductivityThreshold,(void**)&k_threshold);
-	
+
 	/* Get bucket of material points */
 	ierr = pTatinGetMaterialPoints(user,&material_points,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_points,&n_mp_points,0,0);
-	
+
 	DataBucketGetDataFieldByName(material_points,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	DataBucketGetDataFieldByName(material_points,MPntPEnergy_classname,&PField_energy);
@@ -105,28 +105,28 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 		double        rho_mp,conductivity_mp,diffusivity_mp,H_mp,Cp;
 		int           density_type,conductivity_type;
 		int           *source_type;
-    
+
 		DataFieldAccessPoint(PField_std,    pidx,(void**)&mp_std);
 		DataFieldAccessPoint(PField_energy, pidx,(void**)&mpp_energy);
-		
+
 		/* Get index of element containing this marker */
 		eidx = mp_std->wil;
 		/* Get marker local coordinate (for interpolation) */
 		xi_mp = mp_std->xi;
-		
+
 		/* Get region index */
     region_idx = mp_std->phase;
-				
+
     /* Get element temperature */
     ierr = DMDAEQ1_GetScalarElementField_3D(el_T,(PetscInt*)&elnidx[nen * eidx],LA_T);CHKERRQ(ierr);
-    
+
 		T_mp = 0.0;
     P3D_ConstructNi_Q1_3D(xi_mp,NQ1);
-    
+
     for (k=0; k<Q1_NODES_PER_EL_3D; k++) {
       T_mp += NQ1[k] * el_T[k];
     }
-    
+
 		/* get velocity for the element */
 		ierr = DMDAEQ1_GetVectorElementField_3D(el_U,(PetscInt*)&elnidx[nen * eidx],LA_U);CHKERRQ(ierr);
 
@@ -136,11 +136,11 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
       u_mp[1] += NQ1[k] * el_U[3*k+1];      /* compute vy on the particle */
       u_mp[2] += NQ1[k] * el_U[3*k+2];      /* compute vz on the particle */
     }
-		
+
 		density_type      = mat_consts[ region_idx ].density_type;
 		conductivity_type = mat_consts[ region_idx ].conductivity_type;
 		source_type       = mat_consts[ region_idx ].source_type;
-		
+
 		/* Fetch value for Cp */
 		Cp = mat_consts[ region_idx ].Cp;
 
@@ -149,11 +149,11 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 		switch (density_type) {
       case ENERGYDENSITY_NONE:
         break;
-			
+
       case ENERGYDENSITY_USE_MATERIALPOINT_VALUE:
 				SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[region %D] ENERGYDENSITY_USE_MATERIALPOINT_VALUE is not available",region_idx);
         break;
-        
+
       case ENERGYDENSITY_CONSTANT:
 				rho_mp = mat_consts[ region_idx ].rho_ref;
 			break;
@@ -169,7 +169,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
       case ENERGYCONDUCTIVITY_NONE:
         SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[region %D] A valid conductivity type must be specified",region_idx);
         break;
-        
+
       case ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE:
 				conductivity_mp = mpp_energy->diffusivity;
         break;
@@ -177,7 +177,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 			case ENERGYCONDUCTIVITY_CONSTANT:
         conductivity_mp = k_const[ region_idx ].k0;
 				break;
-			
+
       case ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD:
         /*
         conductivity_mp = k_threshold[ region_idx ].k0;
@@ -191,9 +191,9 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
         } else if (k_threshold[ region_idx ].T_threshold - T_mp < k_threshold[ region_idx ].dT) {
           double shift_T = T_mp - (k_threshold[ region_idx ].T_threshold - k_threshold[ region_idx ].dT);
           double dk = k_threshold[ region_idx ].k1 - k_threshold[ region_idx ].k0;
-          
+
           conductivity_mp = k_threshold[ region_idx ].k0 + (dk/k_threshold[ region_idx ].dT)*shift_T;
-        } 
+        }
 				break;
 		}
 
@@ -212,15 +212,15 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 				case ENERGYSOURCE_USE_MATERIALPOINT_VALUE:
 					H_mp += mpp_energy->heat_source;
 					break;
-					
+
 				case ENERGYSOURCE_CONSTANT:
 					H_mp += source_const[ region_idx ].H;
 					break;
-					
+
 				case ENERGYSOURCE_SHEAR_HEATING:
 					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[region %D] SHEAR-HEATING is not available",region_idx);
 					break;
-					
+
 				case ENERGYSOURCE_DECAY:
 					H_mp += source_decay[ region_idx ].H0 * exp( -time * source_decay[ region_idx ].lambda );
 					break;
@@ -232,45 +232,45 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 				case ENERGYSOURCE_ADIABATIC:
 				{
 					double g_dot_v; /* g_i * u_i */
-          
+
 					//g_dot_v = -(1.0)*u_mp[1]; /* todo - needs to be generalized to use gravity vector */
-          
+
           g_dot_v = -( grav_vec[0]*u_mp[0] + grav_vec[1]*u_mp[1] + grav_vec[2]*u_mp[2] );
-					
+
           H_mp += T_mp * mat_consts[ region_idx ].alpha * rho_mp * g_dot_v;
 				}
 					break;
-					
+
         /*
          vector u point in the direction of gravity
         */
 				case ENERGYSOURCE_ADIABATIC_ADVECTION:
 				{
 					double grav_nrm,u_vertical;
-					     
+
 					//u_vertical = u_mp[1]; /* todo - needs to be generalized to use gravity vector */
 
           grav_nrm = PetscSqrtReal( grav_vec[0]*grav_vec[0] + grav_vec[1]*grav_vec[1] + grav_vec[2]*grav_vec[2] );
           u_vertical = -(u_mp[0]*grav_vec[0] + u_mp[1]*grav_vec[1] + u_mp[2]*grav_vec[2])/grav_nrm;
-          
+
           H_mp += rho_mp * Cp * u_vertical * ( source_adi_adv[ region_idx ].dTdy );
-					
+
 				}
 					break;
 			}
 		}
-		
+
 		diffusivity_mp = conductivity_mp / (rho_mp * Cp);
-		
+
 		H_mp = H_mp / (rho_mp * Cp);
-		
+
 		MPntPEnergySetField_diffusivity(mpp_energy,diffusivity_mp);
 		MPntPEnergySetField_heat_source(mpp_energy,H_mp);
 	}
-	
+
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_energy);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -280,12 +280,12 @@ PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,PetscReal time,DM dmT,P
   DataBucket     materialpoint;
   Quadrature     volQ;
 	PhysCompEnergy energy;
-  
+
 	PetscFunctionBegin;
-	
+
   /* Evaluate physics on material points */
 	ierr = EnergyEvaluateCoefficients_MaterialPoints(user,time,dmT,LA_T,LA_U);CHKERRQ(ierr);
-	
+
   /* Project effective diffusivity and source from material points to quadrature points */
   ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 	volQ = energy->volQ;
@@ -293,7 +293,7 @@ PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,PetscReal time,DM dmT,P
 
 	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(dmT,materialpoint,MPField_Energy,MPPEgy_diffusivity,volQ);CHKERRQ(ierr);
 	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(dmT,materialpoint,MPField_Energy,MPPEgy_heat_source,volQ);CHKERRQ(ierr);
-  
+
 	PetscFunctionReturn(0);
 }
 

@@ -4,7 +4,7 @@
 #  - Simple one layer folding experiment to verify correctness of solution from ptatin_model
 #  - This option file defines a non-cylinderical (3D) model
 #  - Verification is achieved via comparison with Fletchers' 3D analytic solution, see reference
-#    Raymond C. Fletcher, Three-dimensional folding of an embedded viscous layer in pure shear, 
+#    Raymond C. Fletcher, Three-dimensional folding of an embedded viscous layer in pure shear,
 #    Journal of Structural Geology, Volume 13, Issue 1, 1991, Pages 87-96
 #
 # -------------------------------------------------------------------------------------------------
@@ -18,18 +18,18 @@
 	-model_multilayer_folding_Lx 1
 	-model_multilayer_folding_Lz 0.6
 
-# The layer is embedded within a larger matrix, thus we have 
-# three horizontal regions in the material we need to define 
+# The layer is embedded within a larger matrix, thus we have
+# three horizontal regions in the material we need to define
 # the heights for. This implies we have to specify FOUR heights
-	
+
 	-model_multilayer_folding_n_interfaces       4
 	-model_multilayer_folding_interface_heights  -50.0e-2,-0.25e-2,0.25e-2,50.0e-2
 
 
 # ---------------------
 # Perturbation types
-#   0: random noise 
-#   1: co and sinusoidal perturbation 
+#   0: random noise
+#   1: co and sinusoidal perturbation
 -model_multilayer_folding_perturbation_type 1
 -model_multilayer_folding_kx 10.47197551
 -model_multilayer_folding_kz 12.56637061
@@ -40,12 +40,12 @@
 # Material properties
 # Three layer model implies we need 3 element resolutions and 3 viscosities and 3 densities
 	-model_multilayer_folding_layer_eta     0.01,1.0,0.01
-	-model_multilayer_folding_layer_rho     0.0,0.0,0.0	
+	-model_multilayer_folding_layer_rho     0.0,0.0,0.0
 
 
 # ---------------------
 # Boundary conditions
-	-model_multilayer_folding_bc_type  2       
+	-model_multilayer_folding_bc_type  2
 	-model_multilayer_folding_exx     -0.3e2
 	-model_multilayer_folding_ezz     -0.3e2
 #	-model_multilayer_folding_ezz     -0.3e2
@@ -53,14 +53,14 @@
 
 # ------------------------------------------
 # pTatin simulation parameters
-	
+
 	!! Model resolution
 	-mx 12
 	-model_multilayer_folding_layer_res_j   12,2,12
 	-mz 16
 
 	!! Time step control
-	-constant_dt 1.0e-07    
+	-constant_dt 1.0e-07
 	-dt_max 0.05
 	-nsteps 1
 
@@ -81,7 +81,7 @@
 	-ksp_rtol 1.0e-5
 	-ksp_atol 1.0e-9
 	-pc_type fieldsplit
-	
+
 	-pc_fieldsplit_type schur
 	-pc_fieldsplit_schur_fact_type upper
 
@@ -112,7 +112,7 @@
 	-stk_velocity_da_refine_hierarchy_y 2
 	-stk_velocity_da_refine_hierarchy_z 4
 
-	# dump the geometric multi-grid mesh hierarchy 
+	# dump the geometric multi-grid mesh hierarchy
 	#-stk_velocity_da_view_hierarchy
 
 	#-fieldsplit_u_mg_levels_ksp_type chebyshev

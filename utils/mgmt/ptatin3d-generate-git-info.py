@@ -13,7 +13,7 @@ import re
 def GitFound_WriteInfoHeader():
 
     spacer = " "
-    
+
     hf = open("ptatin_git_version_info.h",'w')
     hf.write("\n")
     hf.write("#ifndef __ptatin_git_version_info_h__\n")
@@ -100,12 +100,12 @@ def GitFound_WriteInfoHeader():
 def main():
 
     gitrepo_detected = False
-    
+
     root = os.curdir
     for entry in os.listdir(root):
         if entry == ".git":
             gitrepo_detected = True
-    
+
     if gitrepo_detected == True:
         GitFound_WriteInfoHeader()
     else:

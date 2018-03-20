@@ -35,7 +35,7 @@
 typedef struct {
 	PetscReal Lx,Ly,Lz,hc,hm,ha,dxs,dys,dzs,hvbx1,hvbx2;
 	PetscReal vx_up,vx_down,rhoc,rhom,rhoa,etac,etam,etaa;
-    
+
 	PetscInt  nmaterials;
     PetscBool runmises;
 	PetscBool dimensional;

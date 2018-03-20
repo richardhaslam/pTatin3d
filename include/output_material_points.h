@@ -30,14 +30,14 @@
 #ifndef __ptatin_output_material_points_h__
 #define __ptatin_output_material_points_h__
 
-typedef enum { 
-	MPV_region=0, 
-	MPV_viscosity, 
-	MPV_density, 
-	MPV_plastic_strain, 
-	MPV_yield_indicator, 
-	MPV_diffusivity, 
-	MPV_heat_source 
+typedef enum {
+	MPV_region=0,
+	MPV_viscosity,
+	MPV_density,
+	MPV_plastic_strain,
+	MPV_yield_indicator,
+	MPV_diffusivity,
+	MPV_heat_source
 } MaterialPointVariable;
 
 extern const char *MaterialPointVariableName[];

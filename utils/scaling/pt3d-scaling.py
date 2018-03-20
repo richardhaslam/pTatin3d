@@ -11,7 +11,7 @@
 #              L(u) - grad(p) P/L [ E.(1/L).(V/L) ]^-1 = rho.g [ E.(1/L).(V/L) ]^-1
 #  E.(1/L).D  - P/L = rho.g
 #
-#   
+#
 #
 
 import sys
@@ -19,7 +19,7 @@ import getopt
 #import numpy as np
 #import quantities as pq
 
-# Abstract struct class       
+# Abstract struct class
 class Struct:
 	def __init__ (self, *argv, **argd):
 		if len(argd):
@@ -180,11 +180,11 @@ def usage_ScalingELV():
 
 #	input_unit_specification = PDEStokesUnits()
 #	user_unit_specification  = PDEStokesUnits(length='km')
-	# user now modifies all lengths in input to be in km 
+	# user now modifies all lengths in input to be in km
 	# ...
   #
 
-	# choose the scaling in the units defined by: user_unit_specification 
+	# choose the scaling in the units defined by: user_unit_specification
 #	user_output_unit_specification  = PDEStokesUnits(length='km',stress='MPa')
 
 def main_ScaleUsingELV():
@@ -211,7 +211,7 @@ def main_ScaleUsingELV():
 		elif o in ("-l", "--elv_length"):
 			print '  option: --elv_length = ', a
 			length_scale = a
-			
+
 		elif o in ("-v", "--elv_velocity"):
 			print '  option: --elv_velocity = ', a
 			velocity_scale = a
@@ -219,7 +219,7 @@ def main_ScaleUsingELV():
 		else :
 			usage_ScalingELV()
 			assert False, "unhandled option"
-		
+
 	scaling = StokesScalingCreate_ELV( eta_scale, length_scale, velocity_scale )
 	StokeScalingView(scaling,'ND')
 	StokeScalingReport_Dimensional2NonDimensional(scaling)
@@ -240,7 +240,7 @@ def main1():
 		if o in ("-h", "--help"):
 			print __doc__
 			sys.exit(0)
-			
+
 	# process arguments
 	for arg in args:
 		process(arg) # process() is defined elsewhere

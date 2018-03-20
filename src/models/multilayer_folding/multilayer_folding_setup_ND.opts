@@ -2,18 +2,18 @@
 # Model specification
 #  - 8 layer folding experiment
 #  - Domain is 200 km x 8 km x 200 km
-#  - the sedimentary cover consists of 8 layers: 
-#  
-#  various formation: sandstones/conglomerates/limestones viscosity: 1e23, density 2400 kg/m3, thickness: 2km 
-#  shales (weak layer) viscosity: 1e21, density 2400 kg/m3, thickness: 0.25 km 
-#  Limestones viscosity: 1e23, density 2700 kg/m3, thickness: 0.5 km 
-#  Anhydrite viscosity (weak layer): 1e21, density 2900 kg/m3, thickness:  0.25 km 
-#  Limestone/dolostone/mudstone viscosity: 1e23, density 2700 kg/m3, thickness: 1 km  
-#  Dolostones/Gypsum/Anhydrite (weak layer) viscosity: 1e21, density 2700 kg/m3, thickness: 1 km 
-#  sandstones/limestones: viscosity: 1e23, density 2500 kg/m3, thickness: 1.5 km 
-#  Halite/Gypsum/Halite viscosity: 1e19, density 2200 kg/m3, thickness: 1.5 km 
+#  - the sedimentary cover consists of 8 layers:
 #
-#	non dimensional units 
+#  various formation: sandstones/conglomerates/limestones viscosity: 1e23, density 2400 kg/m3, thickness: 2km
+#  shales (weak layer) viscosity: 1e21, density 2400 kg/m3, thickness: 0.25 km
+#  Limestones viscosity: 1e23, density 2700 kg/m3, thickness: 0.5 km
+#  Anhydrite viscosity (weak layer): 1e21, density 2900 kg/m3, thickness:  0.25 km
+#  Limestone/dolostone/mudstone viscosity: 1e23, density 2700 kg/m3, thickness: 1 km
+#  Dolostones/Gypsum/Anhydrite (weak layer) viscosity: 1e21, density 2700 kg/m3, thickness: 1 km
+#  sandstones/limestones: viscosity: 1e23, density 2500 kg/m3, thickness: 1.5 km
+#  Halite/Gypsum/Halite viscosity: 1e19, density 2200 kg/m3, thickness: 1.5 km
+#
+#	non dimensional units
 #
 #  option: --elv_eta =  1.0e22
 #  option: --elv_length =  200.0e3
@@ -51,8 +51,8 @@
 
 # ---------------------
 # Perturbation types
-#   0: random noise 
-#   1: co and sinusoidal perturbation 
+#   0: random noise
+#   1: co and sinusoidal perturbation
 -model_multilayer_folding_perturbation_type 0
 -model_multilayer_folding_amp_factor 0.01 # from the layer thickness
 
@@ -65,27 +65,27 @@
 
 # ---------------------
 # Boundary conditions
-	-model_multilayer_folding_bc_type  1       
+	-model_multilayer_folding_bc_type  1
 	-model_multilayer_folding_exx     -1.0
 	-model_multilayer_folding_ezz     -0.0e2
 
 
 # ------------------------------------------
 # pTatin simulation parameters
-	
+
 	!! Model resolution
 	-mx 96
-	-model_multilayer_folding_layer_res_j 6,6,4,4,1,2,1,8   
+	-model_multilayer_folding_layer_res_j 6,6,4,4,1,2,1,8
 	-mz 96
 
 	!! Time step control
-	#-constant_dt 1.0e-07    
+	#-constant_dt 1.0e-07
 	-dt_max 0.05
 	-nsteps 500
 
 	!! output control
 	-output_frequency 1
-	#-output_path 
+	#-output_path
 
 	!! checkpoint control
 	-checkpoint_every_nsteps 1
@@ -103,7 +103,7 @@
 	-ksp_rtol 1.0e-5
 	-ksp_atol 1.0e-4
 	-pc_type fieldsplit
-	
+
 	-pc_fieldsplit_type schur
 	-pc_fieldsplit_schur_fact_type upper
 
@@ -133,7 +133,7 @@
 	-stk_velocity_da_refine_hierarchy_y 2,2
 	-stk_velocity_da_refine_hierarchy_z 4,4
 
-	# dump the geometric multi-grid mesh hierarchy 
+	# dump the geometric multi-grid mesh hierarchy
 	#-stk_velocity_da_view_hierarchy
 
 	#-fieldsplit_u_mg_levels_ksp_type chebyshev

@@ -57,12 +57,12 @@ const char *MaterialConst_SoftExpo_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_SoftExpo */
 /* ===================================== */
-void MaterialConst_SoftExpoGetField_eps_min(MaterialConst_SoftExpo *point,double *data) 
+void MaterialConst_SoftExpoGetField_eps_min(MaterialConst_SoftExpo *point,double *data)
 {
   *data = point->eps_min;
 }
 
-void MaterialConst_SoftExpoGetField_eps_fold(MaterialConst_SoftExpo *point,double *data) 
+void MaterialConst_SoftExpoGetField_eps_fold(MaterialConst_SoftExpo *point,double *data)
 {
   *data = point->eps_fold;
 }
@@ -71,12 +71,12 @@ void MaterialConst_SoftExpoGetField_eps_fold(MaterialConst_SoftExpo *point,doubl
 /* ===================================== */
 /* Setters for MaterialConst_SoftExpo */
 /* ===================================== */
-void MaterialConst_SoftExpoSetField_eps_min(MaterialConst_SoftExpo *point,double data) 
+void MaterialConst_SoftExpoSetField_eps_min(MaterialConst_SoftExpo *point,double data)
 {
   point->eps_min = data;
 }
 
-void MaterialConst_SoftExpoSetField_eps_fold(MaterialConst_SoftExpo *point,double data) 
+void MaterialConst_SoftExpoSetField_eps_fold(MaterialConst_SoftExpo *point,double data)
 {
   point->eps_fold = data;
 }
@@ -103,7 +103,7 @@ void MaterialConst_SoftExpoView(MaterialConst_SoftExpo *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_SoftExpo */
 /* ===================================== */
-void MaterialConst_SoftExpoVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_SoftExpo points[]) 
+void MaterialConst_SoftExpoVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_SoftExpo points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eps_min\" format=\"ascii\">\n");
@@ -122,7 +122,7 @@ void MaterialConst_SoftExpoVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const
 /* ===================================== */
 /* PVTU viewer for MaterialConst_SoftExpo */
 /* ===================================== */
-void MaterialConst_SoftExpoPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_SoftExpoPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eps_min\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eps_fold\" NumberOfComponents=\"1\"/>\n");
@@ -132,7 +132,7 @@ void MaterialConst_SoftExpoPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_SoftExpo */
 /* ===================================== */
-void MaterialConst_SoftExpoVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_SoftExpo points[]) 
+void MaterialConst_SoftExpoVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_SoftExpo points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eps_min\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -146,7 +146,7 @@ void MaterialConst_SoftExpoVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,in
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_SoftExpo */
 /* ==================================================== */
-void MaterialConst_SoftExpoVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_SoftExpo points[]) 
+void MaterialConst_SoftExpoVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_SoftExpo points[])
 {
   int p,length;
   size_t atomic_size;

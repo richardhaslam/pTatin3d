@@ -36,15 +36,15 @@ PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)
 PetscBool DMDAVecTraverse3d_Constant(PetscScalar pos[],PetscScalar *val,void *ctx);
 PetscBool DMDAVecTraverseIJK_Constant(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx);
 
-/* 
- val0 = A[0].x + B[0] 
- val1 = A[1].y + B[1] 
- val2 = A[2].z + B[2] 
+/*
+ val0 = A[0].x + B[0]
+ val1 = A[1].y + B[1]
+ val2 = A[2].z + B[2]
  val = val0 + val1 + val2
  */
 typedef struct {
 	PetscScalar Ox[3];
-	PetscScalar A[3],B[3];	
+	PetscScalar A[3],B[3];
 } DMDAVecTraverse3d_InterpCtx;
 
 

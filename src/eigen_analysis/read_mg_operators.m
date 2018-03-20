@@ -37,12 +37,12 @@ max(max(pc_A_fine - pc_A_fine'))
 %pc_A_fine = tmp;
 
 % Compute eigenvalues -----------------------------------
-% This should be compared with 
+% This should be compared with
 % right preconditioned operators which are fed into SLEPC
 fprintf(1,'eigs(A_fine.pc_A_fine)\n');
 eigs(A_fine * pc_A_fine,9,'LM')
 
-% This should be compared with 
+% This should be compared with
 % LEFT preconditioned operators which are fed into SLEPC
 %fprintf(1,'eigs(pc_A_fine.A_fine)\n');
 %eigs(pc_A_fine * A_fine,9,'LM')

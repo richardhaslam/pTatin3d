@@ -6,7 +6,7 @@
 #
 # As such it is defined as a fairly large problem,
 #  but of course options can be overridden by placing them after
-#  this options file, e.g. -options_file xyz -mx 16 -my 16 -mz 16 
+#  this options file, e.g. -options_file xyz -mx 16 -my 16 -mz 16
 #
 # This is set up with two telescoping operations, so to run
 #  smaller test cases, options must be adjusted to the communicator size
@@ -70,7 +70,7 @@
 -stk_velocity_dm_mat_type aij
 -A11_operator_type 0,1,1 # coarse-->fine  assm,mf,mf (all redisc.)
 -a11_op avx
--dau_nlevels 3 
+-dau_nlevels 3
 
 -fieldsplit_u_ksp_type fgmres
 -fieldsplit_u_ksp_rtol 1.0e-2 # gduclaux has 1e-3

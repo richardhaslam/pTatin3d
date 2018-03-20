@@ -41,31 +41,31 @@ PetscErrorCode DMDAGetSizeElementQ2(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ
 	const PetscInt order = 2;
 	PetscInt M,N,P,width;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=2) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 2 for Q2");
 	}
-	
+
 	/* M = order*mx+1 */
 	if ( (M-1)%order != 0 ) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMDA is not compatible with Q2 elements in x direction");
 	}
 	if (MX) { *MX = (M-1)/order; }
-	
+
 	//
 	if ( (N-1)%order != 0 ) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMDA is not compatible with Q2 elements in y direction");
 	}
 	if (MY) { *MY = (N-1)/order; }
-	
+
 	//
 	if ( (P-1)%order != 0 ) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMDA is not compatible with Q2 elements in z direction");
 	}
 	if (MZ) { *MZ = (P-1)/order; }
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -78,7 +78,7 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 	PetscInt sig,sjg,skg,mg,ng,pg;
 	PetscErrorCode ierr;
 	PetscMPIInt rank;
-	
+
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
@@ -88,10 +88,10 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 	}
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	//printf("[%d]: i(%d->%d) : j(%d->%d) \n", rank,si,si+m,sj,sj+n);
-	
+
 	cntx = cnty = cntz = 0;
 
-	
+
 	/* ======================================================================================== */
 	// x
 	start = -1;
@@ -105,27 +105,27 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 	if (start == -1) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot determine start index in I"); }
 	while (start + 2 * cntx < si+m) {
 		PetscInt n0,n2;
-		
+
 		n0 = start + 2 * cntx;
 		n2 = n0 + 2;
-		
+
 		if (n2<sig+mg) {
 //			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(i) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,si,si+m-1 );
 			cntx++;
 			continue;
-		}		
-		
+		}
+
 		if (si+m-n2>1) {
 //			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(i) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,si,si+m-1 );
 			cntx++;
 			continue;
-		}		
-		
+		}
+
 		if (si+m-n2<=1) {
 			break;
-		}		
+		}
 	}
-	
+
 	/* ======================================================================================== */
 	// y
 	start = -1;
@@ -136,31 +136,31 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 			break;
 		}
 	}
-	if (start == -1) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot determine start index in J"); }	
+	if (start == -1) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot determine start index in J"); }
 	while (start + 2 * cnty < sj+n) {
 		PetscInt n0,n2;
-		
+
 		n0 = start + 2 * cnty;
 		n2 = n0 + 2;
-		
+
 		/* if start and end of element are inside global range - keep it */
 		if (n2<sjg+ng) {
 //			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(j) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sj,sj+n-1 );
 			cnty++;
 			continue;
-		}		
-		
+		}
+
 		if (sj+n-n2>1) {
 //			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(j) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sj,sj+n-1 );
 			cnty++;
 			continue;
-		}		
-		
+		}
+
 		if (sj+n-n2<=1) {
 			break;
-		}		
+		}
 	}
-	
+
 	/* ======================================================================================== */
 	// z
 	start = -1;
@@ -174,10 +174,10 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 	if (start == -1) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot determine start index in K"); }
 	while (start + 2 * cntz < p+sk) {
 		PetscInt n0,n2;
-		
+
 		n0 = start + 2 * cntz;
 		n2 = n0 + 2;
-		
+
 		//		printf("last-n2 = %d \n", sk+p-n2 );
 		/* if start and end of element are inside global range - keep it */
 		if (n2<skg+pg) {
@@ -185,24 +185,24 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 			//			printf("[GLOBAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
 			cntz++;
 			continue;
-		}		
-		
+		}
+
 		if (sk+p-n2>1) {
 //			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(k) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sk,sk+p-1 );
 			//			printf("[LOCAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
 			cntz++;
 			continue;
-		}		
-		
+		}
+
 		if (sk+p-n2<=1) {
 			/* this means the element is taking two entries from the ghost cells */
 			//			printf("[OUTSIDE] element (%d .. %d) [%d-%d]l [%d-%d]g\n", n0,n2,sk,sk+p-1,skg,skg+pg-1);
 			break;
-		}		
+		}
 	}
-	
+
 	/* ======================================================================================== */
-	
+
 	if (mx) { *mx = cntx; }
 	if (my) { *my = cnty; }
 	if (mz) { *mz = cntz; }
@@ -217,7 +217,7 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 	PetscInt sig,sjg,skg,mg,ng,pg;
 	PetscErrorCode ierr;
 	PetscMPIInt rank;
-	
+
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
@@ -225,10 +225,10 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 	if (width!=2) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 2 for Q2");
 	}
-	
+
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	/*PetscPrintf(PETSC_COMM_SELF,"[%d]: %d->%d : %d->%d \n", rank,si,si+m,sj,sj+n);*/
-	
+
 	// x
 	for (i=si; i<si+m; i++) {
 		if (i%2==0 && i==si && i!=0) { continue; } /* reject first ghost if its's even */
@@ -246,7 +246,7 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 			break;
 		}
 	}
-	
+
 	// z
 	for (k=sk; k<sk+p; k++) {
 		if (k%2==0 && k==sk && k!=0) { continue; } /* reject first ghost if its's even */
@@ -256,9 +256,9 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 		}
 	}
 	/*PetscPrintf(PETSC_COMM_SELF,"si,sj,sk = %d %d %d \n", *sei,*sej,*sek);*/
-	
+
 	ierr = DMDAGetLocalSizeElementQ2(da,mx,my,mz);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -272,16 +272,16 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	PetscInt *olx,*oly,*olz;
 	PetscInt *lmx,*lmy,*lmz,*tmp;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
 	/* create file name */
 	PetscObjectGetComm( (PetscObject)da, &comm );
 	ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
 	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-	
+
 	ierr = DMDAGetInfo( da, &dim, &M,&N,&P, &pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
 	ierr = DMDAGetCornersElementQ2(da,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
-	
+
 	if (dim == 1) {
 		pN = 1;
 		pP = 1;
@@ -289,17 +289,17 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	if (dim == 2) {
 		pP = 1;
 	}
-	
+
 	ierr = PetscMalloc( sizeof(PetscInt)*(nproc), &tmp );CHKERRQ(ierr);
-	
+
 	ierr = PetscMalloc( sizeof(PetscInt)*(pM+1), &olx );CHKERRQ(ierr);
 	ierr = PetscMalloc( sizeof(PetscInt)*(pN+1), &oly );CHKERRQ(ierr);
 	ierr = PetscMalloc( sizeof(PetscInt)*(pP+1), &olz );CHKERRQ(ierr);
-	
+
 	ierr = PetscMalloc( sizeof(PetscInt)*(pM+1), &lmx );CHKERRQ(ierr);
 	ierr = PetscMalloc( sizeof(PetscInt)*(pN+1), &lmy );CHKERRQ(ierr);
 	ierr = PetscMalloc( sizeof(PetscInt)*(pP+1), &lmz );CHKERRQ(ierr);
-	
+
 	if (dim >= 1) {
 		ierr = MPI_Allgather ( &esi, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		j = k = 0;
@@ -307,7 +307,7 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
 			olx[i] = tmp[procid];
 		}
-		
+
 		ierr = MPI_Allgather ( &mx, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		j = k = 0;
 		for( i=0; i<pM; i++ ) {
@@ -315,7 +315,7 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 			lmx[i] = tmp[procid];
 		}
 	}
-	
+
 	if (dim >= 2 ) {
 		ierr = MPI_Allgather ( &esj, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = k = 0;
@@ -323,7 +323,7 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
 			oly[j] = tmp[procid];
 		}
-		
+
 		ierr = MPI_Allgather ( &my, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = k = 0;
 		for( j=0; j<pN; j++ ) {
@@ -331,7 +331,7 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 			lmy[j] = tmp[procid];
 		}
 	}
-	
+
 	if (dim == 3 ) {
 		ierr = MPI_Allgather ( &esk, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = j = 0;
@@ -339,7 +339,7 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 			PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
 			olz[k] = tmp[procid];
 		}
-		
+
 		ierr = MPI_Allgather ( &mz, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = j = 0;
 		for( k=0; k<pP; k++ ) {
@@ -347,21 +347,21 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 			lmz[k] = tmp[procid];
 		}
 	}
-	
+
 	if(m) { *m = pM; }
 	if(n) { *n = pN; }
 	if(p) { *p = pP; }
-	
+
 	if(si) { *si = olx; } else { ierr = PetscFree(olx);CHKERRQ(ierr); }
 	if(sj) { *sj = oly; } else { ierr = PetscFree(oly);CHKERRQ(ierr); }
 	if(sk) { *sk = olz; } else { ierr = PetscFree(olz);CHKERRQ(ierr); }
-	
+
 	if(_mx) { *_mx = lmx; } else { ierr = PetscFree(lmx);CHKERRQ(ierr); }
 	if(_my) { *_my = lmy; } else { ierr = PetscFree(lmy);CHKERRQ(ierr); }
 	if(_mz) { *_mz = lmz; } else { ierr = PetscFree(lmz);CHKERRQ(ierr); }
-	
+
 	ierr = PetscFree(tmp);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -376,20 +376,20 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	PetscInt dof;
 	PetscMPIInt rank;
 	PetscFunctionBegin;
-	
+
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, &M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=2) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 2 for Q2");
 	}
-	
+
 	_npe = (order + 1)*(order + 1)*(order + 1);
   if (!da->e) {
 		ierr = DMDAGetCornersElementQ2(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 		ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe+1),&idx);CHKERRQ(ierr);
 		ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
 		ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
-		
+
 		elcnt = 0;
 
 		for (ek=0; ek<mz; ek++) {
@@ -400,71 +400,71 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 					i = esi-gsi + 2*ei;
 
 					el = &idx[_npe*elcnt];
-					
-					//				printf("[%d]: i=%d \n", rank,i );
-					nid[ 0] = (i  ) + (j  ) *X  + (k  ) *X*Y; 
-					nid[ 1] = (i+1) + (j  ) *X  + (k  ) *X*Y; 
-					nid[ 2] = (i+2) + (j  ) *X  + (k  ) *X*Y; 
-					
-					nid[ 3] = (i  ) + (j+1) *X  + (k  ) *X*Y; 
-					nid[ 4] = (i+1) + (j+1) *X  + (k  ) *X*Y; 
-					nid[ 5] = (i+2) + (j+1) *X  + (k  ) *X*Y; 
-					
-					nid[ 6] = (i  ) + (j+2) *X  + (k  ) *X*Y; 
-					nid[ 7] = (i+1) + (j+2) *X  + (k  ) *X*Y; 
-					nid[ 8] = (i+2) + (j+2) *X  + (k  ) *X*Y; 
-					//
-					nid[ 9] = (i  ) + (j  ) *X  + (k+1) *X*Y; 
-					nid[10] = (i+1) + (j  ) *X  + (k+1) *X*Y; 
-					nid[11] = (i+2) + (j  ) *X  + (k+1) *X*Y; 
-					
-					nid[12] = (i  ) + (j+1) *X  + (k+1) *X*Y; 
-					nid[13] = (i+1) + (j+1) *X  + (k+1) *X*Y; 
-					nid[14] = (i+2) + (j+1) *X  + (k+1) *X*Y; 
-					
-					nid[15] = (i  ) + (j+2) *X  + (k+1) *X*Y; 
-					nid[16] = (i+1) + (j+2) *X  + (k+1) *X*Y; 
-					nid[17] = (i+2) + (j+2) *X  + (k+1) *X*Y; 
-					//
-					nid[18] = (i  ) + (j  ) *X  + (k+2) *X*Y; 
-					nid[19] = (i+1) + (j  ) *X  + (k+2) *X*Y; 
-					nid[20] = (i+2) + (j  ) *X  + (k+2) *X*Y; 
-					
-					nid[21] = (i  ) + (j+1) *X  + (k+2) *X*Y; 
-					nid[22] = (i+1) + (j+1) *X  + (k+2) *X*Y; 
-					nid[23] = (i+2) + (j+1) *X  + (k+2) *X*Y; 
-					
-					nid[24] = (i  ) + (j+2) *X  + (k+2) *X*Y; 
-					nid[25] = (i+1) + (j+2) *X  + (k+2) *X*Y; 
-					nid[26] = (i+2) + (j+2) *X  + (k+2) *X*Y; 
 
-/*					
+					//				printf("[%d]: i=%d \n", rank,i );
+					nid[ 0] = (i  ) + (j  ) *X  + (k  ) *X*Y;
+					nid[ 1] = (i+1) + (j  ) *X  + (k  ) *X*Y;
+					nid[ 2] = (i+2) + (j  ) *X  + (k  ) *X*Y;
+
+					nid[ 3] = (i  ) + (j+1) *X  + (k  ) *X*Y;
+					nid[ 4] = (i+1) + (j+1) *X  + (k  ) *X*Y;
+					nid[ 5] = (i+2) + (j+1) *X  + (k  ) *X*Y;
+
+					nid[ 6] = (i  ) + (j+2) *X  + (k  ) *X*Y;
+					nid[ 7] = (i+1) + (j+2) *X  + (k  ) *X*Y;
+					nid[ 8] = (i+2) + (j+2) *X  + (k  ) *X*Y;
+					//
+					nid[ 9] = (i  ) + (j  ) *X  + (k+1) *X*Y;
+					nid[10] = (i+1) + (j  ) *X  + (k+1) *X*Y;
+					nid[11] = (i+2) + (j  ) *X  + (k+1) *X*Y;
+
+					nid[12] = (i  ) + (j+1) *X  + (k+1) *X*Y;
+					nid[13] = (i+1) + (j+1) *X  + (k+1) *X*Y;
+					nid[14] = (i+2) + (j+1) *X  + (k+1) *X*Y;
+
+					nid[15] = (i  ) + (j+2) *X  + (k+1) *X*Y;
+					nid[16] = (i+1) + (j+2) *X  + (k+1) *X*Y;
+					nid[17] = (i+2) + (j+2) *X  + (k+1) *X*Y;
+					//
+					nid[18] = (i  ) + (j  ) *X  + (k+2) *X*Y;
+					nid[19] = (i+1) + (j  ) *X  + (k+2) *X*Y;
+					nid[20] = (i+2) + (j  ) *X  + (k+2) *X*Y;
+
+					nid[21] = (i  ) + (j+1) *X  + (k+2) *X*Y;
+					nid[22] = (i+1) + (j+1) *X  + (k+2) *X*Y;
+					nid[23] = (i+2) + (j+1) *X  + (k+2) *X*Y;
+
+					nid[24] = (i  ) + (j+2) *X  + (k+2) *X*Y;
+					nid[25] = (i+1) + (j+2) *X  + (k+2) *X*Y;
+					nid[26] = (i+2) + (j+2) *X  + (k+2) *X*Y;
+
+/*
 					if(rank==1) printf("%d,%d,%d %d %d %d, %d %d %d , %d %d %d \n", i,j,k,
 											 nid[0],nid[1],nid[2],nid[3],nid[4],nid[5],nid[6],nid[7],nid[8] );
-*/					
+*/
 					for (n=0; n<_npe; n++) {
-						if (nid[n]>M*N*P) { 
+						if (nid[n]>M*N*P) {
 							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Local indexing exceeds number of global nodes");
 						}
-						if (nid[n]>X*Y*Z) { 
+						if (nid[n]>X*Y*Z) {
 							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Local indexing exceeds number of local nodes");
 						}
 						el[n] = nid[n]; //gidx[dof*nid[n]+0]/dof;
 					}
-					
+
 					elcnt++;
 				}
 			}
 		}
-		
+
 		da->e  = idx;
 		da->ne = elcnt;
 	}
-	
+
 	if (eidx) { *eidx = da->e; }
 	if (npe)  {  *npe = _npe; }
 	if (nel)  {  *nel = da->ne; }
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -497,27 +497,27 @@ PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,cons
 	PetscInt *el,M,N,P,dof;
 	PetscMPIInt rank;
 	PetscFunctionBegin;
-	
+
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, &M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=0) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 0 for P0 with multi-dofs");
 	}
-	
+
 	_npe = 1;
 	ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
   if (dof>100) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dof > 100"); }
-	
+
 	if (!da->e) {
 		ierr = DMDAGetCorners(dm,&esi,&esj,0,&mx,&my,&mz);CHKERRQ(ierr);
 		ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe*dof+1),&idx);CHKERRQ(ierr); /* we add one extra space to allow for cases when a proc has zero elements, and we don't want to malloc 0 bytes */
-		
+
 		elcnt = 0;
 		for (ek=0; ek<mz; ek++) {
 			for (ej=0; ej<my; ej++) {
 				for (ei=0; ei<mx; ei++) {
 					el = &idx[_npe*dof*elcnt];
-					
+
 					for (d=0; d<_npe*dof; d++) {
 						nid[d] = (_npe*dof) * elcnt + d;
 					}
@@ -528,20 +528,20 @@ PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,cons
 						}
 						el[d] = nid[d];
 					}
-					
+
 					elcnt++;
 				}
 			}
 		}
-		
+
 		da->e  = idx;
 		da->ne = elcnt;
 	}
-	
+
 	*eidx = da->e;
 	*npe  = _npe * dof;
 	*nel  = da->ne;
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -569,9 +569,9 @@ PetscErrorCode DMDAGetElements_pTatinQ2P1(DM dm,PetscInt *nel,PetscInt *nen,cons
 {
   PetscErrorCode ierr;
   PetscInt dof,sw;
-  
+
 	ierr = DMDAGetInfo(dm, 0, 0,0,0, 0,0,0, &dof,&sw, 0,0,0, 0);CHKERRQ(ierr);
-  
+
   if (sw == 2) {
     ierr = DMDAGetElements_DA_Q2(dm,nel,nen,e);CHKERRQ(ierr);
   } else if (sw == 0) {
@@ -579,7 +579,7 @@ PetscErrorCode DMDAGetElements_pTatinQ2P1(DM dm,PetscInt *nel,PetscInt *nen,cons
   } else {
     ierr = DMDAGetElements(dm,nel,nen,e);CHKERRQ(ierr);
   }
-  
+
     PetscFunctionReturn(0);
 }
 
@@ -587,18 +587,18 @@ PetscErrorCode  DMDASetElementType_Q2(DM da)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
-	
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 	//  PetscValidLogicalCollectiveEnum(da,etype,2);
   if (dd->elementtype) {
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 		//    dd->elementtype = etype;
-    dd->ne          = 0; 
+    dd->ne          = 0;
     dd->e           = NULL;
   }
   //da->ops->getelements = DMGetElements_DA_Q2;
-	
+
   PetscFunctionReturn(0);
 }
 
@@ -606,18 +606,18 @@ PetscErrorCode  DMDASetElementType_P1(DM da)
 {
   DM_DA          *dd = (DM_DA*)da->data;
   PetscErrorCode ierr;
-	
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 	//  PetscValidLogicalCollectiveEnum(da,etype,2);
   if (dd->elementtype) {
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 		//    dd->elementtype = etype;
-    dd->ne          = 0; 
+    dd->ne          = 0;
     dd->e           = NULL;
   }
 	//da->ops->getelements = DMGetElements_DA_P1;
-	
+
   PetscFunctionReturn(0);
 }
 
@@ -673,7 +673,7 @@ PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,Pets
 PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
 {
   PetscInt n,d,el_idx,idx;
-	
+
   PetscFunctionBegin;
 	for (d=0; d<ndof; d++) {
 		for (n = 0; n<U_BASIS_FUNCTIONS; n++) {
@@ -688,7 +688,7 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,Pet
 PetscErrorCode DMDASetValuesLocalStencil_SetValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
 {
   PetscInt n,d,el_idx,idx;
-	
+
   PetscFunctionBegin;
 	for (d=0; d<ndof; d++) {
 		for (n = 0; n<U_BASIS_FUNCTIONS; n++) {
@@ -708,7 +708,7 @@ PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt n
 		for (n=0; n<U_BASIS_FUNCTIONS; n++) {
 			el_localIndices[ndof*n+d] = ndof*elnid[n]+d;
 		}
-	}		
+	}
 	PetscFunctionReturn(0);
 }
 

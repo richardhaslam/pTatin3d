@@ -31,7 +31,7 @@
 #ifndef __geometry_object_h__
 #define __geometry_object_h__
 
-typedef enum { 
+typedef enum {
 	GeomType_Box              = 0,
 	GeomType_Cylinder         = 1,
 	GeomType_Sphere           = 2,
@@ -44,7 +44,7 @@ typedef enum {
 } GeomType;
 extern const char *GeomTypeNames[];
 
-typedef enum { 
+typedef enum {
 	GeomSet_Union        = 0,
 	GeomSet_Intersection = 1,
 	GeomSet_Complement   = 2,
@@ -52,7 +52,7 @@ typedef enum {
 } GeomSetOperatorType;
 extern const char *GeomTypeSetOperatorNames[];
 
-typedef enum { 
+typedef enum {
 	ROTATE_AXIS_X = 0,
 	ROTATE_AXIS_Y = 1,
 	ROTATE_AXIS_Z = 2,
@@ -60,7 +60,7 @@ typedef enum {
 } GeomRotateAxis;
 extern const char *GeomRotateAxisNames[];
 
-typedef enum { 
+typedef enum {
 	SIGN_POSITIVE = 0,
 	SIGN_NEGATIVE = 1,
 	SIGN_UNDEFINED
@@ -87,7 +87,7 @@ struct _p_GeometryObject {
 };
 
 
-/* 
+/*
  Geometry specific data type implementations can be defined here.
  These should be made private so no one tries to directly access members from these structs.
 */
@@ -136,7 +136,7 @@ struct _p_GeomTypeHalfSpace {
 	GeomRotateAxis axis;
 };
 
-/* 
+/*
  API
 */
 PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G);
@@ -147,7 +147,7 @@ PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double 
 PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *inside);
 PetscErrorCode GeometryObjectSetCentroid(GeometryObject go,double cx[]);
 
-/* 
+/*
  Specific constructors for each implementation
 */
 PetscErrorCode GeometryObjectSetType_Box(GeometryObject go,double x0[],double Lx[]);

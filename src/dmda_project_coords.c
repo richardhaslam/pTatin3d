@@ -44,29 +44,29 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
     Mat inject;
 	PetscInt L;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
-	
+
 	for (L=nlevels-1; L>0; L--) {
 		daf = da[L];
 		dac = da[L-1];
-		
+
 		ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
 		ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
-		
+
 		ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
 		ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
-		
+
 		ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
         ierr = MatMult(inject,coordsf,coordsc);CHKERRQ(ierr);
         ierr = MatDestroy(&inject);CHKERRQ(ierr);
 	}
-	
+
 	/* update ghost coordinates for all levels except the finest */
 	for (L=0; L<nlevels-1; L++) {
 		ierr = DMDAUpdateGhostedCoordinates(da[L]);CHKERRQ(ierr);
 	}
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -76,22 +76,22 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 	Vec coordsc,coordsf;
     Mat inject;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
-	
+
 	ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
 	ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
-	
+
 	ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
 	ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
-	
+
 	ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
     ierr = MatMult(inject,coordsf,coordsc);CHKERRQ(ierr);
     ierr = MatDestroy(&inject);CHKERRQ(ierr);
-	
+
 	/* update ghost coordinates */
 	ierr = DMDAUpdateGhostedCoordinates(dac);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -101,7 +101,7 @@ PetscErrorCode  DMDASetCoarseningFactor(DM da,PetscInt cx,PetscInt cy,PetscInt c
 	if (cx > 0) dd->coarsen_x = cx;
     if (cy > 0) dd->coarsen_y = cy;
     if (cz > 0) dd->coarsen_z = cz;
-    
+
 	PetscFunctionReturn(0);
 }
 

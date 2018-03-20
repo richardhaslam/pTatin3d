@@ -20,7 +20,7 @@
 -model_viscous_sinker_rho1 1.2
 # Harder to solve with more inclusions
 -model_viscous_sinker_ninclusions 2
-# Need to make inclusions small to fit 
+# Need to make inclusions small to fit
 -model_viscous_sinker_dx 0.2
 -model_viscous_sinker_dy 0.2
 -model_viscous_sinker_dz 0.2

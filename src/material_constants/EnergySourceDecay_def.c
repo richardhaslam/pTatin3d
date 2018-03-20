@@ -30,12 +30,12 @@ const char *EnergySourceDecay_member_names[] = {
 /* ================================================================= */
 /*   Getters for EnergySourceDecay */
 /* ================================================================= */
-void EnergySourceDecayGetField_HeatSourceRef(EnergySourceDecay *point,double *data) 
+void EnergySourceDecayGetField_HeatSourceRef(EnergySourceDecay *point,double *data)
 {
   *data = point->H0;
 }
 
-void EnergySourceDecayGetField_HalfLife(EnergySourceDecay *point,double *data) 
+void EnergySourceDecayGetField_HalfLife(EnergySourceDecay *point,double *data)
 {
   *data = point->lambda;
 }
@@ -44,12 +44,12 @@ void EnergySourceDecayGetField_HalfLife(EnergySourceDecay *point,double *data)
 /* ================================================================= */
 /*   Setters for EnergySourceDecay */
 /* ================================================================= */
-void EnergySourceDecaySetField_HeatSourceRef(EnergySourceDecay *point,double data) 
+void EnergySourceDecaySetField_HeatSourceRef(EnergySourceDecay *point,double data)
 {
   point->H0 = data;
 }
 
-void EnergySourceDecaySetField_HalfLife(EnergySourceDecay *point,double data) 
+void EnergySourceDecaySetField_HalfLife(EnergySourceDecay *point,double data)
 {
   point->lambda = data;
 }
@@ -76,20 +76,20 @@ void EnergySourceDecayView(EnergySourceDecay *point)
 /* ================================================================= */
 /*   Getters for default parameters (EnergySourceDecay) */
 /* ================================================================= */
-void EnergySourceDecayGetDefault_HeatSourceRef(double *data) 
+void EnergySourceDecayGetDefault_HeatSourceRef(double *data)
 {
   *data = (double)0.0;
 }
 
-void EnergySourceDecayGetDefault_HalfLife(double *data) 
+void EnergySourceDecayGetDefault_HalfLife(double *data)
 {
   *data = (double)0.0;
 }
 
-void MaterialConstantsSetDefaultAll_SourceDecay( 
+void MaterialConstantsSetDefaultAll_SourceDecay(
     int nr,EnergySourceDecay _data[])
 {
-  int r; 
+  int r;
 
   for (r=0; r<nr; r++) {
     { double value;
@@ -104,7 +104,7 @@ void MaterialConstantsSetDefaultAll_SourceDecay(
 
   }
 
-} 
+}
 
 PetscErrorCode MaterialConstantsSetFromOptions_SourceDecay(const char model_name[],const int region_id,EnergySourceDecay _data[],PetscBool essential)
 {
@@ -132,9 +132,9 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceDecay(const char model_name
   }}
 
   PetscFunctionReturn(0);
-} 
+}
 
-PetscErrorCode MaterialConstantsPrintValues_SourceDecay(const char model_name[],const int region_id,EnergySourceDecay _data[]) 
+PetscErrorCode MaterialConstantsPrintValues_SourceDecay(const char model_name[],const int region_id,EnergySourceDecay _data[])
 {
   EnergySourceDecay *data = &_data[region_id];
   char   opt_name[PETSC_MAX_PATH_LEN];
@@ -145,18 +145,18 @@ PetscErrorCode MaterialConstantsPrintValues_SourceDecay(const char model_name[],
   sprintf(opt_name,"-%s_HeatSourceRef_%d", model_name,region_id);
   { double value;
     EnergySourceDecayGetField_HeatSourceRef(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    HeatSourceRef = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    HeatSourceRef = %1.4e (%s) \n", value,opt_name);
   }
 
   /* options for HalfLife ==>> lambda */
   sprintf(opt_name,"-%s_HalfLife_%d", model_name,region_id);
   { double value;
     EnergySourceDecayGetField_HalfLife(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    HalfLife = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    HalfLife = %1.4e (%s) \n", value,opt_name);
   }
 
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsSetValues_SourceDecay(const int region_id,EnergySourceDecay _data[],
     double H0,
@@ -166,7 +166,7 @@ PetscErrorCode MaterialConstantsSetValues_SourceDecay(const int region_id,Energy
   data->H0 =  H0;
   data->lambda =  lambda;
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsScaleValues_SourceDecay(const int region_id,EnergySourceDecay _data[],
     double H0,
@@ -187,5 +187,5 @@ PetscErrorCode MaterialConstantsScaleValues_SourceDecay(const int region_id,Ener
   }
 
   PetscFunctionReturn(0);
-} 
+}
 

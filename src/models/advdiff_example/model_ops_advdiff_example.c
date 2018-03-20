@@ -48,18 +48,18 @@ PetscReal vel_scale       = 1.0;
 PetscReal diffusion_scale = 1.0;
 
 PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
-{	
+{
   DataBucket              materialconstants;
   DataField               PField;
   EnergyMaterialConstants *matconstants_e;
   int                     r,regionidx;
   double                  rho_ref,Cp;
   PetscErrorCode          ierr;
-  
+
   PetscFunctionBegin;
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	PetscOptionsGetInt(NULL,NULL,"-advdiff_setup",&model_setup,0);
 	PetscOptionsGetReal(NULL,NULL,"-advdiff_vel_scale",&vel_scale,0);
 	PetscOptionsGetReal(NULL,NULL,"-advdiff_diff_scale",&diffusion_scale,0);
@@ -78,13 +78,13 @@ PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
 			PetscPrintf(PETSC_COMM_WORLD,"AdvDiff test: Step advection in x-direction.\n");
 			break;
 	}
-	
+
   ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
   ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
-  
+
   DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
   DataFieldGetEntries(PField,(void**)&matconstants_e);
-  
+
   for (r=0; r<4; r++) {
     regionidx = r;
     rho_ref = 1.0;
@@ -93,11 +93,11 @@ PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
   }
   DataFieldRestoreEntries(PField,(void**)&matconstants_e);
-  
+
 	PetscFunctionReturn(0);
 }
 
-PetscBool BCListEvaluator_HughesSkewTest( PetscScalar position[], PetscScalar *value, void *ctx ) 
+PetscBool BCListEvaluator_HughesSkewTest( PetscScalar position[], PetscScalar *value, void *ctx )
 {
 	PetscBool impose_dirichlet = PETSC_TRUE;
 	PetscScalar dv = *((PetscScalar*)ctx);
@@ -118,29 +118,29 @@ PetscErrorCode ModelApplyBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 	PhysCompEnergy energy;
 	DM             daT;
 	BCList         bclist;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	/* ignore all velocity boundary conditions */
-	
+
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
 	if (active_energy == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"energy must be activated");
 	}
-	
+
 	/* a) fetch the energy context */
 	ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 	daT    = energy->daT;
 	bclist = energy->T_bclist;
-	
+
 	if (model_setup == 0) {
 		val = 2.0;
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
-	}	
+	}
 
 	if (model_setup == 1) {
 		val = 2.0;
@@ -155,7 +155,7 @@ PetscErrorCode ModelApplyBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
 
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_HughesSkewTest,(void*)&val);CHKERRQ(ierr);
-		// outflow IMAX,JMAX		
+		// outflow IMAX,JMAX
 	}
 
 	if (model_setup == 3) {
@@ -168,21 +168,21 @@ PetscErrorCode ModelApplyBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 		val = 2.0;
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
 	}
-	
+
 	PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyBoundaryConditionMG_AdvDiffExample(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	PetscInt       n;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	for (n=0; n<nl; n++) {
 		/* Define boundary conditions for each level in the MG hierarchy */
-	}	
-	
+	}
+
 	PetscFunctionReturn(0);
 }
 
@@ -190,7 +190,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_AdvDiffExample(pTatinCtx c,vo
 {
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -198,17 +198,17 @@ PetscErrorCode ModelApplyInitialMeshGeometry_AdvDiffExample(pTatinCtx c,void *ct
 {
 	PetscErrorCode ierr;
 	PhysCompStokes stokes;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
-	
+
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(stokes->dav,0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr);
-	
+
 	/* note - Don't access the energy mesh here, its not yet created */
 	/* note - The initial velocity mesh geometry will be copied into the energy mesh */
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -219,36 +219,36 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 	DataField      PField_std,PField_stokes, PField_energy;
 	int            p,n_mp_points;
 	PetscBool      active_energy;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mp_points,0,0);
-	
+
 	/* define viscous params */
 	DataBucketGetDataFieldByName(materialpoint_db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
-	
+
 	DataBucketGetDataFieldByName(materialpoint_db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
-	
+
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
 		double      *position;
-		
+
 		DataFieldAccessPoint(PField_std,    p, (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes, p, (void**)&mpprop_stokes);
-		
+
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point,&position);
-		
+
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,0);
 		MPntPStokesSetField_eta_effective(mpprop_stokes,1.0);
 		MPntPStokesSetField_density(mpprop_stokes,1.0);
-		
+
 		if (position[0] < 0.5) {
 			MPntStdSetField_phase_index(material_point,1);
 		} else if (position[1] < 0.7) {
@@ -259,28 +259,28 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 	}
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
-	
+
 	/* define thermal params */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
-	
+
 	if (active_energy) {
 		DataBucketGetDataFieldByName(materialpoint_db,MPntStd_classname,&PField_std);
 		DataFieldGetAccess(PField_std);
 
 		DataBucketGetDataFieldByName(materialpoint_db,MPntPEnergy_classname,&PField_energy);
 		DataFieldGetAccess(PField_energy);
-		
+
 		for (p=0; p<n_mp_points; p++) {
 			MPntStd     *material_point;
 			MPntPEnergy *mpprop_energy;
 			double      *position;
-			
+
 			DataFieldAccessPoint(PField_std,   p, (void**)&material_point);
 			DataFieldAccessPoint(PField_energy,p, (void**)&mpprop_energy);
-			
+
 			/* Access using the getter function provided for you (recommeneded for beginner user) */
 			MPntStdGetField_global_coord(material_point,&position);
-			
+
 			/* user the setters provided for you */
 			if (model_setup == 0) {
 				MPntPEnergySetField_diffusivity(mpprop_energy,1.0);
@@ -303,8 +303,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 		}
 		DataFieldRestoreAccess(PField_std);
 		DataFieldRestoreAccess(PField_energy);
-	}	
-	
+	}
+
 	PetscFunctionReturn(0);
 }
 
@@ -317,19 +317,19 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 	DM             daT,dav,dap,multipys_pack;
 	PetscScalar    vx_const,vy_const,vz_const,p_init;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	/* note - X contains only the velocity and pressure */
-	
+
 	/* define velocity field for advection test */
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	multipys_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(multipys_pack,&dav,&dap);CHKERRQ(ierr);
-	
+
 	ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	
+
 	if (model_setup == 0) {
 		vx_const = 0.0;
 		vy_const = 0.0;
@@ -369,16 +369,16 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 		ierr = DMDAVecTraverse3d(dav,velocity,0,DMDAVecTraverse3d_Constant,(void*)&vx_const);CHKERRQ(ierr);
 		ierr = DMDAVecTraverse3d(dav,velocity,1,DMDAVecTraverse3d_Constant,(void*)&vy_const);CHKERRQ(ierr);
 		ierr = DMDAVecTraverse3d(dav,velocity,2,DMDAVecTraverse3d_Constant,(void*)&vz_const);CHKERRQ(ierr);
-		
+
 	}
-	
+
 	/* note - pressure has no coordinates set, so use ijk traversal */
 	p_init = 0.0;
 	ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_Constant,(void*)&p_init);CHKERRQ(ierr);
-	
+
 	ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
+
+
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
 	if (active_energy == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"energy must be activated");
@@ -399,7 +399,7 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,NULL);CHKERRQ(ierr);
 		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,NULL);CHKERRQ(ierr);
 		ierr = VecShift(temperature,2.0);CHKERRQ(ierr);
-	}	
+	}
 	if (model_setup == 1) {
 		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXY,NULL);CHKERRQ(ierr);
 		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXYZ,NULL);CHKERRQ(ierr);
@@ -407,13 +407,13 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,NULL);CHKERRQ(ierr);
 		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,NULL);CHKERRQ(ierr);
 		ierr = VecShift(temperature,2.0);CHKERRQ(ierr);
-	}	
+	}
 	if (model_setup == 2) {
 		ierr = VecZeroEntries(temperature);CHKERRQ(ierr);
-	}	
+	}
 	if (model_setup == 3) {
 		int direction;
-		
+
 		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,NULL);CHKERRQ(ierr);
 		/*
 		direction = 0;
@@ -427,8 +427,8 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 		direction = 2;
 		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepWithDirection,(void*)&direction);CHKERRQ(ierr);
 		 */
-	}	
-	
+	}
+
 	PetscFunctionReturn(0);
 }
 
@@ -436,7 +436,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_AdvDiffExample(pTatinCtx c,Vec X,voi
 {
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -449,34 +449,34 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 	char           name[256];
 	PetscBool      write_markers,output_markers_once = PETSC_TRUE;
 	static int     been_here = 0;
-	
-	
+
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	/* stokes variables */
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	
+
 	/* energy variables */
 	ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-	
+
 	ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 
 	/* standard viewer */
 	ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 
 	/* debugging adv-diff solver */
-#if 0	
+#if 0
 	sprintf(name,"%s/%s_T.vtk",c->outputpath,prefix);
 	ierr = DMDAViewPetscVTK(energy->daT,temperature,name);CHKERRQ(ierr);
-	
+
 	sprintf(name,"%s/%s_Tlast.vtk",c->outputpath,prefix);
 	ierr = DMDAViewPetscVTK(energy->daT,energy->Told,name);CHKERRQ(ierr);
-	
+
 	sprintf(name,"%s/%s_advdiff_u.vtk",c->outputpath,prefix);
 	ierr = DMDAViewPetscVTK(energy->daT,energy->u_minus_V,name);CHKERRQ(ierr);
 #endif
-	
+
 	/* stokes + energy material points */
 	ierr = PetscOptionsGetBool(NULL,NULL,"-advdiff_output_markers_once",&output_markers_once,NULL);CHKERRQ(ierr);
 	write_markers = PETSC_TRUE;
@@ -485,7 +485,7 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 	}
 	if (write_markers) {
 		const int                  nf = 2;
-		const MaterialPointField   mp_prop_list[] = { MPField_Std, MPField_Energy }; 
+		const MaterialPointField   mp_prop_list[] = { MPField_Std, MPField_Energy };
 
 		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		sprintf(name,"%s_advdiff_mpoints",prefix);
@@ -494,13 +494,13 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 
 	if (write_markers) {
 		const int                   nf = -1;
-		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
-		
+		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density };
+
 		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		sprintf(name,"%s_mpoints_cell",prefix);
 		ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 	}
-	
+
 	been_here = 1;
 	PetscFunctionReturn(0);
 }
@@ -509,7 +509,7 @@ PetscErrorCode ModelDestroy_AdvDiffExample(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -517,9 +517,9 @@ PetscErrorCode pTatinModelRegister_AdvDiffExample(void)
 {
 	pTatinModel m;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
-	
+
 	/* register user model */
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
 
@@ -537,9 +537,9 @@ PetscErrorCode pTatinModelRegister_AdvDiffExample(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_AdvDiffExample);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_AdvDiffExample);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_AdvDiffExample);CHKERRQ(ierr);
-	
+
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }

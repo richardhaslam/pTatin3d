@@ -51,7 +51,7 @@ struct  _p_DataEx {
 	PetscInt    instance;
 	MPI_Comm    comm;
 	PetscMPIInt rank;
-	
+
 	PetscMPIInt  n_neighbour_procs;
 	PetscMPIInt *neighbour_procs; /* [n_neighbour_procs] */
 	PetscInt    *messages_to_be_sent; /* [n_neighbour_procs] */
@@ -69,7 +69,7 @@ struct  _p_DataEx {
 	DEObjectState     message_lengths_status;
 	DEObjectState     packer_status;
 	DEObjectState     communication_status;
-	
+
 	MPI_Status  *_stats;
 	MPI_Request *_requests;
 };

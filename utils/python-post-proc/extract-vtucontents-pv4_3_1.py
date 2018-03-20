@@ -12,7 +12,7 @@ from paraview import simple
 
 
 def ExtractVTUContents(inputfile):
-	
+
 	tracer_ug = simple.XMLUnstructuredGridReader( FileName=inputfile )
 	tracer_ug.UpdatePipeline()
 	tracer_ug.UpdatePipelineInformation()
@@ -22,7 +22,7 @@ def ExtractVTUContents(inputfile):
 
 
 	import vtk.numpy_interface.dataset_adapter as dsa
-	
+
 	# Wrap the raw data object to access NumPy friendly API
 	rawdata = dsa.WrapDataObject(rawdata)
 
@@ -46,14 +46,14 @@ def ExtractVTUContents(inputfile):
 
 	print("[Point Data Fields]")
 	for n in range(pointData.GetNumberOfArrays()):
-		print('  Name: ' + pointData.GetArray(n).GetName() + '; Data Range ' + 
+		print('  Name: ' + pointData.GetArray(n).GetName() + '; Data Range ' +
 		str(pointData.GetArray(n).GetRange()))
 	print('\n')
 
 
 	#print( data.GetPointData().GetArray("pressure").GetValue(1) )
-	field = rawdata.GetPointData().GetArray("pressure") 
-	print('Number of pressure vals: ' + str(rawdata.GetPointData().GetArray("pressure").GetSize())) 
+	field = rawdata.GetPointData().GetArray("pressure")
+	print('Number of pressure vals: ' + str(rawdata.GetPointData().GetArray("pressure").GetSize()))
 
 
 	#print("[Field methods]")
@@ -70,11 +70,11 @@ def ExtractVTUContents(inputfile):
 
 
 def main():
-	
+
 	# parse command line options
 	optparser=OptionParser(usage='usage: %prog -i <filename1>',
 			add_help_option=True,
-			description="""Example of reading a VTU file """ + 
+			description="""Example of reading a VTU file """ +
 			"""and extracting one field into a numpy array.""")
 
 	optparser.add_option( "-i", "--input", dest="opt_inputfile",
@@ -87,7 +87,7 @@ def main():
 			sys.exit(1)
 
 	infilename = options.opt_inputfile
-	
+
 	if os.path.splitext(infilename)[1]=='.vtu':
 		ExtractVTUContents(infilename)
 	else:

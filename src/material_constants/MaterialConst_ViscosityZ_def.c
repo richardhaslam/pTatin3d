@@ -59,17 +59,17 @@ const char *MaterialConst_ViscosityZ_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_ViscosityZ */
 /* ===================================== */
-void MaterialConst_ViscosityZGetField_eta0(MaterialConst_ViscosityZ *point,double *data) 
+void MaterialConst_ViscosityZGetField_eta0(MaterialConst_ViscosityZ *point,double *data)
 {
   *data = point->eta0;
 }
 
-void MaterialConst_ViscosityZGetField_zeta(MaterialConst_ViscosityZ *point,double *data) 
+void MaterialConst_ViscosityZGetField_zeta(MaterialConst_ViscosityZ *point,double *data)
 {
   *data = point->zeta;
 }
 
-void MaterialConst_ViscosityZGetField_zref(MaterialConst_ViscosityZ *point,double *data) 
+void MaterialConst_ViscosityZGetField_zref(MaterialConst_ViscosityZ *point,double *data)
 {
   *data = point->zref;
 }
@@ -78,17 +78,17 @@ void MaterialConst_ViscosityZGetField_zref(MaterialConst_ViscosityZ *point,doubl
 /* ===================================== */
 /* Setters for MaterialConst_ViscosityZ */
 /* ===================================== */
-void MaterialConst_ViscosityZSetField_eta0(MaterialConst_ViscosityZ *point,double data) 
+void MaterialConst_ViscosityZSetField_eta0(MaterialConst_ViscosityZ *point,double data)
 {
   point->eta0 = data;
 }
 
-void MaterialConst_ViscosityZSetField_zeta(MaterialConst_ViscosityZ *point,double data) 
+void MaterialConst_ViscosityZSetField_zeta(MaterialConst_ViscosityZ *point,double data)
 {
   point->zeta = data;
 }
 
-void MaterialConst_ViscosityZSetField_zref(MaterialConst_ViscosityZ *point,double data) 
+void MaterialConst_ViscosityZSetField_zref(MaterialConst_ViscosityZ *point,double data)
 {
   point->zref = data;
 }
@@ -120,7 +120,7 @@ void MaterialConst_ViscosityZView(MaterialConst_ViscosityZ *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_ViscosityZ */
 /* ===================================== */
-void MaterialConst_ViscosityZVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityZ points[]) 
+void MaterialConst_ViscosityZVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityZ points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta0\" format=\"ascii\">\n");
@@ -144,7 +144,7 @@ void MaterialConst_ViscosityZVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,con
 /* ===================================== */
 /* PVTU viewer for MaterialConst_ViscosityZ */
 /* ===================================== */
-void MaterialConst_ViscosityZPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_ViscosityZPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eta0\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"zeta\" NumberOfComponents=\"1\"/>\n");
@@ -155,7 +155,7 @@ void MaterialConst_ViscosityZPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_ViscosityZ */
 /* ===================================== */
-void MaterialConst_ViscosityZVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_ViscosityZ points[]) 
+void MaterialConst_ViscosityZVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_ViscosityZ points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta0\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -172,7 +172,7 @@ void MaterialConst_ViscosityZVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_ViscosityZ */
 /* ==================================================== */
-void MaterialConst_ViscosityZVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityZ points[]) 
+void MaterialConst_ViscosityZVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_ViscosityZ points[])
 {
   int p,length;
   size_t atomic_size;

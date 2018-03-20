@@ -54,9 +54,9 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	Vec             X,F,T;
 	PetscBool       active_energy;
 	PhysCompEnergy  energy;
-	
+
 	PetscFunctionBegin;
-	
+
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
@@ -64,9 +64,9 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
-	
+
 	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
-	
+
 	/* Generate physics modules */
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 
@@ -78,12 +78,12 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	
+
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);	
-	
+	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
-	
+
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
 
@@ -92,20 +92,20 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	/* NOTE - Calling pTatinPhysCompActivate_Energy() after pTatin3dCreateMaterialPoints() is essential */
 	{
 		PetscBool load_energy = PETSC_FALSE;
-		
+
 		PetscOptionsGetBool(NULL,NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
-		
+
 		ierr = pTatinLogBasicDMDA(user,"Energy",energy->daT);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
 		ierr = pTatinPhysCompAttachData_Energy(user,T,NULL);CHKERRQ(ierr);
 	}
-    
-    
+
+
 	/* interpolate point coordinates (needed if mesh was modified) */
 	//ierr = QuadratureStokesCoordinateSetUp(user->stokes_ctx->Q,dav);CHKERRQ(ierr);
 	//for (e=0; e<QUAD_EDGES; e++) {
@@ -113,10 +113,10 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	//}
 	/* interpolate material point coordinates (needed if mesh was modified) */
 	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
-	
+
 	/* material geometry */
 	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
-	
+
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
 
@@ -128,47 +128,47 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 		ierr = BCListInsert(user->stokes_ctx->u_bclist,Xu);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	}
-	
-	
-	
+
+
+
 	/* test form function */
 	{
 		SNES snes;
-		
-		
+
+
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
 		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 	}
-	
+
 	/* test data bucket viewer */
 	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	DataBucketView(PETSC_COMM_SELF, user->material_constants,"material_constants",DATABUCKET_VIEW_STDOUT);
-	
+
 
 	/* write out the initial condition */
 	ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
-	
+
 	/* test generic viewer */
 	{
 		const int nf = 1;
-		const MaterialPointField mp_prop_list[] = { MPField_Std }; 
+		const MaterialPointField mp_prop_list[] = { MPField_Std };
 		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"test_MPStd");CHKERRQ(ierr);
 	}
 	{
 		const int nf = 1;
-		const MaterialPointField mp_prop_list[] = { MPField_Stokes }; 
+		const MaterialPointField mp_prop_list[] = { MPField_Stokes };
 		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"test_MPStokes");CHKERRQ(ierr);
 	}
-	
+
 	{
 		const int nf = 2;
-		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes }; 
+		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
 		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"test_MPStd_MPStokes");CHKERRQ(ierr);
 	}
-	
-	
+
+
 	if (active_energy) {
 		ierr = VecDestroy(&T);CHKERRQ(ierr);
 	}
@@ -182,11 +182,11 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
-	
+
 	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-	
+
 	ierr = pTatin3d_material_points_check_ic(argc,argv);CHKERRQ(ierr);
-	
+
 	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

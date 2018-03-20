@@ -7,9 +7,9 @@
 /*
 
  MPIWrite_Blocking()
- 
+
  Description:
-   Blocking MPI output to disk implementation in which data is streamed to root, 
+   Blocking MPI output to disk implementation in which data is streamed to root,
    and only root writes to disk.
    Each MPI-rank sends its data to root, where it is written to disk.
    The data written to disk will be in order of the rank which defined it.
@@ -23,13 +23,13 @@
    size - the size in bytes of each entry in data[]
    root - the rank responsible for collecting data and writing data
    comm - the MPI communicator
- 
+
  Notes:
    * The file must be opened prior to calling this function
    * The value of fp is only required to be a valid file pointer on root
    * The values data[] is not altered
    * The implementation does not require O(p) storage
- 
+
 */
 PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,int root,PetscBool skip_header,MPI_Comm comm)
 {
@@ -40,11 +40,11 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
   int            tagI,tagD;
   MPI_Request    request,requestS;
   MPI_Status     status;
-  
+
 
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  
+
   if (rank == root) {
     if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIWrite_Blocking] File error: File pointer is NULL on root");
   }
@@ -58,7 +58,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
     rbuffer = malloc(size*len_max);
     if (!rbuffer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIWrite_Blocking] Memory allocation error: could not allocate auxiliary buffer");
   }
-  
+
 
   if (rank == root) {
     //if (rank == root) printf("<win 1> filepos %ld \n",ftell(fp));
@@ -83,7 +83,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
       } else {
         /* flush old data */
         memset(rbuffer,0,size*len_max);
-        
+
         /* recv length */
         ierr = MPI_Irecv(&len_r,1,MPI_LONG,r,tagI,comm,&request);CHKERRQ(ierr);
         ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
@@ -113,21 +113,21 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
 
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   if (rank == root) { free(rbuffer); }
-  
+
   PetscFunctionReturn(0);
 }
 
 /*
- 
+
  MPIRead_Blocking()
- 
+
  Description:
    Blocking MPI input implementation in which data is streamed from root to all ranks in comm.
    Only root reads data from disk.
    Each MPI-rank will receive a chunk of data from root.
- 
+
  Collective over comm
- 
+
  Input:
    fp   - file pointer
    len  - the number of entries to be read from the file
@@ -141,7 +141,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
    * The value of fp is only required to be a valid file pointer on root
    * If a valid pointer for data is provided, MPIRead_Blocking() will use the existing memory
      space. Otherwise, a new allocation will be performed
-   * If sum_{all ranks} len does not equal the number of bytes written to disk, no data will be 
+   * If sum_{all ranks} len does not equal the number of bytes written to disk, no data will be
      read from the file (or scattered)
    * The implementation does not require O(p) storage
 
@@ -158,21 +158,21 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   long int       ipack[2],ipackr[2];
   long           byte_offset;
 
-  
+
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (!data) {
     if (!rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIRead_Blocking] Pointer error: A valid pointer to store data must be provided");
   }
-  
+
   /* check file pointer is valid */
   if (rank == root) {
     if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIRead_Blocking] File error: File pointer is NULL on root");
   }
 
   //if (rank == root) printf("<in> filepos %ld \n",ftell(fp));
-  
+
   ipack[0] = 0;
   ipack[1] = len;
 
@@ -198,7 +198,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   }
 
   /*
-   User pointer is not null - assume it is long enough and re-use it, 
+   User pointer is not null - assume it is long enough and re-use it,
    otherwise allocate additional memory
   */
   if (*data) {
@@ -206,7 +206,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   } else {
     buffer = malloc(size*len);
   }
-  
+
   /*
   buffer = malloc(size*len);
   memset(buffer,0,size*len);
@@ -216,7 +216,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
     byte_offset = 0;
     for (r=0; r<commsize; r++) {
       sbuffer = NULL;
-      
+
       //printf("r[%d]: %ld byte offset \n",r,byte_offset);
 
       if (r == root) {
@@ -231,9 +231,9 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
         tagI = 2*r;
         ierr = MPI_Irecv(ipackr,2,MPI_LONG,r,tagI,comm,&request);CHKERRQ(ierr);
         ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
-        
+
         //printf("r[%d] requested [%ld,%ld] \n",r,ipackr[0],ipackr[0]+ipackr[1]);
-        
+
         /* malloc */
         sbuffer = malloc(size*ipackr[1]);
         memset(sbuffer,0,size*ipackr[1]);
@@ -241,37 +241,37 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
         /* read */
         if (fread(sbuffer,size,ipackr[1],fp) != (size_t) ipackr[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() error");
 
-        
+
         /* send - must wait until MPI_Isend is finished before it is safe to free sbuffer */
         tagD = 2*r + 1;
         ierr = MPI_Isend(sbuffer,ipackr[1]*size,MPI_CHAR,r,tagD,comm,&requestS);CHKERRQ(ierr);
         ierr = MPI_Wait(&requestS,&statusS);CHKERRQ(ierr);
         //printf("r0 --> %d with tag %d\n",r,tagD);
-        
+
         free(sbuffer);
       }
 
       byte_offset += ipackr[1]*size;
     }
-    
+
   }
   if (rank != root) {
     tagI = 2*rank;
     ierr = MPI_Isend(ipack,2,MPI_LONG,root,tagI,comm,&requestS);CHKERRQ(ierr);
   }
-  
+
   if (rank != root) {
     tagD = 2*rank + 1;
     //printf("r%d <-- r0 with tag %d\n",rank,tagD);
     ierr = MPI_Irecv(buffer,len*size,MPI_CHAR,root,tagD,comm,&request);CHKERRQ(ierr);
     ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
   }
-  
+
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 
   //if (rank == root) printf("<out> filepos %ld \n",ftell(fp));
-  
+
   if (data) { *data = buffer; }
-  
+
   PetscFunctionReturn(0);
 }

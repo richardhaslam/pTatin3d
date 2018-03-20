@@ -4,20 +4,20 @@
 
 /*
  SolKxSolution - Exact Stokes solutions for exponentially varying viscosity
- 
+
  Input Parameters:
  + pos   - The (x,z) coordinate at which to evaluate the solution
  . n     - The constant defining the x-dependence of the forcing function
  . m     - The constant defining the z-dependence of the forcing function
  - B     - The viscosity coefficient
- 
+
  Output Parameters:
  + vel   - The (x,z)-velocity at (x,z), or NULL
  . p     - The pressure at (x,z), or NULL
  . s     - The total stress (sigma_xx, sigma_xz, sigma_zz) at (x,z), or NULL
  . gamma - The strain rate, or NULL
  - nu    - The viscosity at (x,z), or NULL
- 
+
  Note:
  $  The domain is the square 0 <= x,z <= 1. We solve the Stokes equation for incompressible flow with free-slip boundary
  $  conditions everywhere. The forcing term f is given by
@@ -45,7 +45,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   PetscReal Rp, UU, VV;
   PetscReal a,b,r,_aa,_bb,AA,BB,Rm;
   PetscReal num1,num2,num3,num4,den1;
-  
+
   PetscReal t1,t2,t3,t4,t5,t6,t7,t8,t9,t10;
   PetscReal t11,t12,t13,t14,t15,t16,t17,t18,t19,t20;
   PetscReal t21,t22,t23,t24,t25,t26,t27,t28,t29,t30;
@@ -59,7 +59,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   PetscReal t111,t112,t113,t114,t115,t116,t117,t118,t119,t120;
   PetscReal t121,t124,t125,t126,t127,t129,t130,t132,t133,t135;
   PetscReal t136,t138,t140,t141,t142,t143,t152,t160,t162;
-  
+
   PetscFunctionBegin;
   /*************************************************************************/
   /*************************************************************************/
@@ -78,7 +78,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   Rm  = sqrt( (r-a)/2.0 );
   UU  = Rp - B;
   VV = Rp + B;
-  
+
   sum1=0.0;
   sum2=0.0;
   sum3=0.0;
@@ -86,11 +86,11 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   sum5=0.0;
   sum6=0.0;
   /*sum7=0.0;*/
-  
+
   /*******************************************/
   /*         calculate the constants         */
   /*******************************************/
-  
+
   t1 = kn * kn;
   t4 = km * km;
   t5 = t4 + t1;
@@ -99,7 +99,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t9 = B * B;
   t16 = pow(km - kn, 0.2e1);
   _aa = -0.4e1 * B * t1 * sigma * t5 / (t6 + 0.4e1 * t8 * t9) / (t6 + 0.4e1 * t16 * t9);
-  
+
   t2 = km * km;
   t3 = kn * kn;
   t5 = pow(t2 + t3, 0.2e1);
@@ -109,10 +109,10 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t13 = t7 * t7;
   t19 = t6 * t6;
   _bb = sigma * kn * (t5 + 0.4e1 * t6 * t7 * t9) / (t5 + 0.4e1 * t13 * t9) / (t5 + 0.4e1 * t19 * t9);
-  
+
   AA = _aa;
   BB = _bb;
-  
+
   /*******************************************/
   /*       calculate the velocities etc      */
   /*******************************************/
@@ -159,7 +159,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t127 = t110 * t115 * AA;
   t140 = exp(t6 - Rp - B);
   num1 = -0.4e1 * t1 * t2 * t4 * AA * t9 + ((0.2e1 * Rp * (0.3e1 * t13 * B - 0.2e1 * t16 - t19 - 0.2e1 * t20 - B * t22 - t24) * AA - t32) * t35 + (0.2e1 * t37 * (t1 + 0.5e1 * t13 - t22 - t18) * AA - 0.8e1 * B * BB * kn * Rm * Rp) * t49 - 0.2e1 * B * (0.3e1 * t20 - Rp * t22 - t18 * Rp - 0.2e1 * t19 - t16 - 0.2e1 * t24) * AA + t32) * t63 + ((0.2e1 * t65 * t69 * AA + t78) * t81 + (0.2e1 * t65 * t83 * AA - t78) * t89 + (t92 - 0.2e1 * t65 * t69 * BB) * t97 + (t92 + 0.2e1 * t65 * t83 * BB) * t103) * t108 + ((-0.2e1 * t110 * t111 * AA - t117) * t81 + (-0.2e1 * t110 * t120 * AA + t117) * t89 + (-t127 + 0.2e1 * t110 * t111 * BB) * t97 + (-t127 - 0.2e1 * t110 * t120 * BB) * t103) * t140;
-  
+
   t1 = Rp + B;
   t2 = Rm * t1;
   t3 = B * B;
@@ -220,7 +220,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t152 = t2 * t10 * BB;
   t162 = exp(t20 - Rp - B);
   num2 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t23 + ((-0.2e1 * t25 * (t7 + 0.5e1 * t3 - t8 - t9) * AA + 0.8e1 * B * BB * t32 * Rp) * t38 + (0.2e1 * Rp * (0.3e1 * t40 - 0.2e1 * Rp * t7 - t44 - 0.2e1 * t45 - B * t8 - B * t7) * AA - 0.8e1 * t53 * kn * Rp) * t58 - 0.2e1 * t14 * (-t8 + t9 + t4 + t7) * AA + 0.8e1 * t53 * t32) * t69 + ((-t85 * AA - 0.2e1 * t101 * BB) * t106 + (-t108 * AA + 0.2e1 * t110 * BB) * t115 + (-0.2e1 * t101 * AA + t85 * BB) * t121 + (-0.2e1 * t110 * AA - t108 * BB) * t127) * t132 + ((t12 - 0.2e1 * t2 * t136 * BB) * t106 + (t12 + 0.2e1 * t2 * t142 * BB) * t115 + (-0.2e1 * t2 * t136 * AA - t152) * t121 + (-0.2e1 * t2 * t142 * AA + t152) * t127) * t162;
-  
+
   t1 = Rm * Rm;
   t2 = B - Rp;
   t4 = Rp + B;
@@ -264,7 +264,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t125 = t108 * t113 * AA;
   t138 = exp(-t6 - Rp - B);
   num3 = -0.4e1 * t1 * t2 * t4 * AA * t7 + ((-0.2e1 * Rp * (-B * t11 - t13 - t15 + 0.2e1 * t17 + 0.3e1 * t16 * B + 0.2e1 * t21) * AA + t30) * t33 + (-0.2e1 * t35 * (t1 + 0.5e1 * t16 - t11 - t14) * AA + 0.8e1 * B * BB * kn * Rm * Rp) * t47 + 0.2e1 * B * (0.3e1 * t17 - t21 + 0.2e1 * t15 + 0.2e1 * t13 - Rp * t11 - t14 * Rp) * AA - t30) * t61 + ((-0.2e1 * t63 * t67 * AA - t76) * t79 + (-0.2e1 * t63 * t81 * AA + t76) * t87 + (-t90 + 0.2e1 * t63 * t67 * BB) * t95 + (-t90 - 0.2e1 * t63 * t81 * BB) * t101) * t106 + ((0.2e1 * t108 * t109 * AA + t115) * t79 + (0.2e1 * t108 * t118 * AA - t115) * t87 + (t125 - 0.2e1 * t108 * t109 * BB) * t95 + (t125 + 0.2e1 * t108 * t118 * BB) * t101) * t138;
-  
+
   t1 = B - Rp;
   t2 = Rm * t1;
   t3 = B * B;
@@ -325,8 +325,8 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t143 = t132 + t129 - t125 + t133 + t127 - t124 - t130 - t126 + t135;
   t160 = exp(-t20 - Rp - B);
   num4 = (0.2e1 * t12 - 0.8e1 * t14 * kn * t1 * BB) * t21 + ((0.2e1 * t23 * (t7 + 0.5e1 * t3 - t8 - t9) * AA - 0.8e1 * B * BB * t30 * Rp) * t36 + (-0.2e1 * Rp * (-B * t8 - B * t7 - t40 + 0.2e1 * t41 + 0.3e1 * t43 + 0.2e1 * Rp * t7) * AA + 0.8e1 * t51 * kn * Rp) * t56 - 0.2e1 * t14 * (-t8 + t9 + t4 + t7) * AA + 0.8e1 * t51 * t30) * t67 + ((t12 - 0.2e1 * t2 * t71 * BB) * t77 + (t12 + 0.2e1 * t2 * t79 * BB) * t85 + (-0.2e1 * t2 * t71 * AA - t91) * t93 + (-0.2e1 * t2 * t79 * AA + t91) * t99) * t104 + ((-t120 * AA + 0.2e1 * t136 * BB) * t77 + (-t141 * AA - 0.2e1 * t143 * BB) * t85 + (0.2e1 * t136 * AA + t120 * BB) * t93 + (0.2e1 * t143 * AA - t141 * BB) * t99) * t160;
-  
-  
+
+
   t1 = Rm * Rm;
   t2 = Rp * Rp;
   t3 = t1 * t2;
@@ -336,9 +336,9 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t15 = cos(0.2e1 * Rm);
   t22 = exp(-0.2e1 * Rp);
   den1 = (-0.4e1 * t3 + 0.4e1 * t5) * t9 + ((0.8e1 * t1 + 0.8e1 * t4) * t2 * t15 - 0.8e1 * t5 - 0.8e1 * t2 * t4) * t22 - 0.4e1 * t3 + 0.4e1 * t5;
-  
+
   _C1=num1/den1; _C2=num2/den1; _C3=num3/den1; _C4=num4/den1;
-  
+
   t1 = Rm * x;
   t2 = cos(t1);
   t4 = sin(t1);
@@ -347,7 +347,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t13 = cos(t12);
   t16 = sin(t12);
   u1 = -km * (_C1 * t2 + _C2 * t4 + _C3 * t2 + _C4 * t4 + t10 * AA * t13 + t10 * BB * t16);
-  
+
   t2 = Rm * x;
   t3 = cos(t2);
   t6 = sin(t2);
@@ -357,7 +357,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t25 = cos(t24);
   t29 = sin(t24);
   u2 = UU * _C1 * t3 + UU * _C2 * t6 - _C1 * t6 * Rm + _C2 * t3 * Rm - VV * _C3 * t3 - VV * _C4 * t6 - _C3 * t6 * Rm + _C4 * t3 * Rm - 0.2e1 * t23 * AA * t25 - 0.2e1 * t23 * BB * t29 - t22 * AA * t29 * kn + t22 * BB * t25 * kn;
-  
+
   t3 = exp(0.2e1 * x * B);
   t4 = t3 * B;
   t8 = km * km;
@@ -384,7 +384,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t91 = sin(t90);
   t106 = cos(t90);
   u3 = -((t19 * t21 + t36 * t37) * _C1 + (t36 * t21 - t19 * t37) * _C2 + (t53 * t21 + t64 * t37) * _C3 + (t64 * t21 - t53 * t37) * _C4 + (-0.3e1 * t8 * AA * kn - 0.8e1 * t76 * BB - 0.4e1 * BB * B * t80 + 0.4e1 * AA * t83 * kn - AA * t87) * t91 + (-0.4e1 * AA * t80 * B - 0.4e1 * t83 * BB * kn + 0.3e1 * t8 * BB * kn - sigma + BB * t87 - 0.8e1 * t76 * AA) * t106) / km;
-  
+
   t3 = exp(0.2e1 * x * B);
   t4 = km * km;
   t5 = t3 * t4;
@@ -412,7 +412,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t78 = kn * kn;
   t82 = t46 * t13 + t46 * t15 + 0.2e1 * t49 * _C3 * t10 * Rm - 0.2e1 * t49 * _C4 * t7 * Rm - t3 * _C3 * t39 - t3 * _C4 * t42 + 0.4e1 * t62 * AA * t19 + 0.4e1 * t62 * BB * t22 + 0.4e1 * B * AA * t22 * kn - 0.4e1 * B * BB * t19 * kn - AA * t19 * t78 - BB * t22 * t78;
   u4 = t44 + t82;
-  
+
   t3 = exp(0.2e1 * x * B);
   t4 = t3 * B;
   t8 = km * km;
@@ -439,7 +439,7 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t87 = sin(t86);
   t101 = cos(t86);
   u5 = ((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-t8 * AA * kn - 0.4e1 * t72 * BB - 0.4e1 * BB * B * t76 + 0.4e1 * AA * t79 * kn - AA * t83) * t87 + (-0.4e1 * AA * t76 * B - 0.4e1 * t79 * BB * kn + t8 * BB * kn - sigma + BB * t83 - 0.4e1 * t72 * AA) * t101) / km;
-  
+
   t3 = exp(0.2e1 * x * B);
   t4 = UU * UU;
   t8 = km * km;
@@ -465,27 +465,27 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   t84 = sin(t83);
   t96 = cos(t83);
   u6 = -((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-0.4e1 * BB * B * t71 + 0.4e1 * AA * t74 * kn + t8 * AA * kn - AA * t80) * t84 + (-0.4e1 * AA * t71 * B - t8 * BB * kn - 0.4e1 * t74 * BB * kn - sigma + BB * t80) * t96) / km;
-  
+
   /*SS = sin(km*z)*(exp(UU*x)*(_C1*cos(Rm*x)+_C2*sin(Rm*x)) + exp(-VV*x)*(_C3*cos(Rm*x)+_C4*sin(Rm*x)) + exp(-2*x*B)*(AA*cos(kn*x)+BB*sin(kn*x)));*/
-  
+
   /* u1 = Vx, u2 = Vz, u3 = txx, u4 = tzx, u5 = pressure, u6 = tzz */
-  
+
   sum5 += u5*cos(km*z);  /* pressure */
   sum6 += u6*cos(km*z);  /* zz total stress */
-  
+
   u1 *= cos(km*z); /* x velocity */
   sum1 += u1;
   u2 *= sin(km*z); /* z velocity */
   sum2 += u2;
-  
+
   u3 *= cos(km*z); /* xx total stress */
   sum3 += u3;
   u4 *= sin(km*z); /* zx stress */
   sum4 += u4;
-  
+
   /* rho = -sigma*sin(km*z)*cos(kn*x); */ /* density */
   /* sum7 += rho; */
-  
+
   /* Output */
   if (nu) {
     *nu = Z;
@@ -515,7 +515,7 @@ PetscErrorCode EvaluateV_SolKx(PetscReal pos[],PetscReal vel[],void *ctx)
 {
   ParamsSolKx *data = (ParamsSolKx*)ctx;
   PetscErrorCode ierr;
-  
+
   ierr = SolKxSolution((const PetscReal*)pos,data->m,data->n,data->B,
                                vel,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   vel[2] = 0.0;
@@ -527,10 +527,10 @@ PetscErrorCode EvaluateE_SolKx(PetscReal pos[],PetscReal E[],void *ctx)
   ParamsSolKx *data = (ParamsSolKx*)ctx;
   PetscReal E_voigt[3];
   PetscErrorCode ierr;
-  
+
   ierr = SolKxSolution((const PetscReal*)pos, data->m, data->n, data->B,
                        NULL,NULL,NULL,E_voigt,NULL);CHKERRQ(ierr);
-  
+
   E[0] = E_voigt[0]; /* E_xx */
   E[1] = E_voigt[1]; /* E_xy */
   E[2] = 0.0;        /* E_xz */
@@ -550,7 +550,7 @@ PetscErrorCode EvaluateP_SolKx(PetscReal pos[],PetscReal p[],void *ctx)
 {
   ParamsSolKx *data = (ParamsSolKx*)ctx;
   PetscErrorCode ierr;
-  
+
   ierr = SolKxSolution((const PetscReal*)pos, data->m, data->n, data->B,
                        NULL,p,NULL,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

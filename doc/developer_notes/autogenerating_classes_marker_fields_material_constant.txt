@@ -51,7 +51,7 @@ and edit the function
 b) For material point properties, open
   ptatin3d.c
 and edit the function
-  pTatin3dCreateMaterialPoints()  
+  pTatin3dCreateMaterialPoints()
 
 c) For quadrature point properties, open
   quadrature.c
@@ -79,7 +79,7 @@ The files generated will have the name
 ClassName : Defines the name associated with typedef'd struct
 ClassNameShort : Short name for the class (not currently used)
 variable_names : List of variable names which will appear in the struct
-variable_types : C type of each variable {char, int, long int, float, double 
+variable_types : C type of each variable {char, int, long int, float, double
 variable_extents : Indicates array size of variable. If one is selected, variable is treated as A, not A[1]
 variable_textural_names : Human readable names for variables. These are used in creating the getter/setter functions for each variable.
 

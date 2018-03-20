@@ -61,32 +61,32 @@ const char *QPntSurfCoefStokes_member_names[] = {
 /* ===================================== */
 /* Getters for QPntSurfCoefStokes */
 /* ===================================== */
-void QPntSurfCoefStokesGetField_surface_normal(QPntSurfCoefStokes *point,double *data[]) 
+void QPntSurfCoefStokesGetField_surface_normal(QPntSurfCoefStokes *point,double *data[])
 {
   *data = point->normal;
 }
 
-void QPntSurfCoefStokesGetField_surface_tangent1(QPntSurfCoefStokes *point,double *data[]) 
+void QPntSurfCoefStokesGetField_surface_tangent1(QPntSurfCoefStokes *point,double *data[])
 {
   *data = point->tangent1;
 }
 
-void QPntSurfCoefStokesGetField_surface_tangent2(QPntSurfCoefStokes *point,double *data[]) 
+void QPntSurfCoefStokesGetField_surface_tangent2(QPntSurfCoefStokes *point,double *data[])
 {
   *data = point->tangent2;
 }
 
-void QPntSurfCoefStokesGetField_surface_traction(QPntSurfCoefStokes *point,double *data[]) 
+void QPntSurfCoefStokesGetField_surface_traction(QPntSurfCoefStokes *point,double *data[])
 {
   *data = point->traction;
 }
 
-void QPntSurfCoefStokesGetField_viscosity(QPntSurfCoefStokes *point,double *data) 
+void QPntSurfCoefStokesGetField_viscosity(QPntSurfCoefStokes *point,double *data)
 {
   *data = point->eta;
 }
 
-void QPntSurfCoefStokesGetField_density(QPntSurfCoefStokes *point,double *data) 
+void QPntSurfCoefStokesGetField_density(QPntSurfCoefStokes *point,double *data)
 {
   *data = point->rho;
 }
@@ -95,32 +95,32 @@ void QPntSurfCoefStokesGetField_density(QPntSurfCoefStokes *point,double *data)
 /* ===================================== */
 /* Setters for QPntSurfCoefStokes */
 /* ===================================== */
-void QPntSurfCoefStokesSetField_surface_normal(QPntSurfCoefStokes *point,double data[]) 
+void QPntSurfCoefStokesSetField_surface_normal(QPntSurfCoefStokes *point,double data[])
 {
   memcpy( &point->normal[0], data, sizeof(double)*3 );
 }
 
-void QPntSurfCoefStokesSetField_surface_tangent1(QPntSurfCoefStokes *point,double data[]) 
+void QPntSurfCoefStokesSetField_surface_tangent1(QPntSurfCoefStokes *point,double data[])
 {
   memcpy( &point->tangent1[0], data, sizeof(double)*3 );
 }
 
-void QPntSurfCoefStokesSetField_surface_tangent2(QPntSurfCoefStokes *point,double data[]) 
+void QPntSurfCoefStokesSetField_surface_tangent2(QPntSurfCoefStokes *point,double data[])
 {
   memcpy( &point->tangent2[0], data, sizeof(double)*3 );
 }
 
-void QPntSurfCoefStokesSetField_surface_traction(QPntSurfCoefStokes *point,double data[]) 
+void QPntSurfCoefStokesSetField_surface_traction(QPntSurfCoefStokes *point,double data[])
 {
   memcpy( &point->traction[0], data, sizeof(double)*3 );
 }
 
-void QPntSurfCoefStokesSetField_viscosity(QPntSurfCoefStokes *point,double data) 
+void QPntSurfCoefStokesSetField_viscosity(QPntSurfCoefStokes *point,double data)
 {
   point->eta = data;
 }
 
-void QPntSurfCoefStokesSetField_density(QPntSurfCoefStokes *point,double data) 
+void QPntSurfCoefStokesSetField_density(QPntSurfCoefStokes *point,double data)
 {
   point->rho = data;
 }
@@ -175,7 +175,7 @@ void QPntSurfCoefStokesView(QPntSurfCoefStokes *point)
 /* ===================================== */
 /* VTK viewer for QPntSurfCoefStokes */
 /* ===================================== */
-void QPntSurfCoefStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPntSurfCoefStokes points[]) 
+void QPntSurfCoefStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPntSurfCoefStokes points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta\" format=\"ascii\">\n");
@@ -194,7 +194,7 @@ void QPntSurfCoefStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPn
 /* ===================================== */
 /* PVTU viewer for QPntSurfCoefStokes */
 /* ===================================== */
-void QPntSurfCoefStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void QPntSurfCoefStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eta\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"rho\" NumberOfComponents=\"1\"/>\n");
@@ -204,7 +204,7 @@ void QPntSurfCoefStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for QPntSurfCoefStokes */
 /* ===================================== */
-void QPntSurfCoefStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const QPntSurfCoefStokes points[]) 
+void QPntSurfCoefStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const QPntSurfCoefStokes points[])
 {
   /* Warning: swarm_class_generator.py is ignoring multi-component field normal[] */
 
@@ -226,7 +226,7 @@ void QPntSurfCoefStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *o
 /* ================================================== */
 /* VTK binary (appended data) viewer for QPntSurfCoefStokes */
 /* ==================================================== */
-void QPntSurfCoefStokesVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const QPntSurfCoefStokes points[]) 
+void QPntSurfCoefStokesVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const QPntSurfCoefStokes points[])
 {
   int p,length;
   size_t atomic_size;

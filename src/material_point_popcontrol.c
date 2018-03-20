@@ -54,10 +54,10 @@ int sort_ComparePSortCtx(const void *dataA,const void *dataB)
 {
     PSortCtx *pointA;
     PSortCtx *pointB;
-    
+
     pointA = (PSortCtx*)dataA;
     pointB = (PSortCtx*)dataB;
-    
+
     if (pointA->cell_index < pointB->cell_index) {
         return -1;
     } else if (pointA->cell_index > pointB->cell_index) {
@@ -71,7 +71,7 @@ void sort_PSortCx(const int np32, PSortCtx list[])
 {
     PetscLogDouble t0,t1;
     size_t         np;
-    
+
     np = (size_t)np32;
     PetscTime(&t0);
     qsort( list, np, sizeof(PSortCtx), sort_ComparePSortCtx );
@@ -91,10 +91,10 @@ int sort_CompareNNSortCtx(const void *dataA,const void *dataB)
 {
     NNSortCtx *pointA;
     NNSortCtx *pointB;
-    
+
     pointA = (NNSortCtx*)dataA;
     pointB = (NNSortCtx*)dataB;
-    
+
     if (pointA->sep < pointB->sep) {
         return -1;
     } else if (pointA->sep > pointB->sep) {
@@ -123,12 +123,12 @@ PetscErrorCode _find_min(double pos[],PetscInt point_count,double patch_point_co
     PetscInt p;
     double   dx,dy,dz;
     double   sep,min_sep;
-    
+
     PetscFunctionBegin;
-    
+
     min_sep = 1.0e32;
     *idx = -1;
-    
+
     for (p=0; p<point_count; p++) {
         dx = (pos[0] - patch_point_coords[3*p+0]);
         dy = (pos[1] - patch_point_coords[3*p+1]);
@@ -139,7 +139,7 @@ PetscErrorCode _find_min(double pos[],PetscInt point_count,double patch_point_co
             *idx = p;
         }
     }
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -158,26 +158,26 @@ PetscErrorCode _find_min_fast(double pos[],PetscInt point_count,double patch_poi
     PetscInt p,closest;
     double   dist;
     double   *p1,*p2;
-    
+
     PetscFunctionBegin;
-    
+
     closest = 0;
     p1 = &patch_point_coords[3*closest];
-    
+
     for (p=1; p<point_count; p++) {
-        
+
         p2 = &patch_point_coords[3*p];
         dist = AVD3dDistanceTest(pos,p1,p2);
-        
+
         if (dist > 0.0) { /* p2 is closer than p1 */
             closest = p;
             //p1 = &patch_point_coords[3*closest];
             p1 = p2;
         }
     }
-    
+
     *idx = closest;
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -186,9 +186,9 @@ PetscErrorCode _find_min_sep_brute_force(double pos[],PetscInt point_count,NNSor
     PetscInt p;
     double   dx,dy,dz;
     double   sep,min_sep;
-    
+
     PetscFunctionBegin;
-    
+
     for (p=0; p<point_count; p++) {
         dx = (pos[0] - patch_points[p].coor[0]);
         dy = (pos[1] - patch_points[p].coor[1]);
@@ -196,7 +196,7 @@ PetscErrorCode _find_min_sep_brute_force(double pos[],PetscInt point_count,NNSor
         sep = dx*dx + dy*dy + dz*dz;
         patch_points[p].sep = sep;
     }
-    
+
     min_sep = 1.0e32;
     *idx = -1;
     for (p=0; p<point_count; p++) {
@@ -206,7 +206,7 @@ PetscErrorCode _find_min_sep_brute_force(double pos[],PetscInt point_count,NNSor
             *idx = p;
         }
     }
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -215,9 +215,9 @@ PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx p
     PetscInt p;
     double   dx,dy,dz;
     double   sep;
-    
+
     PetscFunctionBegin;
-    
+
     for (p=0; p<point_count; p++) {
         dx = (pos[0] - patch_points[p].coor[0]);
         dy = (pos[1] - patch_points[p].coor[1]);
@@ -225,24 +225,24 @@ PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx p
         sep = dx*dx + dy*dy + dz*dz;
         patch_points[p].sep = sep;
     }
-    
+
     sort_NNSortCx((int)point_count,patch_points);
-    
+
     *idx = 0;
-    
+
     PetscFunctionReturn(0);
 }
 
 /*
- 
+
  -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
  -mx 32 -my 32 -mz 32   -lattice_layout_Nx 4 -lattice_layout_Ny 4 -lattice_layout_Nz 4 -mp_popctrl_np_lower 100
- 
+
  _find_min     :  time_nn           = 1.2912e+00 (sec)
  _find_min_fast:  time_nn           = 2.9685e+00 (sec)
- 
+
  apply_mppc_nn_patch(_find_min)
- 
+
  [LOG]  sort_PSortCx [npoints = 2097152] -> qsort 1.5965e-01 (sec)
  [LOG]  cells with points < np_lower (32768)
  [LOG]  cells with points > np_upper (0)
@@ -252,12 +252,12 @@ PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx p
  [LOG]  npoints_current-1 = 2359296
  [LOG]  npoints_current-2 = 2359296
  [LOG]  time(apply_mppc_nn_patch): 2.5713e+00 (sec)
- 
+
  -mx 32 -my 32 -mz 32
  -lattice_layout_Nx 4 -lattice_layout_Ny 4 -lattice_layout_Nz 4
  -mp_popctrl_np_lower 100
  -mp_popctrl_nxp 4 -mp_popctrl_nyp 4 -mp_popctrl_nzp 4
- 
+
  [LOG] MPPC_NearestNeighbourPatch:
  [LOG]  sort_PSortCx [npoints = 2097152] -> qsort 1.5914e-01 (sec)
  [LOG]  cells with points < np_lower (32768)
@@ -268,7 +268,7 @@ PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx p
  [LOG]  npoints_current-1 = 4194304
  [LOG]  npoints_current-2 = 4194304
  [LOG]  time(apply_mppc_nn_patch): 1.2710e+01 (sec)
- 
+
 */
 PetscErrorCode apply_mppc_nn_patch(
                                    PetscInt ncells, PetscInt pcell_list[],
@@ -291,18 +291,18 @@ PetscErrorCode apply_mppc_nn_patch(
     PetscInt        *patch_point_idx;
     PetscLogDouble  t0_nn,t1_nn,time_nn = 0.0;
     PetscErrorCode  ierr;
-    
+
     PetscFunctionBegin;
-    
-    
+
+
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-    
+
     /* get mx,my from the da */
     ierr = DMDAGetLocalSizeElementQ2(da,&mx,&my,&mz);CHKERRQ(ierr);
-    
+
     DataBucketGetSizes(db,&npoints_init32,NULL,NULL);
     npoints_current32 = npoints_init32;
-    
+
     /* find max np_per_cell I will need */
     nxcubed32 = (int)(nxp * nyp * nzp);
     np_per_cell_max = 0;
@@ -311,44 +311,44 @@ PetscErrorCode apply_mppc_nn_patch(
     for (c=0; c<nel; c++) {
         PetscInt points_per_cell;
         PetscInt points_per_patch;
-        
+
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         if (points_per_cell > np_lower) { continue; }
-        
+
         cell_index_k = c / (mx*my);
         cidx2d = c - cell_index_k*(mx*my);
         cell_index_j = cidx2d / mx;
         cell_index_i = cidx2d - cell_index_j * mx;
-        
+
         points_per_patch = 0;
         for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
             for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
                 for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
-                    
+
                     if (i >= mx) { continue; }
                     if (j >= my) { continue; }
                     if (k >= mz) { continue; }
                     if (i < 0) { continue; }
                     if (j < 0) { continue; }
                     if (k < 0) { continue; }
-                    
+
                     patch_cell_id = i + j * mx + k * mx*my;
-                    
+
                     points_per_patch = points_per_patch + (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
                 }
             }
         }
-        
+
         if (points_per_patch > np_per_cell_max) {
             np_per_cell_max = points_per_patch;
         }
-        
+
         Lnew32 = Lnew32 + nxcubed32;
         cells_needing_new_points64++;
     }
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  np_per_patch_max = %D \n", np_per_cell_max );
 #endif
@@ -356,50 +356,50 @@ PetscErrorCode apply_mppc_nn_patch(
     if (cells_needing_new_points_g64 == 0) {
         PetscFunctionReturn(0);
     }
-    
+
     DataBucketSetSizes(db,Lnew32,-1);
-    
+
     ierr = PetscMalloc(sizeof(double)*3*np_per_cell_max,&patch_point_coords);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
-    
+
     /* setup for coords */
     ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
     ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
-    
+
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
-    
+
     for (c=0; c<nel; c++) {
         PetscInt points_per_cell;
-        
+
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         if (points_per_cell > np_lower) { continue; }
-        
+
         cell_index_k = c / (mx*my);
         cidx2d = c - cell_index_k*(mx*my);
         cell_index_j = cidx2d / mx;
         cell_index_i = cidx2d - cell_index_j * mx;
-        
+
         /* load points */
         ierr = PetscMemzero( patch_point_coords, sizeof(double)*3*np_per_cell_max );CHKERRQ(ierr);
         ierr = PetscMemzero( patch_point_idx, sizeof(PetscInt)*np_per_cell_max );CHKERRQ(ierr);
-        
+
         point_count = 0;
-        
+
         DataFieldGetAccess(PField);
         for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
             for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
                 for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
-                    
+
                     if (i >= mx) { continue; }
                     if (j >= my) { continue; }
                     if (k >= mz) { continue; }
                     if (i < 0) { continue; }
                     if (j < 0) { continue; }
                     if (k < 0) { continue; }
-                    
+
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
 #if (MPPC_LOG_LEVEL >= 2)
@@ -408,12 +408,12 @@ PetscErrorCode apply_mppc_nn_patch(
                     for (p=0; p<points_per_patch; p++) {
                         MPntStd *marker_p;
                         PetscInt pid, pid_unsorted;
-                        
+
                         pid = pcell_list[patch_cell_id] + p;
                         pid_unsorted = plist[pid].point_index;
-                        
+
                         DataFieldAccessPoint(PField, (int)pid_unsorted ,(void**)&marker_p);
-                        
+
                         patch_point_coords[3*point_count+0] = marker_p->coor[0];
                         patch_point_coords[3*point_count+1] = marker_p->coor[1];
                         patch_point_coords[3*point_count+2] = marker_p->coor[2];
@@ -423,7 +423,7 @@ PetscErrorCode apply_mppc_nn_patch(
 #endif
                         point_count++;
                     }
-                    
+
                 }
             }
         }
@@ -431,21 +431,21 @@ PetscErrorCode apply_mppc_nn_patch(
 #if (MPPC_LOG_LEVEL >= 2)
         PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
 #endif
-        
+
         /* create trial coordinates - find closest point */
         {
             PetscInt  Nxp[NSD],pi,pj,pk,k;
             PetscReal dxi,deta,dzeta;
             PetscInt  marker_index;
-            
+
             Nxp[0] = nxp;
             Nxp[1] = nyp;
             Nxp[2] = nzp;
-            
+
             dxi    = 2.0/(PetscReal)Nxp[0];
             deta   = 2.0/(PetscReal)Nxp[1];
             dzeta  = 2.0/(PetscReal)Nxp[2];
-            
+
             ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*c],LA_coords);CHKERRQ(ierr);
             for (pk=0; pk<Nxp[2]; pk++) {
                 for (pj=0; pj<Nxp[1]; pj++) {
@@ -453,20 +453,20 @@ PetscErrorCode apply_mppc_nn_patch(
                         PetscInt  idx;
                         PetscReal xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
                         MPntStd   *marker_p,*marker_nearest;
-                        
+
                         xip[0] = -1.0 + dxi    * (pi + 0.5);
                         xip[1] = -1.0 + deta   * (pj + 0.5);
                         xip[2] = -1.0 + dzeta  * (pk + 0.5);
-                        
+
                         /* random between -0.5 <= shift <= 0.5 */
                         xip_shift[0] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
                         xip_shift[1] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
                         xip_shift[2] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
-                        
+
                         xip_rand[0] = xip[0] + perturb * dxi    * xip_shift[0];
                         xip_rand[1] = xip[1] + perturb * deta   * xip_shift[1];
                         xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
-                        
+
                         if (PetscAbsReal(xip_rand[0]) > 1.0) {
                             SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
                         }
@@ -476,34 +476,34 @@ PetscErrorCode apply_mppc_nn_patch(
                         if (PetscAbsReal(xip_rand[2]) > 1.0) {
                             SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
                         }
-                        
+
                         P3D_ConstructNi_Q2_3D(xip_rand,Ni);
-                        
+
                         xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
                         for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
                             xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
                             xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
                             xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
                         }
-                        
+
                         /* locate nearest point */
                         PetscTime(&t0_nn);
                         ierr = _find_min(xp_rand,point_count,patch_point_coords,&idx);CHKERRQ(ierr);
                         //ierr = _find_min_fast(xp_rand,point_count,patch_point_coords,&idx);CHKERRQ(ierr);
                         PetscTime(&t1_nn);
                         time_nn += (t1_nn - t0_nn);
-                        
+
                         marker_index = patch_point_idx[ idx ];
-                        
+
                         DataBucketCopyPoint(db,(int)marker_index, db,npoints_current32);
-                        
+
                         DataFieldGetAccess(PField);
-                        
+
                         DataFieldAccessPoint(PField,npoints_current32,(void**)&marker_p);
                         DataFieldAccessPoint(PField,(int)marker_index,(void**)&marker_nearest);
-                        
+
                         marker_p->phase   = marker_nearest->phase;
-                        
+
                         marker_p->coor[0] = (double)xp_rand[0];
                         marker_p->coor[1] = (double)xp_rand[1];
                         marker_p->coor[2] = (double)xp_rand[2];
@@ -511,31 +511,31 @@ PetscErrorCode apply_mppc_nn_patch(
                         marker_p->xi[0]   = (double)xip_rand[0];
                         marker_p->xi[1]   = (double)xip_rand[1];
                         marker_p->xi[2]   = (double)xip_rand[2];
-                        
+
                         DataFieldRestoreAccess(PField);
-                        
+
                         npoints_current32++;
                     }
                 }
             }
-            
+
         }
     }
     ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
-    
+
     DataBucketGetSizes(db,&Lnew32,NULL,NULL);
-    
+
     ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,npoints_init32,Lnew32);CHKERRQ(ierr);
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_init      = %d \n", npoints_init32);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_current-1 = %d \n", npoints_current32);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_current-2 = %d \n", Lnew32);
 #endif
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -559,12 +559,12 @@ PetscErrorCode apply_mppc_nn_patch2(
     NNSortCtx       *patch_points;
     PetscLogDouble  t0_nn,t1_nn,time_nn = 0.0;
     PetscErrorCode  ierr;
-    
+
     PetscFunctionBegin;
-    
-    
+
+
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-    
+
     /* get mx,my from the da */
     ierr = DMDAGetLocalSizeElementQ2(da,&mx,&my,&mz);CHKERRQ(ierr);
 
@@ -579,44 +579,44 @@ PetscErrorCode apply_mppc_nn_patch2(
     for (c=0; c<nel; c++) {
         PetscInt points_per_cell;
         PetscInt points_per_patch;
-        
+
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         if (points_per_cell > np_lower) { continue; }
-        
+
         cell_index_k = c / (mx*my);
         cidx2d = c - cell_index_k*(mx*my);
         cell_index_j = cidx2d / mx;
         cell_index_i = cidx2d - cell_index_j * mx;
-        
+
         points_per_patch = 0;
         for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
             for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
                 for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
-                    
+
                     if (i >= mx) { continue; }
                     if (j >= my) { continue; }
                     if (k >= mz) { continue; }
                     if (i < 0) { continue; }
                     if (j < 0) { continue; }
                     if (k < 0) { continue; }
-                    
+
                     patch_cell_id = i + j * mx + k * mx*my;
-                    
+
                     points_per_patch = points_per_patch + (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
                 }
             }
         }
-        
+
         if (points_per_patch > np_per_cell_max) {
             np_per_cell_max = points_per_patch;
         }
-        
+
         Lnew32 = Lnew32 + nxcubed32;
         cells_needing_new_points64++;
     }
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  np_per_patch_max = %D \n", np_per_cell_max );
 #endif
@@ -626,48 +626,48 @@ PetscErrorCode apply_mppc_nn_patch2(
         PetscFunctionReturn(0);
     }
     //PetscPrintf(PETSC_COMM_WORLD,"!! Population control required <global>!!\n");
-    
+
     DataBucketSetSizes(db,Lnew32,-1);
-    
+
     ierr = PetscMalloc(sizeof(NNSortCtx)*np_per_cell_max,&patch_points);CHKERRQ(ierr);
-    
+
     /* setup for coords */
     ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
     ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
-    
+
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
-    
+
     for (c=0; c<nel; c++) {
         PetscInt points_per_cell;
-        
+
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         if (points_per_cell > np_lower) { continue; }
-        
+
         cell_index_k = c / (mx*my);
         cidx2d = c - cell_index_k*(mx*my);
         cell_index_j = cidx2d / mx;
         cell_index_i = cidx2d - cell_index_j * mx;
-        
+
         /* load points */
         ierr = PetscMemzero( patch_points, sizeof(NNSortCtx)*np_per_cell_max );CHKERRQ(ierr);
-        
+
         point_count = 0;
-        
+
         DataFieldGetAccess(PField);
         for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
             for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
                 for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
-                    
+
                     if (i >= mx) { continue; }
                     if (j >= my) { continue; }
                     if (k >= mz) { continue; }
                     if (i < 0) { continue; }
                     if (j < 0) { continue; }
                     if (k < 0) { continue; }
-                    
+
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
 #if (MPPC_LOG_LEVEL >= 2)
@@ -676,12 +676,12 @@ PetscErrorCode apply_mppc_nn_patch2(
                     for (p=0; p<points_per_patch; p++) {
                         MPntStd *marker_p;
                         PetscInt pid, pid_unsorted;
-                        
+
                         pid = pcell_list[patch_cell_id] + p;
                         pid_unsorted = plist[pid].point_index;
-                        
+
                         DataFieldAccessPoint(PField, (int)pid_unsorted ,(void**)&marker_p);
-                        
+
                         patch_points[point_count].coor[0] = (PetscReal)marker_p->coor[0];
                         patch_points[point_count].coor[0] = (PetscReal)marker_p->coor[1];
                         patch_points[point_count].coor[0] = (PetscReal)marker_p->coor[2];
@@ -691,7 +691,7 @@ PetscErrorCode apply_mppc_nn_patch2(
 #endif
                         point_count++;
                     }
-                    
+
                 }
             }
         }
@@ -699,21 +699,21 @@ PetscErrorCode apply_mppc_nn_patch2(
 #if (MPPC_LOG_LEVEL >= 2)
         PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
 #endif
-        
+
         /* create trial coordinates - find closest point */
         {
             PetscInt Nxp[NSD],pi,pj,pk,k;
             PetscReal dxi,deta,dzeta;
             PetscInt marker_index;
-            
+
             Nxp[0] = nxp;
             Nxp[1] = nyp;
             Nxp[2] = nzp;
-            
+
             dxi    = 2.0/(PetscReal)Nxp[0];
             deta   = 2.0/(PetscReal)Nxp[1];
             dzeta  = 2.0/(PetscReal)Nxp[2];
-            
+
             ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*c],LA_coords);CHKERRQ(ierr);
             for (pk=0; pk<Nxp[2]; pk++) {
                 for (pj=0; pj<Nxp[1]; pj++) {
@@ -721,20 +721,20 @@ PetscErrorCode apply_mppc_nn_patch2(
                         PetscInt  idx;
                         PetscReal xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
                         MPntStd   *marker_p,*marker_nearest;
-                        
+
                         xip[0] = -1.0 + dxi    * (pi + 0.5);
                         xip[1] = -1.0 + deta   * (pj + 0.5);
                         xip[2] = -1.0 + dzeta  * (pk + 0.5);
-                        
+
                         /* random between -0.5 <= shift <= 0.5 */
                         xip_shift[0] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
                         xip_shift[1] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
                         xip_shift[2] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
-                        
+
                         xip_rand[0] = xip[0] + perturb * dxi    * xip_shift[0];
                         xip_rand[1] = xip[1] + perturb * deta   * xip_shift[1];
                         xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
-                        
+
                         if (PetscAbsReal(xip_rand[0]) > 1.0) {
                             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
                         }
@@ -744,34 +744,34 @@ PetscErrorCode apply_mppc_nn_patch2(
                         if (PetscAbsReal(xip_rand[2]) > 1.0) {
                             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
                         }
-                        
+
                         P3D_ConstructNi_Q2_3D(xip_rand,Ni);
-                        
+
                         xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
                         for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
                             xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
                             xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
                             xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
                         }
-                        
+
                         /* locate nearest point */
                         PetscTime(&t0_nn);
                         //ierr = _find_min_sep_brute_force(xp_rand,point_count,patch_points,&idx);CHKERRQ(ierr);
                         ierr = _find_min_sep_qsort(xp_rand,point_count,patch_points,&idx);CHKERRQ(ierr);
                         PetscTime(&t1_nn);
                         time_nn += (t1_nn - t0_nn);
-                        
+
                         marker_index = patch_points[ idx ].point_index;
-                        
+
                         DataBucketCopyPoint(db,(int)marker_index, db,(int)npoints_current32);
-                        
+
                         DataFieldGetAccess(PField);
-                        
+
                         DataFieldAccessPoint(PField,(int)npoints_current32,(void**)&marker_p);
                         DataFieldAccessPoint(PField,(int)marker_index,(void**)&marker_nearest);
-                        
+
                         marker_p->phase   = marker_nearest->phase;
-                        
+
                         marker_p->coor[0] = (double)xp_rand[0];
                         marker_p->coor[1] = (double)xp_rand[1];
                         marker_p->coor[2] = (double)xp_rand[2];
@@ -779,43 +779,43 @@ PetscErrorCode apply_mppc_nn_patch2(
                         marker_p->xi[0]   = (double)xip_rand[0];
                         marker_p->xi[1]   = (double)xip_rand[1];
                         marker_p->xi[2]   = (double)xip_rand[2];
-                        
+
                         DataFieldRestoreAccess(PField);
-                        
+
                         npoints_current32++;
                     }
                 }
             }
-            
+
         }
-        
-        
+
+
     }
     ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_points);CHKERRQ(ierr);
-    
+
     DataBucketGetSizes(db,&Lnew32,NULL,NULL);
-    
+
     ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,npoints_init32,Lnew32);CHKERRQ(ierr);
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_init      = %d \n", npoints_init32);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_current-1 = %d \n", npoints_current32);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_current-2 = %d \n", Lnew32);
 #endif
-    
+
     PetscFunctionReturn(0);
 }
 
 /*
- 
+
  1) create list of markers, sorted by element
  2) for any cell c, which has less than np_lower points
  3)  get cell patch bounds using nodal coordinates
  4)  assemble avd using marker global coordinates
  5)  inject nxp x nyp into cell
- 
+
  */
 PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscReal pertub,DM da,DataBucket db)
 {
@@ -828,40 +828,40 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
     DataField       PField;
     PetscLogDouble  t0,t1;
     PetscErrorCode  ierr;
-    
+
     PetscFunctionBegin;
-    
+
     ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlInsert,0,0,0,0);CHKERRQ(ierr);
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", PETSC_FUNCTION_NAME);
 #endif
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-    
+
     ierr = PetscMalloc( sizeof(PetscInt)*(nel+1),&pcell_list );CHKERRQ(ierr);
-    
+
     DataBucketGetSizes(db,&npoints32,NULL,NULL);
     ierr = PetscMalloc( sizeof(PSortCtx)*(npoints32), &plist);CHKERRQ(ierr);
-    
+
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
     DataFieldGetAccess(PField);
     DataFieldVerifyAccess( PField,sizeof(MPntStd));
     for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
-        
+
         DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         plist[p32].point_index = (PetscInt)p32;
         plist[p32].cell_index  = (PetscInt)marker_p->wil;
     }
     DataFieldRestoreAccess(PField);
-    
+
     sort_PSortCx(npoints32,plist);
-    
+
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
     for (p32=0; p32<npoints32; p32++) {
         pcell_list[ plist[p32].cell_index ]++;
     }
-    
+
     /* create offset list */
     count = 0;
     for (c=0; c<nel; c++) {
@@ -870,12 +870,12 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
         count = count + tmp;
     }
     pcell_list[c] = count;
-    
+
     cells_np_lower = 0;
     cells_np_upper = 0;
     for (c=0; c<nel; c++) {
         PetscInt points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         if (points_per_cell <= np_lower) { cells_np_lower++; }
         if (points_per_cell > np_upper) { cells_np_upper++; }
     }
@@ -883,7 +883,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %D cells with points < np_lower (%D) \n", cells_np_lower,np_lower );
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %D cells with points > np_upper (%D) \n", cells_np_upper,np_upper);
 #endif
-    
+
     /* apply point injection routine */
     PetscTime(&t0);
     ierr = apply_mppc_nn_patch(
@@ -895,11 +895,11 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_nn_patch): %1.4e (sec)\n", t1-t0);
 #endif
-    
+
     ierr = PetscFree(plist);CHKERRQ(ierr);
     ierr = PetscFree(pcell_list);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlInsert,0,0,0,0);CHKERRQ(ierr);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -912,66 +912,66 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
     DataField       PField;
     PetscLogDouble  t0,t1;
     PetscErrorCode  ierr;
-    
+
     PetscFunctionBegin;
     ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
 #endif
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-    
+
     ierr = PetscMalloc( sizeof(PetscInt)*(nel),&cell_count );CHKERRQ(ierr);
     ierr = PetscMemzero( cell_count, sizeof(PetscInt)*(nel) );CHKERRQ(ierr);
-    
+
     DataBucketGetSizes(db,&npoints32,NULL,NULL);
-    
+
     /* compute number of points per cell */
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
     DataFieldGetAccess(PField);
     for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
-        
+
         DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         if (marker_p->wil < 0) { continue; }
-        
+
         cell_count[ marker_p->wil ]++;
     }
     DataFieldRestoreAccess(PField);
-    
+
     count = 0;
     for (c=0; c<nel; c++) {
         if (cell_count[c] > np_upper) {
             count++;
         }
     }
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %D cells with points > np_upper (%D) \n", count, np_upper);
 #endif
-    
-    
+
+
     if (count == 0) {
         ierr = PetscFree(cell_count);CHKERRQ(ierr);
         ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
         PetscFunctionReturn(0);
     }
-    
+
     PetscTime(&t0);
-    
+
     if (!reverse_order_removal) {
         /* remove points from cells with excessive number */
         DataFieldGetAccess(PField);
         for (p32=0; p32<npoints32; p32++) {
             MPntStd *marker_p;
             int wil;
-            
+
             DataFieldAccessPoint(PField,p32,(void**)&marker_p);
             wil = marker_p->wil;
-            
+
             if (cell_count[wil] > np_upper) {
                 DataBucketRemovePointAtIndex(db,p32);
-                
+
                 DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
                 p32--; /* check replacement point */
                 cell_count[wil]--;
@@ -979,7 +979,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
         }
         DataFieldRestoreAccess(PField);
     }
-    
+
     /* scan in reverse order so that most recent points added to list will be removed as a priority */
 /*
     if (reverse_order_removal) {
@@ -987,13 +987,13 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
         for (p32=npoints32-1; p32>=0; p32--) {
             MPntStd *marker_p;
             int wil;
-            
+
             DataFieldAccessPoint(PField,p32,(void**)&marker_p);
             wil = marker_p->wil;
-            
+
             if (cell_count[wil] > np_upper) {
                 DataBucketRemovePointAtIndex(db,p32);
-                
+
                 DataBucketGetSizes(db,&npoints32,0,0); // you need to update npoints as the list size decreases! //
                 cell_count[wil]--;
             }
@@ -1004,26 +1004,26 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 /*
     if (reverse_order_removal) {
         int remove;
-        
+
         remove = 1;
         while (remove == 1) {
-            
+
             remove = 0;
-            
+
             DataBucketGetSizes(db,&npoints32,0,0); // you need to update npoints as the list size decreases! //
-            
+
             DataFieldGetAccess(PField);
             for (p32=npoints32-1; p32>=0; p32--) {
                 MPntStd *marker_p;
                 int wil;
-                
+
                 DataFieldAccessPoint(PField,p32,(void**)&marker_p);
                 wil = marker_p->wil;
-                
+
                 if (cell_count[wil] > np_upper) {
                     DataBucketRemovePointAtIndex(db,p32);
                     cell_count[wil]--;
-                    
+
                     remove = 1;
                     break;
                 }
@@ -1032,11 +1032,11 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
         }
     }
 */
-    
+
     if (reverse_order_removal) {
         MPntStd *mp_std;
         int     wil;
-        
+
         DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
         mp_std = PField->data;
 
@@ -1050,11 +1050,11 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
                 cell_count[wil]--;
             }
         }
-        
+
         for (p32=0; p32<npoints32; p32++) {
             wil = mp_std[p32].wil;
             if (wil == -2) {
-                
+
 				DataBucketRemovePointAtIndex(db,p32);
 				DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
 				p32--; /* check replacement point */
@@ -1062,17 +1062,17 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
             }
         }
     }
-    
-    
+
+
     PetscTime(&t1);
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(MPPC_SimpleRemoval): %1.4e (sec)\n", t1-t0);
 #endif
-    
+
     ierr = PetscFree(cell_count);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -1085,15 +1085,15 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
     DataBucket     db;
     PetscBool      reverse_order_removal;
     MPI_Comm       comm;
-    
+
     PetscFunctionBegin;
-    
+
     /* options for control number of points per cell */
     np_lower = 0;
     np_upper = 60;
     ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
-    
+
     /* options for injection of markers */
     nxp = 2;
     nyp = 2;
@@ -1101,15 +1101,15 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
     ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nxp",&nxp,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nyp",&nyp,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
-    
+
     perturb = 0.1;
     ierr = PetscOptionsGetReal(NULL,NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
     patch_extent = 1;
     ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
-    
+
     ierr = pTatinGetMaterialPoints(ctx,&db,NULL);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)ctx->stokes_ctx->dav,&comm);CHKERRQ(ierr);
-    
+
     /* insertion */
 #if (MPPC_LOG_LEVEL >= 1)
     {
@@ -1118,9 +1118,9 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
         PetscPrintf(comm,"[LOG]  total markers before population control (%ld) \n", np_g );
     }
 #endif
-    
+
     ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     {
         long int np_g;
@@ -1128,13 +1128,13 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
         PetscPrintf(comm,"[LOG]  total markers after INJECTION (%ld) \n", np_g );
     }
 #endif
-    
+
     /* removal */
     if (np_upper != -1) {
         reverse_order_removal = PETSC_TRUE;
         ierr = MPPC_SimpleRemoval(np_upper,ctx->stokes_ctx->dav,db,reverse_order_removal);CHKERRQ(ierr);
     }
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     {
         long int np_g;
@@ -1142,7 +1142,7 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
         PetscPrintf(comm,"[LOG]  total markers after DELETION (%ld) \n", np_g );
     }
 #endif
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -1163,91 +1163,91 @@ PetscErrorCode apply_mppc_region_assignment(
     PetscLogDouble  t0_nn,t1_nn,time_nn = 0.0;
     PetscInt        points_assigned = 0;
     PetscErrorCode  ierr;
-    
+
     PetscFunctionBegin;
-    
-    
+
+
     /* get mx,my from the da */
     ierr = DMDAGetLocalSizeElementQ2(da,&mx,&my,&mz);CHKERRQ(ierr);
-    
+
     /* find max np_per_cell I will need */
     np_per_cell_max = 0;
     for (c=0; c<nel; c++) {
-        
+
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         if (cell_count[c] == 0) { continue; }
-        
+
         cell_index_k = c / (mx*my);
         cidx2d = c - cell_index_k*(mx*my);
         cell_index_j = cidx2d / mx;
         cell_index_i = cidx2d - cell_index_j * mx;
-        
+
         points_per_patch = 0;
         for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
             for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
                 for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
-                    
+
                     if (i >= mx) { continue; }
                     if (j >= my) { continue; }
                     if (k >= mz) { continue; }
                     if (i < 0) { continue; }
                     if (j < 0) { continue; }
                     if (k < 0) { continue; }
-                    
+
                     patch_cell_id = i + j * mx + k * mx*my;
-                    
+
                     points_per_patch = points_per_patch + (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
                 }
             }
         }
-        
+
         if (points_per_patch > np_per_cell_max) {
             np_per_cell_max = points_per_patch;
         }
     }
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  np_per_patch_max = %D \n", np_per_cell_max );
 #endif
-    
+
     ierr = PetscMalloc(sizeof(double)*3*np_per_cell_max,&patch_point_coords);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
-    
+
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
-    
+
     for (c=0; c<nel; c++) {
-        
+
         /* if cell doesn't contain any points which need re-assignment - skip */
         if (cell_count[c] == 0) { continue; }
-        
+
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         cell_index_k = c / (mx*my);
         cidx2d = c - cell_index_k*(mx*my);
         cell_index_j = cidx2d / mx;
         cell_index_i = cidx2d - cell_index_j * mx;
-        
+
         /* load points from the patch into a list - only load points with an assigned phase index */
         ierr = PetscMemzero( patch_point_coords, sizeof(double)*3*np_per_cell_max );CHKERRQ(ierr);
         ierr = PetscMemzero( patch_point_idx, sizeof(PetscInt)*np_per_cell_max );CHKERRQ(ierr);
-        
+
         point_count = 0;
-        
+
         DataFieldGetAccess(PField);
         for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
             for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
                 for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
                     PetscInt patch_cell_id;
-                    
+
                     if (i >= mx) { continue; }
                     if (j >= my) { continue; }
                     if (k >= mz) { continue; }
                     if (i < 0) { continue; }
                     if (j < 0) { continue; }
                     if (k < 0) { continue; }
-                    
+
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
 #if (MPPC_LOG_LEVEL >= 2)
@@ -1256,15 +1256,15 @@ PetscErrorCode apply_mppc_region_assignment(
                     for (p=0; p<points_per_patch; p++) {
                         MPntStd *marker_p;
                         PetscInt pid, pid_unsorted;
-                        
+
                         pid = pcell_list[patch_cell_id] + p;
                         pid_unsorted = plist[pid].point_index;
-                        
+
                         DataFieldAccessPoint(PField, (int)pid_unsorted ,(void**)&marker_p);
-                        
+
                         /* skip markers from patch which need to be assigned */
                         if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) { continue; }
-                        
+
                         patch_point_coords[3*point_count+0] = marker_p->coor[0];
                         patch_point_coords[3*point_count+1] = marker_p->coor[1];
                         patch_point_coords[3*point_count+2] = marker_p->coor[2];
@@ -1274,7 +1274,7 @@ PetscErrorCode apply_mppc_region_assignment(
 #endif
                         point_count++;
                     }
-                    
+
                 }
             }
         }
@@ -1282,29 +1282,29 @@ PetscErrorCode apply_mppc_region_assignment(
 #if (MPPC_LOG_LEVEL >= 2)
         PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
 #endif
-        
+
         /* traverse points in this cell with phase = MATERIAL_POINT_PHASE_UNASSIGNED and find closest point */
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         for (p=0; p<points_per_cell; p++) {
             MPntStd   *marker_p,*marker_nearest;
             double    *pos_p;
             PetscInt  pid,pid_unsorted,nearest_idx,marker_index;
             PetscReal xp_orig[3],xip_orig[3];
             long int  pid_orig;
-            
+
             pid = pcell_list[c] + p;
             pid_unsorted = plist[pid].point_index;
-            
+
             DataFieldGetAccess(PField);
             DataFieldAccessPoint(PField,(int)pid_unsorted,(void**)&marker_p);
-            
+
             /* if marker is assigned - skip */
             if (marker_p->phase != MATERIAL_POINT_PHASE_UNASSIGNED) {
                 DataFieldRestoreAccess(PField);
                 continue;
             }
-            
+
             pid_orig    = marker_p->pid;
             xp_orig[0]  = (PetscReal)marker_p->coor[0];
             xp_orig[1]  = (PetscReal)marker_p->coor[1];
@@ -1312,32 +1312,32 @@ PetscErrorCode apply_mppc_region_assignment(
             xip_orig[0] = (PetscReal)marker_p->xi[0];
             xip_orig[1] = (PetscReal)marker_p->xi[1];
             xip_orig[2] = (PetscReal)marker_p->xi[2];
-            
-            
+
+
 #if (MPPC_LOG_LEVEL >= 2)
             PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell(%D) point(%D) is un-assigned\n",c,pid_unsorted);
 #endif
-            
+
             pos_p = marker_p->coor;
-            
+
             /* locate nearest point */
             PetscTime(&t0_nn);
             ierr = _find_min(pos_p, point_count,patch_point_coords, &nearest_idx);CHKERRQ(ierr);
             PetscTime(&t1_nn);
             time_nn += (t1_nn - t0_nn);
-            
+
             /* marker index of nearest point */
             marker_index = patch_point_idx[ nearest_idx ];
-            
+
             /* fetch nearest with index "marker_index" */
             DataFieldAccessPoint(PField,(int)marker_index,(void**)&marker_nearest);
             DataFieldRestoreAccess(PField);
-            
+
             /* set phase to match the nearest */
             //marker_p->phase = marker_nearest->phase;
-            
+
             DataBucketCopyPoint(db,(int)marker_index, db,(int)pid_unsorted);
-            
+
             /* override unique values */
             DataFieldGetAccess(PField);
             DataFieldAccessPoint(PField,(int)pid_unsorted,(void**)&marker_p);
@@ -1350,29 +1350,29 @@ PetscErrorCode apply_mppc_region_assignment(
             marker_p->xi[1]   = (double)xip_orig[1];
             marker_p->xi[2]   = (double)xip_orig[2];
             DataFieldRestoreAccess(PField);
-            
+
             points_assigned++;
-            
+
 #if (MPPC_LOG_LEVEL >= 2)
             PetscPrintf(PETSC_COMM_SELF,"[LOG]  point(%D) nearest neighbour(%D) -> phase %d\n",pid_unsorted,marker_index,marker_nearest->phase);
 #endif
-            
+
             if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) {
                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Assigned a region index which is itself un-assigned");
             }
-            
+
         }
-        
+
     } /* end loop on elements */
-    
+
     ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  points assigned   = %D\n", points_assigned);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
 #endif
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -1392,35 +1392,35 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
     PetscInt       *cell_count;
     PetscInt       patch_extend;
     PetscErrorCode ierr;
-    
+
     PetscFunctionBegin;
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
 #endif
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
     DataBucketGetSizes(db,&npoints32,NULL,NULL);
-    
+
     /* compute number of cells with unassigned region index */
     ierr = PetscMalloc(sizeof(PetscInt)*nel,&cell_count);CHKERRQ(ierr);
     ierr = PetscMemzero(cell_count,sizeof(PetscInt)*nel);CHKERRQ(ierr);
-    
+
     /* count number of points in each cell with phase = MATERIAL_POINT_PHASE_UNASSIGNED */
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
     DataFieldGetAccess(PField);
     DataFieldVerifyAccess( PField,sizeof(MPntStd));
-    
+
     for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
-        
+
         DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) {
             cell_count[ marker_p->wil ]++;
         }
     }
-    
+
     DataFieldRestoreAccess(PField);
-    
+
     /* scan number of elements need to be re-assigned */
     points_needing_reassignment64 = 0;
     cells_needing_reassignment64 = 0;
@@ -1430,7 +1430,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
             cells_needing_reassignment64++;
         }
     }
-    
+
     /* check if we can exit early */
     ierr = MPI_Allreduce( &cells_needing_reassignment64, &cells_needing_reassignment_g64, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
     if (cells_needing_reassignment_g64 == 0) {
@@ -1443,36 +1443,36 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 #if (MPPC_LOG_LEVEL >= 1)
     {
         long int points_needing_reassignment_g64;
-        
+
         ierr = MPI_Allreduce( &points_needing_reassignment64, &points_needing_reassignment_g64, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
         PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D cells <global> !!\n",cells_needing_reassignment_g64);
         PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D points <global> !!\n",points_needing_reassignment_g64);
     }
 #endif
-    
+
     /* create sorted list */
     ierr = PetscMalloc(sizeof(PetscInt)*(nel+1),&pcell_list);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PSortCtx)*(npoints32),&plist);CHKERRQ(ierr);
-    
+
     DataBucketGetDataFieldByName(db, MPntStd_classname,&PField);
     DataFieldGetAccess(PField);
     for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
-        
+
         DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         plist[p32].point_index = (PetscInt)p32;
         plist[p32].cell_index  = (PetscInt)marker_p->wil;
     }
     DataFieldRestoreAccess(PField);
-    
+
     sort_PSortCx(npoints32,plist);
-    
+
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
     for (p32=0; p32<npoints32; p32++) {
         pcell_list[ plist[p32].cell_index ]++;
     }
-    
+
     /* create offset list */
     count = 0;
     for (c=0; c<nel; c++) {
@@ -1481,9 +1481,9 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
         count = count + tmp;
     }
     pcell_list[c] = count;
-    
+
     patch_extend = 1;
-    
+
     PetscTime(&t0);
     npoints = (PetscInt)npoints32;
     ierr = apply_mppc_region_assignment(
@@ -1494,11 +1494,11 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
 #endif
-    
+
     ierr = PetscFree(cell_count);CHKERRQ(ierr);
     ierr = PetscFree(plist);CHKERRQ(ierr);
     ierr = PetscFree(pcell_list);CHKERRQ(ierr);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -1517,108 +1517,108 @@ PetscErrorCode apply_mppc_region_assignment_v2(
     PetscLogDouble  t0_nn,t1_nn,time_nn = 0.0;
     PetscInt        points_assigned = 0;
     PetscErrorCode  ierr;
-    
+
     PetscFunctionBegin;
-    
-    
+
+
     /* get mx,my from the da */
     ierr = DMDAGetLocalSizeElementQ2(da,&mx,&my,&mz);CHKERRQ(ierr);
-    
+
     /* find max np_per_cell I will need */
     np_per_cell_max = 0;
     for (c=0; c<nel; c++) {
-        
+
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         if (cell_count[c] == 0) { continue; }
-        
+
         cell_index_k = c / (mx*my);
         cidx2d = c - cell_index_k*(mx*my);
         cell_index_j = cidx2d / mx;
         cell_index_i = cidx2d - cell_index_j * mx;
-        
+
         points_per_patch = 0;
         for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
             for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
                 for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
-                    
+
                     if (i >= mx) { continue; }
                     if (j >= my) { continue; }
                     if (k >= mz) { continue; }
                     if (i < 0) { continue; }
                     if (j < 0) { continue; }
                     if (k < 0) { continue; }
-                    
+
                     patch_cell_id = i + j * mx + k * mx*my;
-                    
+
                     points_per_patch = points_per_patch + (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
                 }
             }
         }
-        
+
         if (points_per_patch > np_per_cell_max) {
             np_per_cell_max = points_per_patch;
         }
     }
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  np_per_patch_max = %D \n", np_per_cell_max );
-#endif	
-    
+#endif
+
     ierr = PetscMalloc(sizeof(double)*3*np_per_cell_max,&patch_point_coords);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
-    
+
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
-    
+
     for (c=0; c<nel; c++) {
-        
+
         /* if cell doesn't contain any points which need re-assignment - skip */
         if (cell_count[c] == 0) { continue; }
-        
+
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         cell_index_k = c / (mx*my);
         cidx2d = c - cell_index_k*(mx*my);
         cell_index_j = cidx2d / mx;
         cell_index_i = cidx2d - cell_index_j * mx;
-        
+
         /* load points from the patch into a list - only load points with an assigned phase index */
         ierr = PetscMemzero( patch_point_coords, sizeof(double)*3*np_per_cell_max );CHKERRQ(ierr);
         ierr = PetscMemzero( patch_point_idx, sizeof(PetscInt)*np_per_cell_max );CHKERRQ(ierr);
-        
+
         point_count = 0;
-        
+
         DataFieldGetAccess(PField);
         for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
             for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
                 for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
                     PetscInt patch_cell_id;
-                    
+
                     if (i >= mx) { continue; }
                     if (j >= my) { continue; }
                     if (k >= mz) { continue; }
                     if (i < 0) { continue; }
                     if (j < 0) { continue; }
                     if (k < 0) { continue; }
-                    
+
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
 #if (MPPC_LOG_LEVEL >= 2)
                     PetscPrintf(PETSC_COMM_SELF,"[LOG]     patch(%D)-(%D,%D,%D) cell(%D)-(%D,%D,%D)  : ppcell = %D \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
-#endif					
+#endif
                     for (p=0; p<points_per_patch; p++) {
                         MPntStd *marker_p;
                         PetscInt pid, pid_unsorted;
-                        
+
                         pid = pcell_list[patch_cell_id] + p;
                         pid_unsorted = plist[pid].point_index;
-                        
+
                         DataFieldAccessPoint(PField, (int)pid_unsorted ,(void**)&marker_p);
-                        
+
                         /* skip markers from patch which need to be assigned */
                         if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) { continue; }
-                        
+
                         patch_point_coords[3*point_count+0] = marker_p->coor[0];
                         patch_point_coords[3*point_count+1] = marker_p->coor[1];
                         patch_point_coords[3*point_count+2] = marker_p->coor[2];
@@ -1628,7 +1628,7 @@ PetscErrorCode apply_mppc_region_assignment_v2(
 #endif
                         point_count++;
                     }
-                    
+
                 }
             }
         }
@@ -1636,75 +1636,75 @@ PetscErrorCode apply_mppc_region_assignment_v2(
 #if (MPPC_LOG_LEVEL >= 2)
         PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
 #endif
-        
+
         /* traverse points in this cell with phase = MATERIAL_POINT_PHASE_UNASSIGNED and find closest point */
         points_per_cell = pcell_list[c+1] - pcell_list[c];
-        
+
         DataFieldGetAccess(PField);
-        
+
         for (p=0; p<points_per_cell; p++) {
             MPntStd  *marker_p,*marker_nearest_p;
             double   *pos_p;
             PetscInt pid,pid_unsorted,nearest_idx,marker_index;
-            
+
             pid = pcell_list[c] + p;
             pid_unsorted = plist[pid].point_index;
-            
+
             DataFieldAccessPoint(PField,(int)pid_unsorted,(void**)&marker_p);
-            
+
             /* if marker is assigned - skip */
-            if (marker_p->phase != MATERIAL_POINT_PHASE_UNASSIGNED) { 
-                continue; 
+            if (marker_p->phase != MATERIAL_POINT_PHASE_UNASSIGNED) {
+                continue;
             }
-            
-            
+
+
 #if (MPPC_LOG_LEVEL >= 2)
             PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell(%D) point(%D) is un-assigned\n",c,pid_unsorted);
 #endif
-            
+
             pos_p = marker_p->coor;
-            
+
             /* locate nearest point */
             PetscTime(&t0_nn);
             ierr = _find_min(pos_p, point_count,patch_point_coords, &nearest_idx);CHKERRQ(ierr);
             PetscTime(&t1_nn);
             time_nn += (t1_nn - t0_nn);
-            
+
             /* marker index of nearest point */
             marker_index = patch_point_idx[ nearest_idx ];
-            
+
             /* fetch nearest with index "marker_index" */
             DataFieldAccessPoint(PField,(int)marker_index,(void**)&marker_nearest_p);
-            
+
             /* set phase to match the nearest */
             marker_p->phase = marker_nearest_p->phase;
-            
+
             //MPntStdSetField_phase_index(marker_p,marker_nearest->phase);
-            
+
             points_assigned++;
-            
+
 #if (MPPC_LOG_LEVEL >= 2)
             PetscPrintf(PETSC_COMM_SELF,"[LOG]  point(%D) nearest neighbour(%D) -> phase %d\n",pid_unsorted,marker_index,marker_nearest_p->phase);
 #endif
-            
-            if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) { 
+
+            if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) {
                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Assigned a region index which is itself un-assigned");
             }
-            
+
         }
-        
+
     } /* end loop on elements */
-    
+
     DataFieldRestoreAccess(PField);
-    
+
     ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  points assigned   = %D\n", points_assigned);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
 #endif
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -1723,35 +1723,35 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
     PetscInt       *cell_count;
     PetscInt       patch_extend;
     PetscErrorCode ierr;
-    
+
     PetscFunctionBegin;
-    
+
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
-#endif	
+#endif
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
     DataBucketGetSizes(db,&npoints32,NULL,NULL);
-    
+
     /* compute number of cells with unassigned region index */
     ierr = PetscMalloc(sizeof(PetscInt)*nel,&cell_count);CHKERRQ(ierr);
     ierr = PetscMemzero(cell_count,sizeof(PetscInt)*nel);CHKERRQ(ierr);
-    
+
     /* count number of points in each cell with phase = MATERIAL_POINT_PHASE_UNASSIGNED */
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
     DataFieldGetAccess(PField);
     DataFieldVerifyAccess( PField,sizeof(MPntStd));
-    
+
     for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
-        
+
         DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) {
             cell_count[ marker_p->wil ]++;
         }
     }
-    
+
     DataFieldRestoreAccess(PField);
-    
+
     /* scan number of elements need to be re-assigned */
     points_needing_reassignment64 = 0;
     cells_needing_reassignment64 = 0;
@@ -1761,7 +1761,7 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
             cells_needing_reassignment64++;
         }
     }
-    
+
     /* check if we can exit early */
     ierr = MPI_Allreduce( &cells_needing_reassignment64, &cells_needing_reassignment_g64, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
     if (cells_needing_reassignment_g64 == 0) {
@@ -1774,36 +1774,36 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 #if (MPPC_LOG_LEVEL >= 1)
     {
         long int points_needing_reassignment_g64;
-        
+
         ierr = MPI_Allreduce( &points_needing_reassignment64, &points_needing_reassignment_g64, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
         PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D cells <global> !!\n",cells_needing_reassignment_g64);
         PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D points <global> !!\n",points_needing_reassignment_g64);
     }
 #endif
-    
+
     /* create sorted list */
     ierr = PetscMalloc(sizeof(PetscInt)*(nel+1),&pcell_list);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PSortCtx)*(npoints32),&plist);CHKERRQ(ierr);
-    
+
     DataBucketGetDataFieldByName(db, MPntStd_classname,&PField);
     DataFieldGetAccess(PField);
     for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
-        
+
         DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         plist[p32].point_index = (PetscInt)p32;
         plist[p32].cell_index  = (PetscInt)marker_p->wil;
     }
     DataFieldRestoreAccess(PField);
-    
+
     sort_PSortCx(npoints32,plist);
-    
+
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
     for (p32=0; p32<npoints32; p32++) {
         pcell_list[ plist[p32].cell_index ]++;
     }
-    
+
     /* create offset list */
     count = 0;
     for (c=0; c<nel; c++) {
@@ -1812,9 +1812,9 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
         count = count + tmp;
     }
     pcell_list[c] = count;
-    
+
     patch_extend = 1;
-    
+
     PetscTime(&t0);
     npoints = (PetscInt)npoints32;
     ierr = apply_mppc_region_assignment_v2(
@@ -1825,11 +1825,11 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
 #endif
-    
+
     ierr = PetscFree(cell_count);CHKERRQ(ierr);
     ierr = PetscFree(plist);CHKERRQ(ierr);
     ierr = PetscFree(pcell_list);CHKERRQ(ierr);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -1844,37 +1844,37 @@ PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_
     PetscInt        nel,nen;
     DataField       PField;
     PetscErrorCode  ierr;
-    
+
     PetscFunctionBegin;
-    
+
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-    
+
     ierr = PetscMalloc(sizeof(PetscInt)*(nel+1),&pcell_list);CHKERRQ(ierr);
-    
+
     DataBucketGetSizes(db,&npoints32,NULL,NULL);
     npoints = (PetscInt)npoints32;
     ierr = PetscMalloc(sizeof(PSortCtx)*(npoints),&plist);CHKERRQ(ierr);
-    
+
     DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
     DataFieldGetAccess(PField);
     DataFieldVerifyAccess( PField,sizeof(MPntStd));
     for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
-        
+
         DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         plist[p32].point_index = (PetscInt)p32;
         plist[p32].cell_index  = (PetscInt)marker_p->wil;
     }
     DataFieldRestoreAccess(PField);
-    
+
     sort_PSortCx(npoints32,plist);
-    
+
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
     for (p32=0; p32<npoints32; p32++) {
         pcell_list[ plist[p32].cell_index ]++;
     }
-    
+
     /* create offset list */
     count = 0;
     for (c=0; c<nel; c++) {
@@ -1883,12 +1883,12 @@ PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_
         count = count + tmp;
     }
     pcell_list[c] = count;
-    
+
     *_np = npoints;
     *_nc = nel;
     *_plist      = plist;
     *_pcell_list = pcell_list;
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -1897,9 +1897,9 @@ PetscErrorCode MPPCDestroySortedCtx(DataBucket db,DM da,PSortCtx **_plist,PetscI
     PetscInt        *pcell_list;
     PSortCtx        *plist;
     PetscErrorCode  ierr;
-    
+
     PetscFunctionBegin;
-    
+
     if (_plist)      {
         plist      = *_plist;
         ierr = PetscFree(plist);CHKERRQ(ierr);
@@ -1910,17 +1910,17 @@ PetscErrorCode MPPCDestroySortedCtx(DataBucket db,DM da,PSortCtx **_plist,PetscI
         ierr = PetscFree(pcell_list);CHKERRQ(ierr);
         *_pcell_list = NULL;
     }
-    
+
     PetscFunctionReturn(0);
 }
 
 PetscErrorCode MPPCSortedCtxGetNumberOfPointsPerCell(DataBucket db,PetscInt cell_idx,PetscInt pcell_list[],PetscInt *np)
 {
     PetscInt       points_per_cell;
-    
+
     points_per_cell = pcell_list[cell_idx+1] - pcell_list[cell_idx];
     *np = points_per_cell;
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -1930,20 +1930,20 @@ PetscErrorCode MPPCSortedCtxGetPointByCell(DataBucket db,PetscInt cell_idx,Petsc
     DataField      PField;
     MPntStd        *mp_std,*marker_p;
     PetscInt       pid,pid_unsorted;
-    
+
     points_per_cell = pcell_list[cell_idx+1] - pcell_list[cell_idx];
     if (pidx >= points_per_cell) {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requesting a marker index which is larger than the number of points per cell");
     }
-    
+
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
     mp_std = PField->data;
-    
+
     pid = pcell_list[cell_idx] + pidx;
     pid_unsorted = plist[pid].point_index;
-    
+
     marker_p = &mp_std[pid_unsorted];
     *point = marker_p;
-    
+
     PetscFunctionReturn(0);
 }

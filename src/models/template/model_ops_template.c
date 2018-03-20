@@ -42,14 +42,14 @@ PetscErrorCode ModelInitialize_Template(pTatinCtx c,void *ctx)
   ModelTemplateCtx *data;
   PetscBool        flg;
   PetscErrorCode   ierr;
-  
+
   PetscFunctionBegin;
 
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
   data = (ModelTemplateCtx*)ctx;
   ierr = PetscOptionsGetReal(NULL,NULL,"-model_template_param1",&data->param1,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-model_template_param2",&data->param2,&flg);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -59,39 +59,39 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Template(pTatinCtx c,void *ctx)
   PhysCompStokes   stokes;
   DM               stokes_pack,dav,dap;
   PetscErrorCode   ierr;
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-  
-  
+
+
   /* data = (ModelTemplateCtx*)ctx; */
   ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
   stokes_pack = stokes->stokes_pack;
   ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,1.0,0.0,0.1);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyInitialMaterialGeometry_Template(pTatinCtx c,void *ctx)
 {
   /* ModelTemplateCtx *data; */
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
   /* data = (ModelTemplateCtx*)ctx; */
-  
+
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyInitialSolution_Template(pTatinCtx c,Vec X,void *ctx)
 {
   /* ModelTemplateCtx *data; */
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
   /* data = (ModelTemplateCtx*)ctx; */
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -115,16 +115,16 @@ PetscErrorCode ModelApplyBoundaryCondition_Template(pTatinCtx c,void *ctx)
 
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
   PetscPrintf(PETSC_COMM_WORLD,"param1 = %lf \n", data->param1 );
-    
+
   /* Define velocity boundary conditions */
   ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
   stokes_pack = stokes->stokes_pack;
   ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-  
+
   ierr = Template_VelocityBC(stokes->u_bclist,dav,c,data);CHKERRQ(ierr);
 
   /* Define boundary conditions for any other physics */
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -133,45 +133,45 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Template(PetscInt nl,BCList bclist[
   ModelTemplateCtx *data;
   PetscInt         n;
   PetscErrorCode   ierr;
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-  
+
   data = (ModelTemplateCtx*)ctx;
   /* Define velocity boundary conditions on each level within the MG hierarchy */
   for (n=0; n<nl; n++) {
     ierr = Template_VelocityBC(bclist[n],dav[n],c,data);CHKERRQ(ierr);
-  }  
-  
+  }
+
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Template(pTatinCtx c,void *ctx)
 {
   /* ModelTemplateCtx *data; */
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
   /* data = (ModelTemplateCtx*)ctx; */
-  
+
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,Vec X,void *ctx)
 {
   /* ModelTemplateCtx *data; */
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
   /* data = (ModelTemplateCtx*)ctx; */
-  
+
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
   /* ModelTemplateCtx *data; */
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
   /* data = (ModelTemplateCtx*)ctx; */
@@ -190,13 +190,13 @@ PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *
   ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
   */
 
-  
+
   /* ---- Material Point Output ---- */
   /* [1] Basic viewer: Only reports coords, regionid and other internal data */
   /*
   ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
   */
-  
+
   /* [2] Customized viewer: User defines specific fields they want to view - NOTE not .pvd file will be created */
   /*
   {
@@ -204,7 +204,7 @@ PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *
   const int                 nf = 4;
   const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
   char                      mp_file_prefix[256];
-    
+
   ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
   sprintf(mp_file_prefix,"%s_mpoints",prefix);
   ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
@@ -214,12 +214,12 @@ PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *
   /*
   {
   const int                    nf = 3;
-  const MaterialPointVariable  mp_prop_list[] = { MPV_viscosity, MPV_density, MPV_plastic_strain }; 
-    
+  const MaterialPointVariable  mp_prop_list[] = { MPV_viscosity, MPV_density, MPV_plastic_strain };
+
   ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
-  }  
+  }
   */
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -227,16 +227,16 @@ PetscErrorCode ModelDestroy_Template(pTatinCtx c,void *ctx)
 {
   ModelTemplateCtx *data;
   PetscErrorCode   ierr;
-  
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
   data = (ModelTemplateCtx*)ctx;
-  
+
   /* Free contents of structure */
-  
+
   /* Free structure */
   ierr = PetscFree(data);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -245,17 +245,17 @@ PetscErrorCode pTatinModelRegister_Template(void)
   ModelTemplateCtx *data;
   pTatinModel      m;
   PetscErrorCode   ierr;
-  
+
   PetscFunctionBegin;
-  
+
   /* Allocate memory for the data structure for this model */
   ierr = PetscMalloc(sizeof(ModelTemplateCtx),&data);CHKERRQ(ierr);
   ierr = PetscMemzero(data,sizeof(ModelTemplateCtx));CHKERRQ(ierr);
-  
+
   /* set initial values for model parameters */
   data->param1 = 0.0;
   data->param2 = 0;
-  
+
   /* register user model */
   ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
 
@@ -264,7 +264,7 @@ PetscErrorCode pTatinModelRegister_Template(void)
 
   /* Set model data */
   ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
-  
+
   /* Set function pointers */
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Template);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Template);CHKERRQ(ierr);
@@ -276,9 +276,9 @@ PetscErrorCode pTatinModelRegister_Template(void)
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Template);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_Template);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_Template);CHKERRQ(ierr);
-  
+
   /* Insert model into list */
   ierr = pTatinModelRegister(m);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }

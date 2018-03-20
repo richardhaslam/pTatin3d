@@ -1,6 +1,6 @@
 ## ===================================================
 #
-#    Affine transformations for 
+#    Affine transformations for
 #    2d (quads) and 3d (hex) elements
 #
 ## ===================================================

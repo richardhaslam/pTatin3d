@@ -39,11 +39,11 @@ PetscLogStage _PCDMDARepart_PCApplyStage = -1;
 PetscLogStage _PCDMDARepart_PCSetUpMatrixStage = -1;
 
 /*
- 
+
  Vec x;    = [ a b c ] [ d e f ] [ g h ]          <input>
  Vec xred; = [ a b c d e ][ 0 ][ f g h ][ 0 ]     <after scatter>
  Vec xsub; = [ a b c d e ] [ f g h ]              <defined on subcomm>
- 
+
 */
 
 typedef struct {
@@ -70,7 +70,7 @@ PetscErrorCode _DMDARepartitionDetermineRankFromGlobalIJK(PetscInt i,PetscInt j,
                                                          PetscMPIInt *_pi,PetscMPIInt *_pj,PetscMPIInt *_pk,PetscMPIInt *rank_re)
 {
     PetscInt pi,pj,pk,n;
-    
+
     pi = pj = pk = -1;
     for (n=0; n<Mp; n++) {
         if ( (i >= start_i[n]) && (i < start_i[n]+span_i[n]) ) {
@@ -93,12 +93,12 @@ PetscErrorCode _DMDARepartitionDetermineRankFromGlobalIJK(PetscInt i,PetscInt j,
     if (pi == -1) { SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart][pi] cannot be determined : range %D, val %D",Mp,i); }
     if (pj == -1) { SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart][pj] cannot be determined : range %D, val %D",Np,j); }
     if (pk == -1) { SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart][pk] cannot be determined : range %D, val %D",Pp,k); }
-    
+
     *_pi = pi;
     *_pj = pj;
     *_pk = pk;
     *rank_re = pi + pj * Mp + pk * (Mp*Np);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -106,19 +106,19 @@ PetscErrorCode _DMDARepartitionDetermineGlobalS0(PetscMPIInt rank_re,PetscInt Mp
                                                 PetscInt range_i_re[],PetscInt range_j_re[],PetscInt range_k_re[],PetscInt *s0)
 {
     PetscInt i,j,k,start_IJK;
-    
+
     start_IJK = 0;
     for (k=0; k<Pp_re; k++) {
         for (j=0; j<Np_re; j++) {
             for (i=0; i<Mp_re; i++) {
                 PetscInt rank_ijk;
-                
+
                 rank_ijk = i + j*Mp_re + k*Mp_re*Np_re;
-                
+
                 if (rank_ijk < rank_re) {
                     start_IJK += range_i_re[i]*range_j_re[j]*range_k_re[k];
                 }
-                
+
             }
         }
     }
@@ -141,11 +141,11 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
     IS             isin;
     VecScatter     scatter;
     Mat            B;
-    
+
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
     ierr = MatCreateVecs(B,&x,NULL);CHKERRQ(ierr);
-    
+
     xsub = NULL;
     ierr = PetscMPISubCommGetActive(red->subcomm,&active);CHKERRQ(ierr);
     if (active) {
@@ -153,7 +153,7 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
     }
 //    ierr = _VecCreateFromSubcomm(xsub,comm,&xred);CHKERRQ(ierr);
 //    VecView(xred,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-    
+
     m = -1;
     if (xsub) {
         ierr = VecGetLocalSize(xsub,&m);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
     if (active) {
         ierr = VecDestroy(&xsub);CHKERRQ(ierr);
     }
-    
+
     ierr = ISGetLocalSize(isin,&n);CHKERRQ(ierr);
     ierr = ISGetSize(isin,&N);CHKERRQ(ierr);
     ierr = VecCreate(PetscObjectComm((PetscObject)isin),&xred);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
 
     /* VecView(xred,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr); */
     ierr = VecScatterCreate(x,isin,xred,NULL,&scatter);CHKERRQ(ierr);
-    
+
     xsub = NULL;
     if (active) {
         ierr = VecCreateMPIWithArray(red->subcomm->sub_comm,1,m,PETSC_DECIDE,NULL,&xsub);CHKERRQ(ierr);
@@ -199,29 +199,29 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
     VecAssemblyBegin(x);
     VecAssemblyEnd(x);
     VecView(x,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-    
+
     ierr = VecScatterBegin(scatter,x,xred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scatter,x,xred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    
+
     if (active) {
         PetscScalar *array;
 
         ierr = VecCreateMPIWithArray(red->subcomm->sub_comm,1,m,PETSC_DECIDE,NULL,&xsub);CHKERRQ(ierr);
-        
+
         // define xred //
         ierr = VecGetArray(xred,&array);CHKERRQ(ierr);
         // we created xred with empty local arrays, now we fill it in //
         ierr = VecPlaceArray(xsub,(const PetscScalar*)array);CHKERRQ(ierr);
 
         VecView(xsub,PETSC_VIEWER_STDOUT_(red->subcomm->sub_comm));
-        
+
         ierr = VecResetArray(xsub);CHKERRQ(ierr);
         ierr = VecRestoreArray(xred,&array);CHKERRQ(ierr);
     }
     */
-    
+
     ierr = VecDestroy(&x);CHKERRQ(ierr);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -236,12 +236,12 @@ PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
     PetscInt       sr,er,Mr;
     PetscMPIInt    rank;
     Vec            V;
-    
+
     ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     PetscInfo(pc,"Setting up the permutation matrix\n");
-    
+
     ierr = DMDADuplicateLayout(dm,1,0,DMDA_STENCIL_BOX,&dmsc);CHKERRQ(ierr); /* stencil type (box/star) ignored as stencil width = 0 */
 
     ierr = DMCreateGlobalVector(dmsc,&V);CHKERRQ(ierr);
@@ -254,15 +254,15 @@ PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
     ierr = MatSetType(Pscalar,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(Pscalar,2,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(Pscalar,2,NULL,2,NULL);CHKERRQ(ierr);
-    
+
     ierr = DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],&lenI[2]);CHKERRQ(ierr);
     ierr = DMDAGetCorners(dm,&startI[0],&startI[1],&startI[2],&endI[0],&endI[1],&endI[2]);CHKERRQ(ierr);
     endI[0] += startI[0];
     endI[1] += startI[1];
     endI[2] += startI[2];
-    
+
     ierr = DMDAGetInfo(dm,NULL, &nx,&ny,&nz, NULL,NULL,NULL, &ndof,NULL,NULL,NULL,NULL, NULL);CHKERRQ(ierr);
-    
+
     for (k=startI[2]; k<endI[2]; k++) {
         for (j=startI[1]; j<endI[1]; j++) {
             for (i=startI[0]; i<endI[0]; i++) {
@@ -271,33 +271,33 @@ PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
                 PetscInt    ii,jj,kk,local_ijk_re,mapped_ijk;
                 /* PetscInt    natural_ijk; */
                 PetscInt    lenI_re[3];
-                
+
                 location = (i - startI[0]) + (j - startI[1])*lenI[0] + (k - startI[2])*lenI[0]*lenI[1];
-                
+
                 ierr = _DMDARepartitionDetermineRankFromGlobalIJK(i,j,k,  red->Mp_re,red->Np_re,red->Pp_re,
                                                                   red->start_i_re,red->start_j_re,red->start_k_re,
                                                                   red->range_i_re,red->range_j_re,red->range_k_re,
                                                                   &rank_reI[0],&rank_reI[1],&rank_reI[2],&rank_ijk_re);
-                
+
                 ierr = _DMDARepartitionDetermineGlobalS0(rank_ijk_re, red->Mp_re,red->Np_re,red->Pp_re, red->range_i_re,red->range_j_re,red->range_k_re, &s0_re);CHKERRQ(ierr);
-                
+
                 ii = i - red->start_i_re[ rank_reI[0] ];
                 if (ii < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart] index error ii \n"); }
-                
+
                 jj = j - red->start_j_re[ rank_reI[1] ];
                 if (jj < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart] index error jj \n"); }
-                
+
                 kk = k - red->start_k_re[ rank_reI[2] ];
                 if (kk < 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"  [dmdarepart] index error kk \n"); }
-                
+
                 lenI_re[0] = red->range_i_re[ rank_reI[0] ];
                 lenI_re[1] = red->range_j_re[ rank_reI[1] ];
                 lenI_re[2] = red->range_k_re[ rank_reI[2] ];
-                
+
                 local_ijk_re = ii + jj * lenI_re[0] + kk * lenI_re[0] * lenI_re[1];
                 mapped_ijk = s0_re + local_ijk_re;
                 /* natural_ijk = i + j*nx + k*nx*ny; */
-                
+
                 ierr = MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES);CHKERRQ(ierr);
                 //PetscPrintf(PETSC_COMM_SELF,"[%d] (%D,%D,%D) --> local %D [g=%D] [natural %D] --> repart %D \n",(int)rank,i,j,k,location,sr+location,natural_ijk,mapped_ijk);
             }
@@ -305,10 +305,10 @@ PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
     }
     ierr = MatAssemblyBegin(Pscalar,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Pscalar,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    
+
     ierr = MatCreateMAIJ(Pscalar,ndof,&P);CHKERRQ(ierr);
     ierr = MatDestroy(&Pscalar);CHKERRQ(ierr);
-    
+
     red->permutation = P;
 
     ierr = DMDestroy(&dmsc);CHKERRQ(ierr);
@@ -327,7 +327,7 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
     PetscMPIInt    rank;
     IS             isrow,iscol;
     Mat            Blocal,*_Blocal,Bsub;
-    
+
     ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
     ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
@@ -336,11 +336,11 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
 
     P = red->permutation;
     ierr = MatPtAP(B,P,MAT_INITIAL_MATRIX,1.1,&Bperm);CHKERRQ(ierr);
-    
+
     /* Get submatrices */
     ierr = MatGetSize(B,NULL,&Mc);CHKERRQ(ierr);
 	ierr = ISCreateStride(comm,Mc,0,1,&iscol);CHKERRQ(ierr);
-    
+
     ierr = PetscMPISubCommGetActive(red->subcomm,&active);CHKERRQ(ierr);
 
     if (active) {
@@ -348,7 +348,7 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
         ierr = ISCreateStride(comm,(er-sr),sr,1,&isrow);CHKERRQ(ierr);
     } else {
         PetscInt start,end;
-        
+
         /* fetch some local owned data - just to deal with avoiding zero length ownership on range */
         ierr = MatGetOwnershipRange(B,&start,&end);CHKERRQ(ierr);
         ierr = ISCreateStride(comm,1,start,1,&isrow);CHKERRQ(ierr);
@@ -358,7 +358,7 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
     Blocal = *_Blocal;
     ierr = ISDestroy(&isrow);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-    
+
     m_repart = 0;
     if (active) {
         ierr = VecGetLocalSize(red->xsub,&m_repart);CHKERRQ(ierr);
@@ -387,7 +387,7 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
     } else {
         Bsub = NULL;
     }
-    
+
     /* insert entries */
     if (active) {
         PetscInt          start,end;
@@ -407,7 +407,7 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
             PetscMalloc(sizeof(PetscInt)*(end-start),&onnz);
             PetscMemzero(nnz,sizeof(PetscInt)*(end-start));
             PetscMemzero(onnz,sizeof(PetscInt)*(end-start));
-            
+
             for (i=0; i<(end-start); i++) {
                 ierr = MatGetRow(Blocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
                 for (j=0; j<ncols; j++) {
@@ -439,10 +439,10 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
         ierr = MatAssemblyBegin(Bsub,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(Bsub,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
-    
+
     ierr = MatDestroy(&Bperm);CHKERRQ(ierr);
     ierr = MatDestroyMatrices(1,&_Blocal);CHKERRQ(ierr);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -468,13 +468,13 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         DMBoundaryType  bx,by,bz;
         DMDAInterpolationType itype;
         PetscInt              refine_x,refine_y,refine_z;
-        
+
         ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
         ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
         if (!dm) SETERRQ(comm,PETSC_ERR_SUP,"You must attach a DM to the PC via KSPSetDM, or PCSetDM");
         ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isdmda);CHKERRQ(ierr);
         if (!isdmda) SETERRQ(comm,PETSC_ERR_SUP,"DM attached to the PC must be of type DMDA");
-        
+
         /* set up sub communicator */
         ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
         ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -482,103 +482,103 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         ierr = PetscMPISubCommCreate(comm,red->nsubcomm_factor,&subcomm);CHKERRQ(ierr);
         ierr = MPI_Comm_size(comm,&comm_size);CHKERRQ(ierr);
         ierr = MPI_Comm_size(subcomm->sub_comm,&nsubcomm_size);CHKERRQ(ierr);
-        
+
         PetscInfo2(pc,"Creating PetscMPISubComm. Restricting from %d to %d ranks\n",(int)comm_size,(int)nsubcomm_size);
         red->nsubcomm_size = nsubcomm_size;
         red->subcomm       = subcomm;
-        
+
         /* setup krylov solver */
         red->ksp = NULL;
         if (red->subcomm->parent_rank_active_in_subcomm) {
             const char *prefix;
             PetscInt   tablevel;
-            
+
             ierr = PetscObjectGetTabLevel((PetscObject)pc,&tablevel);CHKERRQ(ierr);
             tablevel += 4;
-            
+
             ierr = KSPCreate(red->subcomm->sub_comm,&red->ksp);CHKERRQ(ierr);
             ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,tablevel);CHKERRQ(ierr);
             ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
-            
+
             ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
             ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr);
             ierr = KSPAppendOptionsPrefix(red->ksp,"dmdarepart_");CHKERRQ(ierr);
-            
+
             ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
         }
-        
+
         /* setup repartitioned dm */
         ierr = DMDAGetInfo(dm,&dim,&nx,&ny,&nz,0,0,0, &ndof,&nsw,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
         if (dim != 3) SETERRQ(comm,PETSC_ERR_SUP,"DM attached to the PC must be a DMDA defined in three dimensions");
         ierr = DMDAGetInterpolationType(dm,&itype);CHKERRQ(ierr);
         ierr = DMDAGetRefinementFactor(dm,&refine_x,&refine_y,&refine_z);CHKERRQ(ierr);
-        
+
         red->dmrepart = NULL;
         _range_i_re = _range_j_re = _range_k_re = NULL;
         if (red->subcomm->parent_rank_active_in_subcomm) {
-            
+
             //ierr = DMDACreate3d(subcomm->sub_comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,NULL,&red->dmrepart);CHKERRQ(ierr);
           // ierr = DMSetUp(red->dmrepart);CHKERRQ(ierr);
             /* Note - I just use stencil_width = 1 here - this allows me to tunnel down deep with gmg without getting errors about stencil width > overlap */
             ierr = DMDACreate3d(subcomm->sub_comm,bx,by,bz,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,1, NULL,NULL,NULL,&red->dmrepart);CHKERRQ(ierr);
             ierr = DMSetUp(red->dmrepart);CHKERRQ(ierr);
             ierr = DMSetOptionsPrefix(red->dmrepart,"repart_");CHKERRQ(ierr);
-            
+
             ierr = DMDASetRefinementFactor(red->dmrepart,refine_x,refine_y,refine_z);CHKERRQ(ierr);
             ierr = DMDASetInterpolationType(red->dmrepart,itype);CHKERRQ(ierr);
-            
+
             //ierr = DMView(red->dmrepart, PETSC_VIEWER_STDOUT_(subcomm->sub_comm));CHKERRQ(ierr);
-            
+
             ierr = DMDAGetInfo(red->dmrepart,0,0,0,0,&red->Mp_re,&red->Np_re,&red->Pp_re, 0,0,0,0,0,0);CHKERRQ(ierr);
             ierr = DMDAGetOwnershipRanges(red->dmrepart,&_range_i_re,&_range_j_re,&_range_k_re);CHKERRQ(ierr);
         }
-        
+
         /* generate ranges for repartitioned dm */
         /* note - assume rank 0 always participates */
         ierr = MPI_Bcast(&red->Mp_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Bcast(&red->Np_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Bcast(&red->Pp_re,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-        
+
         PetscMalloc(sizeof(PetscInt)*red->Mp_re,&red->range_i_re);
         PetscMalloc(sizeof(PetscInt)*red->Np_re,&red->range_j_re);
         PetscMalloc(sizeof(PetscInt)*red->Pp_re,&red->range_k_re);
-        
+
         if (_range_i_re != NULL) { PetscMemcpy(red->range_i_re,_range_i_re,sizeof(PetscInt)*red->Mp_re); }
         if (_range_j_re != NULL) { PetscMemcpy(red->range_j_re,_range_j_re,sizeof(PetscInt)*red->Np_re); }
         if (_range_k_re != NULL) { PetscMemcpy(red->range_k_re,_range_k_re,sizeof(PetscInt)*red->Pp_re); }
-        
+
         ierr = MPI_Bcast(red->range_i_re,red->Mp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Bcast(red->range_j_re,red->Np_re,MPIU_INT,0,comm);CHKERRQ(ierr);
         ierr = MPI_Bcast(red->range_k_re,red->Pp_re,MPIU_INT,0,comm);CHKERRQ(ierr);
-        
+
         PetscMalloc(sizeof(PetscInt)*red->Mp_re,&red->start_i_re);
         PetscMalloc(sizeof(PetscInt)*red->Np_re,&red->start_j_re);
         PetscMalloc(sizeof(PetscInt)*red->Pp_re,&red->start_k_re);
-        
+
         sum = 0;
         for (k=0; k<red->Mp_re; k++) {
             red->start_i_re[k] = sum;
             sum += red->range_i_re[k];
         }
-        
+
         sum = 0;
         for (k=0; k<red->Np_re; k++) {
             red->start_j_re[k] = sum;
             sum += red->range_j_re[k];
         }
-        
+
         sum = 0;
         for (k=0; k<red->Pp_re; k++) {
             red->start_k_re[k] = sum;
             sum += red->range_k_re[k];
         }
-        
+
         /* view result */
         /*
         if (red->subcomm->parent_rank_active_in_subcomm) {
             PetscMPIInt rank_re;
             PetscInt    start_IJK;
-         
+
             start_IJK = -1;
             ierr = MPI_Comm_rank(subcomm->sub_comm,&rank_re);CHKERRQ(ierr);
             ierr = _DMDARepartitionDetermineGlobalS0(rank_re,red->Mp_re,red->Np_re,red->Pp_re,red->range_i_re,red->range_j_re,red->range_k_re,&start_IJK);CHKERRQ(ierr);
@@ -593,14 +593,14 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
             PetscMPIInt rank_re;
             PetscInt rankIJ_re;
             PetscInt pI_re,pJ_re,pK_re;
-            
+
             pI_re = pJ_re = pK_re = -1;
             ierr = MPI_Comm_rank(subcomm->sub_comm,&rank_re);CHKERRQ(ierr);
             pK_re = rank_re/(red->Mp_re*red->Np_re);
             rankIJ_re = rank_re - pK_re * (red->Mp_re*red->Np_re);
             pJ_re = rankIJ_re/red->Mp_re;
             pI_re = rankIJ_re - pJ_re*red->Mp_re;
-            
+
             PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d] (%D %D %D)\n",(int)rank,(int)rank_re,pI_re,pJ_re,pK_re);
         }
         */
@@ -610,7 +610,7 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
             ierr = KSPSetDMActive(red->ksp,PETSC_FALSE);CHKERRQ(ierr);
         }
     }
-    
+
     /* setup scatters and permutation matrix */
     if (!pc->setupcalled) {
         ierr = _DMDARepart_SetupScatters(pc,red);CHKERRQ(ierr);
@@ -639,13 +639,13 @@ static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
     PetscBool      active;
     PetscScalar    *LA_red,*LA_sub;
     Vec            xtmp;
-    
+
     PetscFunctionBegin;
     if (red->log) { ierr = PetscLogStagePush(_PCDMDARepart_PCApplyStage);CHKERRQ(ierr); }
     ierr = VecDuplicate(x,&xtmp);CHKERRQ(ierr);
     ierr = MatMultTranspose(red->permutation,x,xtmp);CHKERRQ(ierr);
     //ierr = MatMult(red->permutation,x,xtmp);CHKERRQ(ierr);
-    
+
     /* pull in vector */
     ierr = VecScatterBegin(red->scatter,xtmp,red->xred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(red->scatter,xtmp,red->xred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -653,23 +653,23 @@ static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
     ierr = PetscMPISubCommGetActive(red->subcomm,&active);CHKERRQ(ierr);
     if (active) {
         PetscScalar *array;
-        
+
         /* define xsub */
         ierr = VecGetArray(red->xred,&array);CHKERRQ(ierr);
         /* we created xsub with empty local arrays, now we fill it in */
         ierr = VecPlaceArray(red->xsub,(const PetscScalar*)array);CHKERRQ(ierr);
 
         ierr = KSPSolve(red->ksp,red->xsub,red->ysub);CHKERRQ(ierr); /* Note: We could override rhs, however VecGetArray() with objects created via VecCreateWithArray() causes segv... */
-        
+
         ierr = VecResetArray(red->xsub);CHKERRQ(ierr);
         ierr = VecRestoreArray(red->xred,&array);CHKERRQ(ierr);
     }
-    
+
     /* return vector */
     ierr = VecGetArray(red->xred,&LA_red);CHKERRQ(ierr);
     if (active) {
         PetscInt i,start,end;
-		
+
         ierr = VecGetOwnershipRange(red->ysub,&start,&end);CHKERRQ(ierr);
         ierr = VecGetArray(red->ysub,&LA_sub);CHKERRQ(ierr);
         for (i=0; i<end-start; i++) {
@@ -686,10 +686,10 @@ static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
     ierr = VecZeroEntries(xtmp);CHKERRQ(ierr);
     ierr = VecScatterBegin(red->scatter,red->xred,xtmp,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(red->scatter,red->xred,xtmp,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    
+
     ierr = MatMult(red->permutation,xtmp,y);CHKERRQ(ierr);
     //ierr = MatMultTranspose(red->permutation,xtmp,y);CHKERRQ(ierr);
-    
+
     ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
     if (red->log) { ierr = PetscLogStagePop();CHKERRQ(ierr); }
 
@@ -712,7 +712,7 @@ static PetscErrorCode PCReset_DMDARepart(PC pc)
 
     ierr = ISDestroy(&red->isin);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&red->scatter);CHKERRQ(ierr);
-    
+
     PetscFree(red->range_i_re);
     PetscFree(red->range_j_re);
     PetscFree(red->range_k_re);
@@ -729,7 +729,7 @@ static PetscErrorCode PCDestroy_DMDARepart(PC pc)
 {
     PetscErrorCode ierr;
     PC_DMDARepart  *red = (PC_DMDARepart*)pc->data;
-	
+
     PetscFunctionBegin;
     ierr = PCReset_DMDARepart(pc);CHKERRQ(ierr);
     if (red->ksp) {
@@ -758,7 +758,7 @@ static PetscErrorCode PCView_DMDARepart(PC pc,PetscViewer viewer)
     PC_DMDARepart   *red = (PC_DMDARepart*)pc->data;
     PetscBool       iascii,isstring;
     PetscViewer     subviewer;
-	
+
     PetscFunctionBegin;
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
@@ -793,10 +793,10 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
     PC_DMDARepart    *red;
     PetscMPIInt      size;
     PetscBool        log;
-    
+
     PetscFunctionBegin;
 
-    /* 
+    /*
      We cannot provide -XXX_pc_dmdarepart_log as an arg to enable logging of separate pcdmdarepart objects.
      This is a limitation enforced by petsc logging infrastructure which doesn't accept a communicator as an arguement.
      As a result all logging objects must be valid on PETSC_COMM_WORLD.
@@ -807,10 +807,10 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
         if (_PCDMDARepart_PCSetUpMatrixStage == -1) { ierr = PetscLogStageRegister("PCRprt_SetUpMat",&_PCDMDARepart_PCSetUpMatrixStage);CHKERRQ(ierr); }
         if (_PCDMDARepart_PCApplyStage == -1) { ierr = PetscLogStageRegister("PCRprt_Apply",&_PCDMDARepart_PCApplyStage);CHKERRQ(ierr); }
     }
-    
+
     ierr = PetscNewLog(pc,&red);CHKERRQ(ierr);
     pc->data            = (void*)red;
-	
+
     red->nsubcomm_factor = 2;
     ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
     red->nsubcomm_size   = size;
@@ -828,7 +828,7 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
     red->Bsub        = NULL;
     red->dmrepart    = NULL;
     red->ksp         = NULL;
-    
+
     pc->ops->apply           = PCApply_DMDARepart;
     pc->ops->applytranspose  = 0;
     pc->ops->setup           = PCSetUp_DMDARepart;
@@ -836,7 +836,7 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
     pc->ops->reset           = PCReset_DMDARepart;
     pc->ops->setfromoptions  = PCSetFromOptions_DMDARepart;
     pc->ops->view            = PCView_DMDARepart;
-	
+
     PetscFunctionReturn(0);
 }
 EXTERN_C_END

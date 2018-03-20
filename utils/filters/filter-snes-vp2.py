@@ -6,7 +6,7 @@ import re
 
 if len(sys.argv) == 1:
 	exit('Error: Requires filename to filter')
-	
+
 print '#=== Filtering ', sys.argv[1], '==='
 
 filename = sys.argv[1]
@@ -17,7 +17,7 @@ print 'FC_res_a=array(['
 fc_cnt = 0
 vcycle_cnt = 0
 for line in file:
-	
+
 	x = line.find('KSP Component U,V,W,P')
 	if x != -1:
 		newstr = filter(lambda c: c not in ",", line)
@@ -31,22 +31,22 @@ for line in file:
 
 		fc_cnt = fc_cnt + 1
 
-	
+
 	x = line.find('KSP Residual norm')
 	if x != -1:
 		newstr = filter(lambda c: c not in ",", line)
 		a = newstr.split()
 		#print newstr
 
-    #4 KSP Residual norm 2.637068195634e-01 
+    #4 KSP Residual norm 2.637068195634e-01
 		#print a[0], a[4]
 
 		#print '[' + str(vcycle_cnt) + ',' + a[0] + ',' + a[4] + '],'
 
 
 		vcycle_cnt = vcycle_cnt + 1
-	
-	
+
+
 file.close()
 print '])'
 
@@ -81,28 +81,28 @@ for line in file:
 			print 'FCiteration_a['+str(fc_cnt)+']=array(['
 		else:
 			print '])\nFCiteration_a['+str(fc_cnt)+']=array(['
-		
-		
+
+
 		fc_cnt = fc_cnt + 1
 
-	
+
 	x = line.find('KSP Residual norm')
 	if x != -1:
 		newstr = filter(lambda c: c not in ",", line)
 		a = newstr.split()
 		#print newstr
 
-    #4 KSP Residual norm 2.637068195634e-01 
+    #4 KSP Residual norm 2.637068195634e-01
 		#print a[0], a[4]
 
 		print '[' + str(vcycle_cnt) + ',' + a[0] + ',' + a[4] + '],'
 
 
 		vcycle_cnt = vcycle_cnt + 1
-	
 
 
-	
+
+
 file.close()
 
 

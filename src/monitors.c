@@ -41,22 +41,22 @@ PetscErrorCode pTatin_SNESMonitor_StdoutStokesResiduals3d(SNES snes,PetscInt n,P
 	PetscReal      norms[4];
 	Vec            F,Fu,Fp;
     MPI_Comm       comm;
-	
+
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
   ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,F,&Fu,&Fp);CHKERRQ(ierr);
-	
+
 	ierr = VecStrideNormLocal(Fu,0,NORM_2,&norms[0]);CHKERRQ(ierr);
 	ierr = VecStrideNormLocal(Fu,1,NORM_2,&norms[1]);CHKERRQ(ierr);
 	ierr = VecStrideNormLocal(Fu,2,NORM_2,&norms[2]);CHKERRQ(ierr);
 	ierr = VecNormLocal(Fp,NORM_2,&norms[3]);CHKERRQ(ierr);
-	
+
 	ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,F,&Fu,&Fp);CHKERRQ(ierr);
-	
+
     ierr = PetscObjectGetComm((PetscObject)F,&comm);CHKERRQ(ierr);
 	PetscPrintf(comm,"%3D SNES Component Fu,Fv,Fw,Fp function norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -103,17 +103,17 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
     char           vtkfilename[PETSC_MAX_PATH_LEN];
     PetscInt       its;
     MPI_Comm       comm;
-    
+
     PetscFunctionBegin;
     ctx = (pTatinCtx)data;
     ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
     ierr = MatCreateVecs(A,&w,&v);CHKERRQ(ierr);
-    
+
     ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    
+
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-    
+
     if (its == 0) {
         PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/stokes_ksp_r_step%.6d.pvd",ctx->outputpath,ctx->step);
         PetscPrintf(comm,"  writing pvdfilename %s \n",pvdfilename );
@@ -121,19 +121,19 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
     }
     PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"stokes_ksp_r_it%.4d_step%.6d.pvts",its,ctx->step);
     ierr = ParaviewPVDAppend(pvdfilename,its,vtkfilename,"");CHKERRQ(ierr);
-    
+
     // PVTS + VTS
     PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"stokes_ksp_r_it%.4d_step%.6d",its,ctx->step);
-    
+
     stokes_pack = ctx->stokes_ctx->stokes_pack;
     UP = X;
     ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
-    
+
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = VecDestroy(&w);CHKERRQ(ierr);
-    
+
     PetscPrintf(comm,"%3D KSP Residual: ptatin linear solution viewer wrote file \n",its);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -146,11 +146,11 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
     char           vtkfilename[PETSC_MAX_PATH_LEN];
     PetscInt       its;
     MPI_Comm       comm;
-    
+
     PetscFunctionBegin;
     ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    
+
     if (its == 0) {
         if (!prefix) {
             PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/stokes_snes_%s_step%.6d.pvd",ctx->outputpath,field,ctx->step);
@@ -166,24 +166,24 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
         PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"stokes_snes_%s%s_it%.4d_step%.6d.pvts",prefix,field,its,ctx->step);
     }
     ierr = ParaviewPVDAppend(pvdfilename,(double)its,vtkfilename,"");CHKERRQ(ierr);
-    
+
     // PVTS + VTS
     if (!prefix) {
         PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"stokes_snes_%s_it%.4d_step%.6d",field,its,ctx->step);
     } else {
         PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"stokes_snes_%s%s_it%.4d_step%.6d",prefix,field,its,ctx->step);
     }
-    
+
     stokes_pack = ctx->stokes_ctx->stokes_pack;
     ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,X,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
-    
+
     ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
     if (!prefix) {
         PetscPrintf(comm,"%3D SNES [field %s]: ptatin non-linear solution viewer wrote file \n",its,field);
     } else {
         PetscPrintf(comm,"%3D SNES(%s) [field %s]: ptatin non-linear solution viewer wrote file \n",its,field,prefix);
     }
-    
+
     PetscFunctionReturn(0);
 }
 

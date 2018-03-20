@@ -29,7 +29,7 @@ const char *EnergySourceAdiabaticAdvection_member_names[] = {
 /* ================================================================= */
 /*   Getters for EnergySourceAdiabaticAdvection */
 /* ================================================================= */
-void EnergySourceAdiabaticAdvectionGetField_VerticalThermalGradient(EnergySourceAdiabaticAdvection *point,double *data) 
+void EnergySourceAdiabaticAdvectionGetField_VerticalThermalGradient(EnergySourceAdiabaticAdvection *point,double *data)
 {
   *data = point->dTdy;
 }
@@ -38,7 +38,7 @@ void EnergySourceAdiabaticAdvectionGetField_VerticalThermalGradient(EnergySource
 /* ================================================================= */
 /*   Setters for EnergySourceAdiabaticAdvection */
 /* ================================================================= */
-void EnergySourceAdiabaticAdvectionSetField_VerticalThermalGradient(EnergySourceAdiabaticAdvection *point,double data) 
+void EnergySourceAdiabaticAdvectionSetField_VerticalThermalGradient(EnergySourceAdiabaticAdvection *point,double data)
 {
   point->dTdy = data;
 }
@@ -60,15 +60,15 @@ void EnergySourceAdiabaticAdvectionView(EnergySourceAdiabaticAdvection *point)
 /* ================================================================= */
 /*   Getters for default parameters (EnergySourceAdiabaticAdvection) */
 /* ================================================================= */
-void EnergySourceAdiabaticAdvectionGetDefault_VerticalThermalGradient(double *data) 
+void EnergySourceAdiabaticAdvectionGetDefault_VerticalThermalGradient(double *data)
 {
   *data = (double)0.0;
 }
 
-void MaterialConstantsSetDefaultAll_SourceAdiabaticAdv( 
+void MaterialConstantsSetDefaultAll_SourceAdiabaticAdv(
     int nr,EnergySourceAdiabaticAdvection _data[])
 {
-  int r; 
+  int r;
 
   for (r=0; r<nr; r++) {
     { double value;
@@ -78,7 +78,7 @@ void MaterialConstantsSetDefaultAll_SourceAdiabaticAdv(
 
   }
 
-} 
+}
 
 PetscErrorCode MaterialConstantsSetFromOptions_SourceAdiabaticAdv(const char model_name[],const int region_id,EnergySourceAdiabaticAdvection _data[],PetscBool essential)
 {
@@ -97,9 +97,9 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceAdiabaticAdv(const char mod
   }}
 
   PetscFunctionReturn(0);
-} 
+}
 
-PetscErrorCode MaterialConstantsPrintValues_SourceAdiabaticAdv(const char model_name[],const int region_id,EnergySourceAdiabaticAdvection _data[]) 
+PetscErrorCode MaterialConstantsPrintValues_SourceAdiabaticAdv(const char model_name[],const int region_id,EnergySourceAdiabaticAdvection _data[])
 {
   EnergySourceAdiabaticAdvection *data = &_data[region_id];
   char   opt_name[PETSC_MAX_PATH_LEN];
@@ -110,11 +110,11 @@ PetscErrorCode MaterialConstantsPrintValues_SourceAdiabaticAdv(const char model_
   sprintf(opt_name,"-%s_VerticalThermalGradient_%d", model_name,region_id);
   { double value;
     EnergySourceAdiabaticAdvectionGetField_VerticalThermalGradient(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    VerticalThermalGradient = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    VerticalThermalGradient = %1.4e (%s) \n", value,opt_name);
   }
 
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsSetValues_SourceAdiabaticAdv(const int region_id,EnergySourceAdiabaticAdvection _data[],
     double dTdy)
@@ -122,7 +122,7 @@ PetscErrorCode MaterialConstantsSetValues_SourceAdiabaticAdv(const int region_id
   EnergySourceAdiabaticAdvection *data = &_data[region_id];
   data->dTdy =  dTdy;
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsScaleValues_SourceAdiabaticAdv(const int region_id,EnergySourceAdiabaticAdvection _data[],
     double dTdy)
@@ -136,5 +136,5 @@ PetscErrorCode MaterialConstantsScaleValues_SourceAdiabaticAdv(const int region_
   }
 
   PetscFunctionReturn(0);
-} 
+}
 

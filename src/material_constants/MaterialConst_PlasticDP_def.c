@@ -66,32 +66,32 @@ const char *MaterialConst_PlasticDP_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_PlasticDP */
 /* ===================================== */
-void MaterialConst_PlasticDPGetField_friction(MaterialConst_PlasticDP *point,double *data) 
+void MaterialConst_PlasticDPGetField_friction(MaterialConst_PlasticDP *point,double *data)
 {
   *data = point->phi;
 }
 
-void MaterialConst_PlasticDPGetField_cohesion(MaterialConst_PlasticDP *point,double *data) 
+void MaterialConst_PlasticDPGetField_cohesion(MaterialConst_PlasticDP *point,double *data)
 {
   *data = point->Co;
 }
 
-void MaterialConst_PlasticDPGetField_friction_inf(MaterialConst_PlasticDP *point,double *data) 
+void MaterialConst_PlasticDPGetField_friction_inf(MaterialConst_PlasticDP *point,double *data)
 {
   *data = point->phi_inf;
 }
 
-void MaterialConst_PlasticDPGetField_cohesion_inf(MaterialConst_PlasticDP *point,double *data) 
+void MaterialConst_PlasticDPGetField_cohesion_inf(MaterialConst_PlasticDP *point,double *data)
 {
   *data = point->Co_inf;
 }
 
-void MaterialConst_PlasticDPGetField_tens_cutoff(MaterialConst_PlasticDP *point,double *data) 
+void MaterialConst_PlasticDPGetField_tens_cutoff(MaterialConst_PlasticDP *point,double *data)
 {
   *data = point->tens_cutoff;
 }
 
-void MaterialConst_PlasticDPGetField_hst_cutoff(MaterialConst_PlasticDP *point,double *data) 
+void MaterialConst_PlasticDPGetField_hst_cutoff(MaterialConst_PlasticDP *point,double *data)
 {
   *data = point->hst_cutoff;
 }
@@ -100,32 +100,32 @@ void MaterialConst_PlasticDPGetField_hst_cutoff(MaterialConst_PlasticDP *point,d
 /* ===================================== */
 /* Setters for MaterialConst_PlasticDP */
 /* ===================================== */
-void MaterialConst_PlasticDPSetField_friction(MaterialConst_PlasticDP *point,double data) 
+void MaterialConst_PlasticDPSetField_friction(MaterialConst_PlasticDP *point,double data)
 {
   point->phi = data;
 }
 
-void MaterialConst_PlasticDPSetField_cohesion(MaterialConst_PlasticDP *point,double data) 
+void MaterialConst_PlasticDPSetField_cohesion(MaterialConst_PlasticDP *point,double data)
 {
   point->Co = data;
 }
 
-void MaterialConst_PlasticDPSetField_friction_inf(MaterialConst_PlasticDP *point,double data) 
+void MaterialConst_PlasticDPSetField_friction_inf(MaterialConst_PlasticDP *point,double data)
 {
   point->phi_inf = data;
 }
 
-void MaterialConst_PlasticDPSetField_cohesion_inf(MaterialConst_PlasticDP *point,double data) 
+void MaterialConst_PlasticDPSetField_cohesion_inf(MaterialConst_PlasticDP *point,double data)
 {
   point->Co_inf = data;
 }
 
-void MaterialConst_PlasticDPSetField_tens_cutoff(MaterialConst_PlasticDP *point,double data) 
+void MaterialConst_PlasticDPSetField_tens_cutoff(MaterialConst_PlasticDP *point,double data)
 {
   point->tens_cutoff = data;
 }
 
-void MaterialConst_PlasticDPSetField_hst_cutoff(MaterialConst_PlasticDP *point,double data) 
+void MaterialConst_PlasticDPSetField_hst_cutoff(MaterialConst_PlasticDP *point,double data)
 {
   point->hst_cutoff = data;
 }
@@ -172,7 +172,7 @@ void MaterialConst_PlasticDPView(MaterialConst_PlasticDP *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_PlasticDP */
 /* ===================================== */
-void MaterialConst_PlasticDPVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_PlasticDP points[]) 
+void MaterialConst_PlasticDPVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_PlasticDP points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"phi\" format=\"ascii\">\n");
@@ -211,7 +211,7 @@ void MaterialConst_PlasticDPVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,cons
 /* ===================================== */
 /* PVTU viewer for MaterialConst_PlasticDP */
 /* ===================================== */
-void MaterialConst_PlasticDPPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_PlasticDPPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"phi\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"Co\" NumberOfComponents=\"1\"/>\n");
@@ -225,7 +225,7 @@ void MaterialConst_PlasticDPPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_PlasticDP */
 /* ===================================== */
-void MaterialConst_PlasticDPVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_PlasticDP points[]) 
+void MaterialConst_PlasticDPVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_PlasticDP points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"phi\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -251,7 +251,7 @@ void MaterialConst_PlasticDPVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,i
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_PlasticDP */
 /* ==================================================== */
-void MaterialConst_PlasticDPVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_PlasticDP points[]) 
+void MaterialConst_PlasticDPVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_PlasticDP points[])
 {
   int p,length;
   size_t atomic_size;

@@ -46,7 +46,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double e
 	for (ip=0; ip<4; ip++) {
 		p_gp += Np[ip]*P[ip];
 	} // ops = 4.[2]
-  
+
 	// strain-rate (e_xx,e_yy,e_zz,2.e_xy,2.e_xz,2.e_yz) at gauss point //
 	for (iu=0; iu<27; iu++) {
 		strain_rate_gp[0] += Ux[iu]*dNudx[iu];
@@ -56,7 +56,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double e
 		strain_rate_gp[4] += Ux[iu]*dNudz[iu]	+ Uz[iu]*dNudx[iu];
 		strain_rate_gp[5] += Uy[iu]*dNudz[iu] + Uz[iu]*dNudy[iu];
 	}	// ops = 27.[18]
-  
+
 	// deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //
 	te = 2.0 * eta_gp;
 	tau_gp[0] = te*strain_rate_gp[0];
@@ -66,12 +66,12 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double e
   tau_gp[4] = eta_gp*strain_rate_gp[4];
   tau_gp[5] = eta_gp*strain_rate_gp[5];
   // ops = 1 + 6 = 7
-	
+
 	// divergence at gauss point //
 	for (k=0; k<3; k++) {
 		div_gp += strain_rate_gp[k];
 	} // ops = 3
-	
+
   // y = A11.u + A12.p at gauss point //
 	for (iu=0; iu<27; iu++) {
 		int idx = 3*iu;
@@ -79,13 +79,13 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double e
 		Y[++idx] += FAC*(dNudx[iu]*tau_gp[3] + dNudy[iu]*tau_gp[1] + dNudz[iu]*tau_gp[5] - dNudy[iu]*p_gp);
 		Y[++idx] += FAC*(dNudx[iu]*tau_gp[4] + dNudy[iu]*tau_gp[5] + dNudz[iu]*tau_gp[2] - dNudz[iu]*p_gp);
 	} // ops = 27.[27]
-	
+
   // y = A21.u at gauss point //
 	tmp = -FAC * div_gp;
 	for (ip=0; ip<4; ip++) {
 		int idx = 81+ip;
 		Y[idx] += tmp*Np[ip];
-	} // ops = 2 + 4.[2] 
+	} // ops = 2 + 4.[2]
 	// total operations = 8 + 490 + 7 + 729 + 10 = 1244
 	PetscLogFlops(1244);
 }
@@ -107,8 +107,8 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double
 		strain_rate_gp[3] += Ux[iu]*dNudy[iu] + Uy[iu]*dNudx[iu];
 		strain_rate_gp[4] += Ux[iu]*dNudz[iu]	+ Uz[iu]*dNudx[iu];
 		strain_rate_gp[5] += Uy[iu]*dNudz[iu] + Uz[iu]*dNudy[iu];
-	} // ops = 27.[18]	
-  
+	} // ops = 27.[18]
+
 	// deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //
 	te = 2.0 * eta_gp;
 	tau_gp[0] = te*strain_rate_gp[0];
@@ -118,7 +118,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double
   tau_gp[4] = eta_gp*strain_rate_gp[4];
   tau_gp[5] = eta_gp*strain_rate_gp[5];
   // ops = 1 + 6 = 7
-	
+
 	// y = A11.u at gauss point //
 	for (iu=0; iu<27; iu++) {
 		int idx = 3*iu;
@@ -126,7 +126,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double
 		Y[++idx] += (dNudx[iu]*tau_gp[3] + dNudy[iu]*tau_gp[1] + dNudz[iu]*tau_gp[5]);
 		Y[++idx] += (dNudx[iu]*tau_gp[4] + dNudy[iu]*tau_gp[5] + dNudz[iu]*tau_gp[2]);
 	} // ops = 27.[18]
-  
+
 // total operations = 486 + 7 + 486 = 979
 	PetscLogFlops(979);
 }
@@ -145,7 +145,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_Buu(const double FAC,const double
 		strain_rate_gp[3] += Ux[iu]*dNudy[iu];
 		strain_rate_gp[4] += Ux[iu]*dNudz[iu];
 	}
-  
+
 	// deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //
   tau_gp[0] = 2.0*eta_gp*strain_rate_gp[0];
   tau_gp[3] = eta_gp*strain_rate_gp[3];
@@ -171,7 +171,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_Bvv(const double FAC,const double
 		strain_rate_gp[3] += Uy[iu]*dNudx[iu];
 		strain_rate_gp[5] += Uy[iu]*dNudz[iu];
 	}
-  
+
 	// deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //
   tau_gp[1] = 2.0*eta_gp*strain_rate_gp[1];
   tau_gp[3] = eta_gp*strain_rate_gp[3];
@@ -197,12 +197,12 @@ static inline void MatMultMF_Stokes_MixedFEM3d_Bww(const double FAC,const double
 		strain_rate_gp[4] += Uz[iu]*dNudx[iu];
 		strain_rate_gp[5] += Uz[iu]*dNudy[iu];
 	}
-	
+
 	// deviatoric stress (t_xx,t_yy,t_zz,t_xy,t_xz,t_yz) at gauss point //
   tau_gp[2] = 2.0*eta_gp*strain_rate_gp[2];
   tau_gp[4] = eta_gp*strain_rate_gp[4];
   tau_gp[5] = eta_gp*strain_rate_gp[5];
-	
+
   // y = A11.{0,0,w} at gauss point //
 	for (iu=0; iu<27; iu++) {
 		Y[iu]  += FAC*(dNudx[iu]*tau_gp[4] + dNudy[iu]*tau_gp[5] + dNudz[iu]*tau_gp[2]);
@@ -228,7 +228,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_A12(const double FAC,const double
 		Y[  idx] += tmp*dNudx[iu];
 		Y[++idx] += tmp*dNudy[iu];
 		Y[++idx] += tmp*dNudz[iu];
-	}	
+	}
 }
 static inline void MatMultMF_Stokes_MixedFEM3d_A21(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
@@ -245,7 +245,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_A21(const double FAC,const double
 		strain_rate_gp[1] += Uy[iu]*dNudy[iu];
 		strain_rate_gp[2] += Uz[iu]*dNudz[iu];
 	}
-	
+
   // divergence at gauss point //
   div_gp = strain_rate_gp[0] + strain_rate_gp[1] + strain_rate_gp[2];
 

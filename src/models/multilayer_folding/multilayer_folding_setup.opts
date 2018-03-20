@@ -21,8 +21,8 @@
 
 # ---------------------
 # Perturbation types
-#   0: random noise 
-#   1: co and sinusoidal perturbation 
+#   0: random noise
+#   1: co and sinusoidal perturbation
 -model_multilayer_folding_perturbation_type 0
 -model_multilayer_folding_amp_factor 0.01 # from the layer thickness
 
@@ -30,32 +30,32 @@
 # ---------------------
 # Material properties
 	-model_multilayer_folding_layer_eta     1.0e19,1.0e23,1.0e21,1.0e23,1.0e21,1.0e23,1.0e21,1.0e23
-	-model_multilayer_folding_layer_rho     2200,2700,2400,2700,2400,2700,2400,2400	
+	-model_multilayer_folding_layer_rho     2200,2700,2400,2700,2400,2700,2400,2400
 
 
 # ---------------------
 # Boundary conditions
-	-model_multilayer_folding_bc_type  1       
+	-model_multilayer_folding_bc_type  1
 	-model_multilayer_folding_exx     -1.0e-14
 	-model_multilayer_folding_ezz     -0.0e2
 
 
 # ------------------------------------------
 # pTatin simulation parameters
-	
+
 	!! Model resolution
 	-mx 40
-	-model_multilayer_folding_layer_res_j 6,6,4,4,1,2,1,8   
+	-model_multilayer_folding_layer_res_j 6,6,4,4,1,2,1,8
 	-mz 40
 
 	!! Time step control
-	#-constant_dt 1.0e-07    
+	#-constant_dt 1.0e-07
 	-dt_max 0.05
 	-nsteps 5
 
 	!! output control
 	-output_frequency 1
-	#-output_path 
+	#-output_path
 
 	!! checkpoint control
 	-checkpoint_every_nsteps 1
@@ -70,7 +70,7 @@
 	-ksp_rtol 1.0e-5
 	-ksp_atol 1.0e-9
 	-pc_type fieldsplit
-	
+
 	-pc_fieldsplit_type schur
 	-pc_fieldsplit_schur_fact_type upper
 
@@ -101,7 +101,7 @@
 	-stk_velocity_da_refine_hierarchy_y 2
 	-stk_velocity_da_refine_hierarchy_z 4
 
-	# dump the geometric multi-grid mesh hierarchy 
+	# dump the geometric multi-grid mesh hierarchy
 	#-stk_velocity_da_view_hierarchy
 
 	#-fieldsplit_u_mg_levels_ksp_type chebyshev

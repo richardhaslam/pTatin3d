@@ -90,9 +90,9 @@ PetscErrorCode CartGridSetType(CartGrid map,CartGridType t)
 {
     PetscFunctionBegin;
     map->type = t;
-    
+
     switch (t) {
-            
+
         case CARTGRID_INMEM:
             map->getindex = CartGridGetIndex_InMem;
             map->getvalue = CartGridGetValue_InMem;
@@ -104,12 +104,12 @@ PetscErrorCode CartGridSetType(CartGrid map,CartGridType t)
             map->getvalue = CartGridGetValue_OutOfCore;
             map->destroy = NULL;
             break;
-            
+
         default:
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid CartGrid type {inmem,outofcore} must be specified");
             break;
     }
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -141,7 +141,7 @@ PetscErrorCode CartGridSetDataType(CartGrid map,CartGridDataType type)
         case CARTGRID_INT:
             map->bytes = sizeof(int);
             break;
-            
+
         case CARTGRID_LONG:
             map->bytes = sizeof(long int);
             break;
@@ -157,7 +157,7 @@ PetscErrorCode CartGridSetDataType(CartGrid map,CartGridDataType type)
         case CARTGRID_SHORT:
             map->bytes = sizeof(short);
             break;
-        
+
         case CARTGRID_CHAR:
             map->bytes = sizeof(char);
             break;
@@ -166,7 +166,7 @@ PetscErrorCode CartGridSetDataType(CartGrid map,CartGridDataType type)
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid data type {char,short,int,long,float,double} must be specified");
             break;
     }
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -196,7 +196,7 @@ PetscErrorCode CartGridSetDataFilename(CartGrid map,const char fname[])
 PetscErrorCode CartGridSetUp_InMem(CartGrid map)
 {
     FILE *fp_data = NULL;
-    
+
     PetscFunctionBegin;
     map->start[0] = 0;
     map->start[1] = 0;
@@ -209,12 +209,12 @@ PetscErrorCode CartGridSetUp_InMem(CartGrid map)
 	/* allocate data */
 	PetscMalloc(map->bytes* map->mx * map->my * map->mz,&map->data);
     PetscMemzero(map->data,map->bytes* map->mx * map->my * map->mz);
-    
+
     fp_data = fopen(map->datafile_name,"r");
     if (!fp_data) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",map->datafile_name);
     if (fread(map->data,map->bytes,(size_t)(map->mx * map->my * map->mz),fp_data) != (size_t)(map->mx * map->my * map->mz)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() error");
     fclose(fp_data);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -226,16 +226,16 @@ PetscErrorCode CartGridSetUp_OutOfCore(CartGrid map)
     map->start[0] = 0;
     map->start[1] = 0;
     map->start[2] = 0;
-    
+
     map->end[0] = map->mx;
     map->end[1] = map->my;
     map->end[2] = map->mz;
 
     fp_data = fopen(map->datafile_name,"r");
     if (!fp_data) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",map->datafile_name);
-    
+
     map->data_fp = fp_data;
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -246,7 +246,7 @@ PetscErrorCode CartGridGetIndex_InMem2d(CartGrid map,PetscInt i,PetscInt j,Petsc
 	if (j < map->start[1]) { *index = -1; PetscFunctionReturn(0); }
 	if (i >= map->end[0])  { *index = -1; PetscFunctionReturn(0); }
 	if (j >= map->end[1])  { *index = -1; PetscFunctionReturn(0); }
-    
+
 	*index = i + j * map->mx;
     PetscFunctionReturn(0);
 }
@@ -260,7 +260,7 @@ PetscErrorCode CartGridGetIndex_InMem3d(CartGrid map,PetscInt i,PetscInt j,Petsc
 	if (i >= map->end[0])  { *index = -1; PetscFunctionReturn(0); }
 	if (j >= map->end[1])  { *index = -1; PetscFunctionReturn(0); }
 	if (k >= map->end[2])  { *index = -1; PetscFunctionReturn(0); }
-    
+
 	*index = i + j * map->mx + k * map->mx * map->my;
     PetscFunctionReturn(0);
 }
@@ -287,27 +287,27 @@ PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,
 {
 	PetscInt i,j,index;
     void     *value_i;
-	
+
     PetscFunctionBegin;
 	if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
 	if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
-    
+
 	if (xp[1] < map->range_y[0]) { PetscFunctionReturn(0); }
 	if (xp[1] > map->range_y[1]) { PetscFunctionReturn(0); }
-	
+
 	i = (xp[0] - map->range_x[0])/map->dx;
 	j = (xp[1] - map->range_y[0])/map->dy;
 	if (i == map->mx) { i--; }
 	if (j == map->my) { j--; }
-	
+
 	CartGridGetIndex_InMem2d(map,i,j,-1,&index);
 	if (index < 0) { PetscFunctionReturn(0); }
-    
+
     *found = PETSC_TRUE;
-    
+
     value_i = (void*)( (char*)map->data + index * map->bytes );
     PetscMemcpy(value,value_i,map->bytes);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -315,7 +315,7 @@ PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,
 {
 	PetscInt i,j,k,index;
     void     *value_i;
-	
+
     PetscFunctionBegin;
 	if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
 	if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
@@ -325,22 +325,22 @@ PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,
 
 	if (xp[2] < map->range_z[0]) { PetscFunctionReturn(0); }
 	if (xp[2] > map->range_z[1]) { PetscFunctionReturn(0); }
-	
+
 	i = (xp[0] - map->range_x[0])/map->dx;
 	j = (xp[1] - map->range_y[0])/map->dy;
 	k = (xp[2] - map->range_z[0])/map->dz;
 	if (i == map->mx) { i--; }
 	if (j == map->my) { j--; }
 	if (k == map->mz) { k--; }
-	
+
 	CartGridGetIndex_InMem3d(map,i,j,k,&index);
 	if (index < 0) { PetscFunctionReturn(0); }
-    
+
     *found = PETSC_TRUE;
-    
+
     value_i = (void*)( (char*)map->data + index * map->bytes );
     PetscMemcpy(value,value_i,map->bytes);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -359,7 +359,7 @@ PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,Pe
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension must be 2 or 3");
             break;
     }
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -367,31 +367,31 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
 {
 	PetscInt i,j,k,index;
     long     offset;
-	
+
     PetscFunctionBegin;
 	if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
 	if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
-    
+
 	if (xp[1] < map->range_y[0]) { PetscFunctionReturn(0); }
 	if (xp[1] > map->range_y[1]) { PetscFunctionReturn(0); }
-    
+
 	i = (xp[0] - map->range_x[0])/map->dx;
 	j = (xp[1] - map->range_y[0])/map->dy;
 	if (i == map->mx) { i--; }
 	if (j == map->my) { j--; }
-	
+
     if (map->dim == 3) {
         if (xp[2] < map->range_z[0]) { PetscFunctionReturn(0); }
         if (xp[2] > map->range_z[1]) { PetscFunctionReturn(0); }
         k = (xp[2] - map->range_z[0])/map->dz;
         if (k == map->mz) { k--; }
-        
+
         CartGridGetIndex_InMem3d(map,i,j,k,&index);
     } else {
         CartGridGetIndex_InMem2d(map,i,j,-1,&index);
     }
 	if (index < 0) { PetscFunctionReturn(0); }
-    
+
     *found = PETSC_TRUE;
 
     /* reset position */
@@ -399,10 +399,10 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
     /* displace position */
     offset = (long)(index * map->bytes);
     fseek(map->data_fp,offset,SEEK_CUR);
-    
+
     /* fread */
     if (fread(value,map->bytes,1,map->data_fp) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() error");
- 
+
     PetscFunctionReturn(0);
 }
 
@@ -420,7 +420,7 @@ PetscErrorCode trimright(char str[])
 {
     size_t len;
     int    c,flg;
-    
+
     PetscFunctionBegin;
     len = strlen(str);
     for (c=len-1; c>=0; c--) {
@@ -454,7 +454,7 @@ PetscErrorCode CartGridSetUp(CartGrid map)
     int            matched;
     const int      STRMAX = 256;
     PetscErrorCode ierr;
-	
+
     PetscFunctionBegin;
 	/* open file to parse */
     fp = fopen(map->metadatafile_name,"r");
@@ -467,12 +467,12 @@ ParseHeader:
     if (str[0] == '!') { goto ParseHeader; }
     if (str[0] == '%') { goto ParseHeader; }
     if (str[0] == '#') { goto ParseHeader; }
-    
-    
+
+
     /* CartGrid type */
     {
         CartGridType type;
-        
+
         trimnewline(str);
         trimright(str);
         type = CARTGRID_TYPE_UDEF;
@@ -486,11 +486,11 @@ ParseHeader:
         ierr = CartGridSetType(map,type);CHKERRQ(ierr);
         PetscPrintf(PETSC_COMM_WORLD,"CartGrid:type: %s\n",CartGridTypeNames[(int)map->type]);
     }
-    
+
     /* data_type */
     if( fgets(str,STRMAX,fp) != NULL) {
         CartGridDataType data_type;
-        
+
         trimnewline(str);
         trimright(str);
         data_type = CARTGRID_DTYPE_UDEF;
@@ -504,7 +504,7 @@ ParseHeader:
         ierr = CartGridSetDataType(map,data_type);CHKERRQ(ierr);
         PetscPrintf(PETSC_COMM_WORLD,"CartGrid:datatype: %s\n",CartGridDataTypeNames[(int)map->data_type]);
     }
-    
+
     /* datafile_name */
     if( fgets(str,STRMAX,fp) != NULL) {
         trimnewline(str);
@@ -512,11 +512,11 @@ ParseHeader:
         PetscPrintf(PETSC_COMM_WORLD,"CartGrid:datafile: %s\n",str);
         ierr = CartGridSetDataFilename(map,str);CHKERRQ(ierr);
     }
-    
+
     /* read header: dim */
     if (fscanf(fp,"%d\n",&dim) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
     map->dim = (PetscInt)dim;
-    
+
     if (dim == 2) {
         /* read header: mx,my */
         if (fscanf(fp,"%d %d",&mx,&my) < 2) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
@@ -526,7 +526,7 @@ ParseHeader:
         zr[0] = -1.0e32;
         zr[1] =  1.032;
         printf("[%d x %d] --> [%1.4e,%1.4e] x [%1.4e,%1.4e]\n",mx,my,xr[0],xr[1],yr[0],yr[1]);
-        
+
         dx = (xr[1] - xr[0])/(double)(mx);
         dy = (yr[1] - yr[0])/(double)(my);
         dz = 0.0;
@@ -543,21 +543,21 @@ ParseHeader:
     } else {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"dim must be specified");
     }
-    
+
     map->mx = (PetscInt)mx;
     map->my = (PetscInt)my;
     map->mz = (PetscInt)mz;
-    
+
     map->dx = (PetscReal)dx;
     map->dy = (PetscReal)dy;
     map->dz = (PetscReal)dz;
-    
+
     map->range_x[0] = (PetscReal)xr[0];  map->range_x[1] = (PetscReal)xr[1];
     map->range_y[0] = (PetscReal)yr[0];  map->range_y[1] = (PetscReal)yr[1];
     map->range_z[0] = (PetscReal)zr[0];  map->range_z[1] = (PetscReal)zr[1];
-    
+
     fclose(fp);
-    
+
     switch (map->type) {
         case CARTGRID_INMEM:
             ierr = CartGridSetUp_InMem(map);CHKERRQ(ierr);
@@ -569,18 +569,18 @@ ParseHeader:
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid type {inmem,outofcore} must be specified");
             break;
     }
-    
+
     PetscFunctionReturn(0);
 }
 
 PetscErrorCode CartGridViewMetaData(CartGrid map)
 {
     FILE *fp;
-    
+
     PetscFunctionBegin;
     fp = fopen(map->metadatafile_name,"w");
     if (!fp)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",map->metadatafile_name);
-    
+
     fprintf(fp,"%s\n",CartGridTypeNames[(int)map->type]);
     fprintf(fp,"%s\n",CartGridDataTypeNames[(int)map->data_type]);
     fprintf(fp,"%s\n",map->datafile_name);
@@ -599,7 +599,7 @@ PetscErrorCode CartGridViewMetaData(CartGrid map)
                 map->range_z[0],map->range_z[1]);
     }
     fclose(fp);
-    
+
     PetscFunctionReturn(0);
 }
 
@@ -607,7 +607,7 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
 {
 	FILE     *fp = NULL;
 	PetscInt i,j,k;
-	
+
     PetscFunctionBegin;
 	/* open file to parse */
     fp = fopen(filename,"w");
@@ -658,17 +658,17 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
 
     switch (map->type) {
         case CARTGRID_INMEM:
-            
+
             for (k=0; k<map->mz; k++) {
                 for (j=0; j<map->my; j++) {
                     for (i=0; i<map->mx; i++) {
                         PetscInt index;
                         void     *data_i;
-                        
+
                         index = i + j * map->mx + k * map->mx * map->my;
-                        
+
                         data_i = (void*)( (char*)map->data + index * map->bytes );
-                        
+
                         switch (map->data_type) {
                             case CARTGRID_INT:
                                 fprintf(fp,"%d ",*((int*)data_i));
@@ -698,7 +698,7 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
                 }
             }
             break;
-            
+
         case CARTGRID_OUTOFCORE:
         {
             void *data_i;
@@ -745,18 +745,18 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
             free(data_i);
         }
             break;
-            
+
         case CARTGRID_TYPE_UDEF:
             break;
     }
     fprintf(fp,"\n");
     fprintf(fp,"      </DataArray>\n");
     fprintf(fp,"      </CellData>\n");
-    
+
     fprintf(fp,"    </Piece>\n");
     fprintf(fp,"  </ImageData>\n");
     fprintf(fp,"</VTKFile>\n");
-	
+
     fclose(fp);
     PetscFunctionReturn(0);
 }
@@ -773,7 +773,7 @@ PetscErrorCode pTatinCtxGetCartGrid(pTatinCtx ctx,CartGrid *map)
 {
 	void           *mymap;
 	PetscErrorCode ierr;
-	
+
     PetscFunctionBegin;
 	ierr = pTatinCtxGetModelData(ctx,"CartGrid",&mymap);CHKERRQ(ierr);
 	*map = (CartGrid)mymap;
@@ -789,24 +789,24 @@ PetscErrorCode ex1(void)
     {
         double t[] = {1.0,2.0,3.3,4.4,5.5,6.6, 7.7,8.8,9.9,10.1,11.2,12.3 };
         FILE *fp;
-        
+
         fp = fopen("mydata.bin","w");
         if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open mydata.bin");
-        
+
         fwrite(t,sizeof(double),12,fp);
-        fclose(fp);        
+        fclose(fp);
     }
-    
+
     ierr = CartGridCreate(&cg);CHKERRQ(ierr);
     ierr = CartGridSetFilename(cg,"test2.dat");CHKERRQ(ierr);
     ierr = CartGridSetUp(cg);CHKERRQ(ierr);
-    
+
     {
         int       k;
         double    pos[] = {1.0,60.0};
         double    value;
         PetscBool found;
-        
+
         value = 0.0;
         for (k=0; k<10; k++) {
             ierr = CartGridGetValue(cg,pos,&value,&found);CHKERRQ(ierr);
@@ -815,7 +815,7 @@ PetscErrorCode ex1(void)
     }
     ierr = CartGridViewPV(cg,"test.vti");CHKERRQ(ierr);
     ierr = CartGridDestroy(&cg);CHKERRQ(ierr);
-    
+
 	PetscFunctionReturn(0);
 }
 
@@ -826,7 +826,7 @@ PetscErrorCode ex2(void)
     int            i,j,k;
     long int       *data;
     PetscErrorCode ierr;
-    
+
     PetscFunctionBegin;
     ierr = CartGridCreate(&cgin);CHKERRQ(ierr);
     ierr = CartGridSetFilename(cgin,"test3.CartGrid");CHKERRQ(ierr);
@@ -848,7 +848,7 @@ PetscErrorCode ex2(void)
         for (j=0; j<cgin->my; j++) {
             for (i=0; i<cgin->mx; i++) {
                 int index;
-                
+
                 index = i+j*cgin->mx+k*cgin->mx*cgin->my;
 
                 data[index] = 0;
@@ -858,10 +858,10 @@ PetscErrorCode ex2(void)
             }
         }
     }
-    
+
     {
         FILE *fp;
-        
+
         fp = fopen("test.bin","w");
         if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open test.bin");
         fwrite(data,sizeof(long int),cgin->mx*cgin->my*cgin->mz,fp);
@@ -869,14 +869,14 @@ PetscErrorCode ex2(void)
     }
 
     free(data);
-    
+
     ierr = CartGridDestroy(&cgin);CHKERRQ(ierr);
-    
+
     ierr = CartGridCreate(&cg);CHKERRQ(ierr);
     ierr = CartGridSetFilename(cg,"test3.CartGrid");CHKERRQ(ierr);
     ierr = CartGridSetUp(cg);CHKERRQ(ierr);
     ierr = CartGridViewPV(cg,"test.vti");CHKERRQ(ierr);
     ierr = CartGridDestroy(&cg);CHKERRQ(ierr);
-    
+
 	PetscFunctionReturn(0);
 }

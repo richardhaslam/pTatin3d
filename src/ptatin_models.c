@@ -53,7 +53,7 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	PetscErrorCode ierr;
 	pTatinModel m;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscMalloc(sizeof(struct _p_pTatinModel),&m);CHKERRQ(ierr);
 	ierr = PetscMemzero(m,sizeof(struct _p_pTatinModel));CHKERRQ(ierr);
 
@@ -76,7 +76,7 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_initial_material_geometry_disable",&m->disable_initial_material_geometry,0);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_update_mesh_geometry_disable",&m->disable_update_mesh_geometry,0);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_output_disable",&m->disable_output,0);CHKERRQ(ierr);
-	
+
 	*model = m;
 	PetscFunctionReturn(0);
 }
@@ -85,7 +85,7 @@ PetscErrorCode pTatinModelDestroy(pTatinModel *m)
 {
   pTatinModel    model;
   PetscErrorCode ierr;
-	
+
   PetscFunctionBegin;
   if (!m) PetscFunctionReturn(0);
   model = *m;
@@ -94,7 +94,7 @@ PetscErrorCode pTatinModelDestroy(pTatinModel *m)
   ierr = pTatinModel_Destroy(model,NULL);CHKERRQ(ierr);
   PetscFree(model);
   *m = NULL;
-	
+
   PetscFunctionReturn(0);
 }
 
@@ -134,12 +134,12 @@ PetscErrorCode pTatinModelGetModelData(pTatinModel ctx,const char name[],void **
 {
 	PetscErrorCode ierr;
 	PetscContainer container;
-	
+
   PetscFunctionBegin;
 	ierr = PetscObjectQuery((PetscObject)ctx->data,name,(PetscObject*)&container);CHKERRQ(ierr);
 	if (!container) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with model->model_data",name);
 	ierr = PetscContainerGetPointer(container,data);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -147,14 +147,14 @@ PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *d
 {
 	PetscContainer container;
 	PetscErrorCode ierr;
-	
+
   PetscFunctionBegin;
   ierr = PetscContainerCreate(PETSC_COMM_WORLD,&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,(void*)data);CHKERRQ(ierr);
-	
+
 	ierr = PetscObjectCompose((PetscObject)ctx->data,name,(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr); /* decrement ref counter */
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -200,16 +200,16 @@ PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperat
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: unknown operation specified");
 			break;
 	}
-	
+
 	PetscFunctionReturn(0);
 }
 
 PetscErrorCode ptatin_match_model_index(const char modelname[],PetscInt *index)
 {
 	PetscBool match;
-	pTatinModel item;	
+	pTatinModel item;
 	int cnt;
-	
+
 	*index = -1;
 	cnt = 0;
   if (registered_model_list) {
@@ -235,12 +235,12 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	pTatinModel *tmp;
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	if (registered_model_list == NULL) {
 		registered_model_list = malloc( sizeof(pTatinModel) );
 		registered_model_list[0] = NULL;
-	} 
-	
+	}
+
 	/* find list size */
 	cnt = 0;
 	ii = registered_model_list[0];
@@ -249,25 +249,25 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 		ii = registered_model_list[cnt];
 	}
 	list_length = cnt;
-	
+
 	/* check model not already loaded with same name */
 	ierr = ptatin_match_model_index(model->model_name,&index);CHKERRQ(ierr);
 	if (index != -1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"  [pTatinModel]: Model with name \"%s\" has already been registered",model->model_name );
 	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: Registering model [%D] with name \"%s\"\n",list_length, model->model_name );		
+		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: Registering model [%D] with name \"%s\"\n",list_length, model->model_name );
 	}
-	
+
 	tmp = realloc( registered_model_list,sizeof(pTatinModel)*(list_length+2) );
 	registered_model_list = tmp;
-	
+
 	registered_model_list[list_length  ] = model;
 	registered_model_list[list_length+1] = NULL;
-	
+
 	if (model->disable_output) {
 		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: Output functionality for \"%s\" has been deactivated\n",model->model_name);
 	}
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -279,7 +279,7 @@ PetscErrorCode pTatinModelDynamicRegister(const char modelname[],PetscErrorCode 
   /* check model not already loaded with same name */
   if (ptatin_registered_model_flist) {
     PetscErrorCode (*methodexists)(pTatinModel);
-    
+
     ierr = PetscFunctionListFind(ptatin_registered_model_flist,modelname,&methodexists);CHKERRQ(ierr);
     if (methodexists) {
       SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"  [pTatinModelDynamic]: Model with name \"%s\" has already been registered",modelname );
@@ -288,16 +288,16 @@ PetscErrorCode pTatinModelDynamicRegister(const char modelname[],PetscErrorCode 
 
   PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModelDynamic]: Dynamically registering model with name \"%s\"\n",modelname );
   ierr = PetscFunctionListAdd(&ptatin_registered_model_flist,modelname,create);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinModelStaticGetByName(const char name[],pTatinModel *model)
-{	
+{
 	PetscErrorCode ierr;
 	PetscInt index;
 	PetscFunctionBegin;
-	
+
 	*model = NULL;
 	ierr = ptatin_match_model_index(name,&index);CHKERRQ(ierr);
 	if (index == -1) {
@@ -305,7 +305,7 @@ PetscErrorCode pTatinModelStaticGetByName(const char name[],pTatinModel *model)
     PetscFunctionReturn(0);
 	}
 	(*model) = registered_model_list[index];
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -324,7 +324,7 @@ PetscErrorCode pTatinModelDynamicGetByName(const char modelname[],pTatinModel *m
   ierr = pTatinModelCreate(model);CHKERRQ(ierr);
   ierr = pTatinModelSetName(*model,modelname);CHKERRQ(ierr);
   ierr = create(*model);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -332,11 +332,11 @@ PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
 {
   PetscErrorCode ierr;
   pTatinModel model_s = NULL, model_d = NULL;
-  
+
   PetscFunctionBegin;
 
   if (!registered_model_list && !ptatin_registered_model_flist) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: No pTatin models have been registered");
-  
+
   *model = NULL;
 
   /* Check for models in the static list first as a request for a dynamic model will also register it in the static list */
@@ -345,7 +345,7 @@ PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
     *model = model_s;
     PetscFunctionReturn(0);
   }
-  
+
   ierr = pTatinModelDynamicGetByName(name,&model_d);CHKERRQ(ierr);
   if (model_d) {
     /* Calling this allows us to free the models by traversing registered_model_list[], */
@@ -359,7 +359,7 @@ PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
   if (!(*model)) {
     SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel(Static/Dynamic)]: -ptatin_model \"%s\" wasn't identified as a registered model",name );
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -373,12 +373,12 @@ PetscErrorCode pTatinModel_Destroy(pTatinModel model,pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	if (model->FP_pTatinModel_Destroy) {
 		ierr = model->FP_pTatinModel_Destroy(ctx,model->model_data);CHKERRQ(ierr);
 	}
   model->model_data = NULL;
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -386,7 +386,7 @@ PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const ch
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelOutput,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_output) {
 		if (model->FP_pTatinModel_Output) {
@@ -394,7 +394,7 @@ PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const ch
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelOutput,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -402,7 +402,7 @@ PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelApplyInitialSolution,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_initial_solution) {
 		if (model->FP_pTatinModel_ApplyInitialSolution) {
@@ -410,7 +410,7 @@ PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelApplyInitialSolution,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -418,7 +418,7 @@ PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,p
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelApplyInitialStokesVariableMarkers,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_initial_stokes_variables) {
 		if (model->FP_pTatinModel_ApplyInitialStokesVariableMarkers) {
@@ -426,7 +426,7 @@ PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,p
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelApplyInitialStokesVariableMarkers,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -434,7 +434,7 @@ PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Ve
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelUpdateMeshGeometry,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_update_mesh_geometry) {
 		if (model->FP_pTatinModel_UpdateMeshGeometry) {
@@ -442,7 +442,7 @@ PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Ve
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelUpdateMeshGeometry,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -450,7 +450,7 @@ PetscErrorCode pTatinModel_ApplyInitialMaterialGeometry(pTatinModel model,pTatin
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelApplyInitialMaterialGeometry,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_initial_material_geometry) {
 		if (model->FP_pTatinModel_ApplyInitialMaterialGeometry) {
@@ -458,7 +458,7 @@ PetscErrorCode pTatinModel_ApplyInitialMaterialGeometry(pTatinModel model,pTatin
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelApplyInitialMaterialGeometry,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -466,7 +466,7 @@ PetscErrorCode pTatinModel_ApplyInitialMeshGeometry(pTatinModel model,pTatinCtx 
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelApplyInitialMeshGeometry,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_initial_mesh_geometry) {
 		if (model->FP_pTatinModel_ApplyInitialMeshGeometry) {
@@ -474,7 +474,7 @@ PetscErrorCode pTatinModel_ApplyInitialMeshGeometry(pTatinModel model,pTatinCtx 
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelApplyInitialMeshGeometry,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -488,7 +488,7 @@ PetscErrorCode pTatinModel_Initialize(pTatinModel model,pTatinCtx ctx)
 		ierr = model->FP_pTatinModel_Initialize(ctx,model->model_data);CHKERRQ(ierr);
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelInitialize,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -496,7 +496,7 @@ PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ct
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelApplyBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_apply_bc) {
 		if (model->FP_pTatinModel_ApplyBoundaryCondition) {
@@ -504,7 +504,7 @@ PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ct
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelApplyBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -512,7 +512,7 @@ PetscErrorCode pTatinModel_ApplyBoundaryConditionMG(PetscInt nl,BCList bclist[],
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelApplyBoundaryConditionMG,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_apply_bc_mg) {
 		if (model->FP_pTatinModel_ApplyBoundaryConditionMG) {
@@ -522,7 +522,7 @@ PetscErrorCode pTatinModel_ApplyBoundaryConditionMG(PetscInt nl,BCList bclist[],
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelApplyBoundaryConditionMG,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -530,7 +530,7 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
-	
+
 	ierr = PetscLogEventBegin(PTATIN_ModelApplyMaterialBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_apply_material_bc) {
 		if (model->FP_pTatinModel_ApplyMaterialBoundaryCondition) {
@@ -538,7 +538,7 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 		}
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelApplyMaterialBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -547,7 +547,7 @@ PetscErrorCode pTatinModelDeRegisterAll(void)
   PetscErrorCode ierr;
   PetscInt i;
   pTatinModel item;
-  
+
   if (registered_model_list) {
     i = 0;
     item = registered_model_list[0];
@@ -559,11 +559,11 @@ PetscErrorCode pTatinModelDeRegisterAll(void)
     free(registered_model_list);
     registered_model_list = NULL;
   }
-  
+
   if (ptatin_registered_model_flist) {
     ierr = PetscFunctionListDestroy(&ptatin_registered_model_flist);CHKERRQ(ierr);
     ptatin_registered_model_flist = NULL;
   }
-  
+
 	PetscFunctionReturn(0);
 }

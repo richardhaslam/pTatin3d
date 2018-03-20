@@ -53,25 +53,25 @@
 static inline void ComputeStressIsotropic3d(PetscReal eta,double D[NSD][NSD],double T[NSD][NSD])
 {
 	const double two_eta = 2.0 * eta;
-	
+
 	T[0][0] = two_eta * D[0][0];	T[0][1] = two_eta * D[0][1];		T[0][2] = two_eta * D[0][2];
 	T[1][0] =           T[0][1];	T[1][1] = two_eta * D[1][1];		T[1][2] = two_eta * D[1][2];
-	T[2][0] =           T[0][2];	T[2][1] =           T[1][2];		T[2][2] = two_eta * D[2][2];	
+	T[2][0] =           T[0][2];	T[2][1] =           T[1][2];		T[2][2] = two_eta * D[2][2];
 }
 
 static inline void ComputeStrainRate3d(double ux[],double uy[],double uz[],double dNudx[],double dNudy[],double dNudz[],double D[NSD][NSD])
 {
 	int    k;
 	double exx,eyy,ezz,exy,exz,eyz;
-	
+
 	exx=0.0;  eyy=0.0;  ezz=0.0;
 	exy=0.0;  exz=0.0;  eyz=0.0;
-	
+
 	for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
 		exx += dNudx[k] * ux[k];
 		eyy += dNudy[k] * uy[k];
 		ezz += dNudz[k] * uz[k];
-		
+
 		exy += dNudy[k] * ux[k] + dNudx[k] * uy[k];
 		exz += dNudz[k] * ux[k] + dNudx[k] * uz[k];
 		eyz += dNudz[k] * uy[k] + dNudy[k] * uz[k];
@@ -79,7 +79,7 @@ static inline void ComputeStrainRate3d(double ux[],double uy[],double uz[],doubl
 	exy = 0.5 * exy;
 	exz = 0.5 * exz;
 	eyz = 0.5 * eyz;
-	
+
 	D[0][0] = exx;		D[0][1] = exy;		D[0][2] = exz;
 	D[1][0] = exy;		D[1][1] = eyy;		D[1][2] = eyz;
 	D[2][0] = exz;		D[2][1] = eyz;		D[2][2] = ezz;
@@ -94,19 +94,19 @@ static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 			sum = sum + A[i][j]*A[i][j];
 		}
 	}
-	*A2 = sqrt( 0.5 * sum );	
+	*A2 = sqrt( 0.5 * sum );
 }
 
 PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],DM daT,PetscScalar Tfield[])
 {
 	PetscErrorCode ierr;
-	
+
 	int            pidx,n_mp_points;
 	DataBucket     db,material_constants;
 	DataField      PField_std,PField_stokes,PField_pls;
 	PetscScalar    min_eta,max_eta,min_eta_g,max_eta_g;
 	PetscLogDouble t0,t1;
-	
+
 	DM             cda;
 	Vec            gcoords,gcoords_T;
 	PetscReal      *LA_gcoords,*LA_gcoords_T;
@@ -120,26 +120,26 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	PetscReal      elu[3*Q2_NODES_PER_EL_3D];
 	PetscReal      elT[Q1_NODES_PER_EL_3D];
 	PetscReal      ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
-	
+
 	PetscReal NI_T[Q1_NODES_PER_EL_3D];
 	PetscReal NI[Q2_NODES_PER_EL_3D],GNI[3][Q2_NODES_PER_EL_3D];
 	PetscReal dNudx[Q2_NODES_PER_EL_3D],dNudy[Q2_NODES_PER_EL_3D],dNudz[Q2_NODES_PER_EL_3D];
-	
+
 	double         eta_mp;
 	double         D_mp[NSD][NSD],Tpred_mp[NSD][NSD];
 	double         inv2_D_mp,inv2_Tpred_mp;
-	
+
 	//DataField      PField_MatTypes;
 	DataField      PField_ViscConst;
     /* structs or material constants */
 	//MaterialConst_MaterialType      *MatType_data;
 	MaterialConst_ViscosityConst    *ViscConst_data;
 	long int       npoints_yielded,npoints_yielded_g;
-	
+
 	PetscFunctionBegin;
-	
+
 	PetscTime(&t0);
-	
+
 	/* access material point information */
 	ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
 	/* PField_std global index marker, phase marker, ...*/
@@ -153,45 +153,45 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	//
 	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
 	DataFieldGetAccess(PField_pls);
-	
+
 	DataBucketGetSizes(db,&n_mp_points,0,0);
-	
-	
+
+
 	/* setup for coords */
 	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
 	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
+
 	/* get u,p element information */
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
-	
+
 	if (daT) {
 		/* access the coordinates for the temperature mesh */ /* THIS IS NOT ACTUALLY NEEDED */
 		ierr = DMGetCoordinatesLocal(daT,&gcoords_T);CHKERRQ(ierr);
 		ierr = VecGetArray(gcoords_T,&LA_gcoords_T);CHKERRQ(ierr);
-		
+
 		ierr = DMDAGetElementsQ1(daT,&nel_T,&nen_T,&elnidx_T);CHKERRQ(ierr);
-		
+
 		if (nel_T != nel) {
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require code update to utilize nested Q1 mesh for temperature");
 		}
 	}
-	
+
 	/* access material constants */
 	ierr = pTatinGetMaterialConstants(user,&material_constants);CHKERRQ(ierr);
-	
+
 	//DataBucketGetDataFieldByName(material_constants,MaterialConst_MaterialType_classname,  &PField_MatTypes);
 	//MatType_data           = (MaterialConst_MaterialType*)PField_MatTypes->data;
-	
+
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityConst_classname,&PField_ViscConst);
 	ViscConst_data         = (MaterialConst_ViscosityConst*)PField_ViscConst->data;
-	
+
 	/* marker loop */
 	min_eta = 1.0e100;
 	max_eta = 1.0e-100;
 	npoints_yielded = 0;
-	
+
 	for (pidx=0; pidx<n_mp_points; pidx++) {
 		MPntStd       *mpprop_std;
 		MPntPStokes   *mpprop_stokes;
@@ -199,69 +199,69 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 		double        *xi_p;
 		double        T_mp;
 		int           region_idx;
-		
+
 		DataFieldAccessPoint(PField_std,   pidx,(void**)&mpprop_std);
 		DataFieldAccessPoint(PField_stokes,pidx,(void**)&mpprop_stokes);
 		DataFieldAccessPoint(PField_pls,   pidx,(void**)&mpprop_pls);
-		
+
 		/* Get marker types */
 		region_idx = mpprop_std->phase;
 
 		/* Get index of element containing this marker */
 		eidx = mpprop_std->wil;
-		
+
 		/* Get element indices */
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*eidx]);CHKERRQ(ierr);
-		
+
 		/* Get element coordinates */
 		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx],LA_gcoords);CHKERRQ(ierr);
-		
+
 		/* Get element velocity */
 		ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx],ufield);CHKERRQ(ierr);
-		
+
 		if (daT) {
 			/* Get element temperature */
 			ierr = DMDAEQ1_GetScalarElementField_3D(elT,(PetscInt*)&elnidx_T[nen_T*eidx],Tfield);CHKERRQ(ierr);
 		}
-		
+
 		/* Get local coordinate of marker */
 		xi_p = mpprop_std->xi;
-		
+
 		/* Prepare basis functions */
 		/* grad.Ni */
 		P3D_ConstructGNi_Q2_3D(xi_p,GNI);
-		
+
 		/* Get shape function derivatives */
 		P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
-		
+
 		/* get velocity components */
 		for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
 			ux[k] = elu[3*k  ];
 			uy[k] = elu[3*k+1];
 			uz[k] = elu[3*k+2];
 		}
-		
+
 		pTatin_ConstructNi_Q2_3D( xi_p, NI );
-		
-		
+
+
 		T_mp = 0.0;
 		if (daT) {
 			/* Interpolate the temperature */
 			/* NOTE: scaling is requred of xi_p if nested mesh is used */
 			P3D_ConstructNi_Q1_3D(xi_p,NI_T);
-            
+
 			for (k=0; k<Q1_NODES_PER_EL_3D; k++) {
 				T_mp += NI_T[k] * elT[k];
 			}
 		}
-		
+
 		/* get viscosity on marker */
 		/*
 		 Reference:
-		 
-		 Ross W. Griffiths. 
-		 The dynamics of lava flows. 
-		 Annual review of fluid mechanics, 
+
+		 Ross W. Griffiths.
+		 The dynamics of lava flows.
+		 Annual review of fluid mechanics,
 		 32(1), pp. 477-518, (2000)
 		*/
 		if (region_idx != 0) {
@@ -271,7 +271,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 			const PetscReal T_s     = 600.0; /* temperature in degrees C */
 			const PetscReal phi_0   = 0.0;
 			PetscReal eta0,ratio,t_dep,phi_f,phi;
-			
+
 			eta0 = ViscConst_data[ region_idx ].eta0;
 			phi_f = phi_max - phi_0;
 			phi = phi_0 + phi_f * (T_e - T_mp) / (T_e - T_s);
@@ -286,91 +286,91 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 			if (phi >= phi_max) {
 				phi = phi_max - 1.0e-10;
 			}
-			
+
 			ratio = pow( 1.0 - phi / phi_max, -2.5 );
 			t_dep = exp( -gamma * (T_e - T_mp) );
-			
+
 			eta_mp = eta0 * ratio * t_dep;
 
 			//{
 			//	double rad = sqrt(mpprop_std->coor[0]*mpprop_std->coor[0] + mpprop_std->coor[1]*mpprop_std->coor[1]);
 			//	printf("rad %1.5e : T %1.5e : phi %1.5e : eta %1.5e \n",rad,T_mp,phi,eta_mp);
 			//}
-			
+
 			if (eta_mp > 1.0e5/ETA_SCALE) {
 				eta_mp = 1.0e5/ETA_SCALE;
 			}
-			
-			
+
+
 		} else {
 			eta_mp = ViscConst_data[ region_idx ].eta0;
 		}
-		
+
 		/* apply stress limiters to all markers not considered "air" */
 		if (region_idx != 0) {
 			double tau_yield_mp;
-			
+
 			/* Compute yield surface */
-			/* 
+			/*
 			 Reference:
-			 
-			 Hideaki Miyamoto and Sho Sasaki. 
-			 Numerical simulations of flood basalt lava flows: Roles of parameters on lava flow morphologies. 
-			 Journal of Geophysical Research, 
+
+			 Hideaki Miyamoto and Sho Sasaki.
+			 Numerical simulations of flood basalt lava flows: Roles of parameters on lava flow morphologies.
+			 Journal of Geophysical Research,
 			 103(B11), pp. 27489-27502, (1998).
 			*/
 			tau_yield_mp = pow( 10.0, 11.59 - 0.0089 * T_mp );
 			tau_yield_mp = tau_yield_mp / ETA_SCALE;
-			
+
 			/* strain rate */
 			ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
 			/* stress */
 			ComputeStressIsotropic3d(eta_mp,D_mp,Tpred_mp);
 			/* second inv stress */
 			ComputeSecondInvariant3d(Tpred_mp,&inv2_Tpred_mp);
-			
+
 			MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
-			
+
 			if (inv2_Tpred_mp > tau_yield_mp) {
 				ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
-				
+
 				eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
 				MPntPStokesPlSetField_yield_indicator(mpprop_pls,1);
 				npoints_yielded++;
 			}
-			
-		}		
-		
+
+		}
+
 		/* update viscosity on marker */
 		MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);
 
 		/* monitor bounds */
 		if (eta_mp > max_eta) { max_eta = eta_mp; }
 		if (eta_mp < min_eta) { min_eta = eta_mp; }
-	}  
-	
+	}
+
 	DataFieldRestoreAccess(PField_pls);
 	DataFieldRestoreAccess(PField_stokes);
 	DataFieldRestoreAccess(PField_std);
-    
+
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
+
 	if (daT) {
 		ierr = VecRestoreArray(gcoords_T,&LA_gcoords_T);CHKERRQ(ierr);
 	}
-	
-	
-	
+
+
+
 	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
-	
+
 	PetscTime(&t1);
-	
+
 	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (LAVA) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %ld; cpu time %1.2e (sec)\n",
                 min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
-	
-	
+
+
 	PetscFunctionReturn(0);
 }
 
@@ -382,30 +382,30 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user,DM dau,
 	Vec temperature,temperature_l;
 	PetscScalar *LA_temperature_l;
 	PetscErrorCode ierr;
-    
+
 	PetscFunctionBegin;
-	
+
 	ierr = pTatinContextValid_Energy(user,&found);CHKERRQ(ierr);
 	if (found) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(user,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
-        
+
 		ierr = DMGetLocalVector(daT,&temperature_l);CHKERRQ(ierr);
 		ierr = VecZeroEntries(temperature_l);CHKERRQ(ierr);
 		ierr = DMGlobalToLocalBegin(daT,temperature,INSERT_VALUES,temperature_l);CHKERRQ(ierr);
 		ierr = DMGlobalToLocalEnd  (daT,temperature,INSERT_VALUES,temperature_l);CHKERRQ(ierr);
 		ierr = VecGetArray(temperature_l,&LA_temperature_l);CHKERRQ(ierr);
-        
+
 		ierr = private_EvaluateRheologyNonlinearitiesMarkers_LAVA(user,dau,ufield,dap,pfield,daT,LA_temperature_l);CHKERRQ(ierr);
-		
+
 		ierr = VecRestoreArray(temperature_l,&LA_temperature_l);CHKERRQ(ierr);
 		ierr = DMRestoreLocalVector(daT,&temperature_l);CHKERRQ(ierr);
-		
+
 	} else {
 		ierr = private_EvaluateRheologyNonlinearitiesMarkers_LAVA(user,dau,ufield,dap,pfield,NULL,NULL);CHKERRQ(ierr);
 	}
-	
-	
+
+
 	PetscFunctionReturn(0);
 }

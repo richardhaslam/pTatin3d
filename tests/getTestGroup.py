@@ -58,4 +58,4 @@ for (root, dirs, files) in os.walk(os.path.join(testsDir,prefix)) :
             if (len(resultString) > 0) :
                 resultString += ','
             resultString += testName
-print(resultString) 
+print(resultString)

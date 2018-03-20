@@ -1,8 +1,8 @@
 /*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  **
- **    Copyright (c) 2012, 
+ **    Copyright (c) 2012,
  **        Dave A. May [dave.may@erdw.ethz.ch]
- **        Geophysical Fluid Dynamics, 
+ **        Geophysical Fluid Dynamics,
  **        Department of Earth Sciences,
  **        ETH Zürich,
  **        Sonneggstrasse 5,
@@ -90,15 +90,15 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	double		   alpha, beta, rho_ref, Cp, k0, k1, T_threshold, dT, dTdy;
 
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
-	
+
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	/* Temperature flag */
 	use_energy = PETSC_TRUE;
 	//use_energy=PETSC_FALSE;
-	
+
 
 	/* Particle Swarm */
 
@@ -112,14 +112,14 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 
   /* Copy reference into model data for later use in different functions */
   data->pswarm = pswarm;
-  
+
 	/* set the default values of the material constant for this particular model */
 	/*scaling */
 	data->length_bar    = 100.0 * 1.0e3;
 	data->viscosity_bar = 1.0e26;
 	data->velocity_bar  = 1.0e-10;
 	data->dimensional   = PETSC_TRUE;
-	
+
 	/* Box GEOMETRY */
 	data->Lx = 1200.0e3;
 	data->Ly = 250.0e3;
@@ -127,14 +127,14 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_Lx",&data->Lx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_Ly",&data->Ly,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_Lz",&data->Lz,&flg);CHKERRQ(ierr);
-	
+
 	data->hc = 35.0e3;
 	data->hm = 85.0e3;
 	data->ha = 130.0e3;
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_hc",&data->hc,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_hm",&data->hm,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_ha",&data->ha,&flg);CHKERRQ(ierr);
-	
+
 	/* notch geometry */
 	data->notch_type   = 1;
 	data->notch_width  = 20.0e3;
@@ -169,7 +169,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	//ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
 	//ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
-	
+
 	/* material properties */
 	data->rhoc = 2800.0;
 	data->rhom = 3300.0;
@@ -196,37 +196,37 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_phi2",&data->phi2,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_coe1",&data->coe1,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_coe2",&data->coe2,&flg);CHKERRQ(ierr);
-	
+
 	/* Initial Temperature profile */
 	if(use_energy) {
 		data->thermalparams.nlayers  = 3;
 		data->thermalparams.lscale   = data->length_bar;
-		
+
 		data->thermalparams.ytop[0]  = 250.0e3;
 		data->thermalparams.thick[0] = 35.0e3;
 		data->thermalparams.ttop[0]  = 0.0;
 		data->thermalparams.cond[0]  = 2.25;
 		data->thermalparams.hp[0]    = 0.9e-6;
 		data->thermalparams.qbase[0] = 19.5e-3;
-		
+
 		data->thermalparams.ytop[1]  = 215.0e3;
 		data->thermalparams.thick[1] = 85.0e3;
 		data->thermalparams.ttop[1]  = 550.0;
 		data->thermalparams.cond[1]  = 2.25;
 		data->thermalparams.hp[1]    = 0.0;
 		data->thermalparams.qbase[1] = 19.5e-3;
-		
+
 		data->thermalparams.ytop[2]  = 130.0e3;
 		data->thermalparams.thick[2] = 130.0e3;
 		data->thermalparams.ttop[2]  = 1330.0;
 		data->thermalparams.cond[2]  = 48.75;
 		data->thermalparams.hp[2]    = 0.0;
 		data->thermalparams.qbase[2] = 19.5e-3;
-		
+
 		data->Ttop    = 0.0;
 		data->Tbottom = 1382.0;
 	}
-	
+
 	/* rheology parameters */
     ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
 	rheology->rheology_type  = RHEOLOGY_VP_STD;
@@ -235,9 +235,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	rheology->eta_upper_cutoff_global       = 1.0e+28;
 	rheology->eta_lower_cutoff_global       = 1.0e+19;
 	data->runmises = PETSC_FALSE;
-	
+
 	//    ierr = PetscOptionsGetInt(NULL,"-model_Rift_oblique3d_param2",&data->param2,&flg);CHKERRQ(ierr);
-	
+
 	/* Material constants */
     ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
     ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
@@ -286,7 +286,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	T_threshold = 1380.0 ;
 	dT = 50.0 ;
 	dTdy = -0.4e-3;
-	
+
 
 	ierr = MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);//DENSITY_BOUSSINESQ);
 CHKERRQ(ierr);
@@ -299,7 +299,7 @@ CHKERRQ(ierr);
 	nexp     = 3.0;
 	Tref     = 273.0;
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
-	
+
 	//DENSITY PARAMETERS FOR STOKES
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.0e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhom);
@@ -310,7 +310,7 @@ CHKERRQ(ierr);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,data->coe1,data->coe2,1.0e7,1.0e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
-	
+
 	// ENERGY //
 	//Conductivity
 	MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
@@ -337,7 +337,7 @@ CHKERRQ(ierr);
 
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);//DENSITY_BOUSSINESQ);
 
-	
+
 	//VISCOSITY PARAMETERS - wet olivine x 5, karato
 	preexpA = 1.393e-14;
 	Ascale  = 5.0;
@@ -346,7 +346,7 @@ CHKERRQ(ierr);
 	nexp    = 3.0;
 	Tref    = 273.0;
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
-	
+
 	//DENSITY PARAMETERS FOR STOKES
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhom);
@@ -357,7 +357,7 @@ CHKERRQ(ierr);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,data->coe1,data->coe2,1.0e7,1.0e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
-	
+
 
 	//ENERGY//
 	//MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
@@ -381,7 +381,7 @@ CHKERRQ(ierr);
 	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
 	k0 = 2.25 ; //standard conductivity
 
-	
+
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);//DENSITY_BOUSSINESQ);
 
 	//VISCOSITY PARAMETERS
@@ -392,7 +392,7 @@ CHKERRQ(ierr);
 	nexp    = 4.0;
 	Tref    = 273.0;
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
-	
+
 	//DENSITY PARAMETERS STOKES
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.0e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
@@ -403,7 +403,7 @@ CHKERRQ(ierr);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,data->coe1,data->coe2,1.0e7,1.0e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
-	
+
 	//-------------------------------------//
 	/* PHASE 3, LOWER CRUST MARKERS */
 	//-------------------------------------//
@@ -423,7 +423,7 @@ CHKERRQ(ierr);
 	Tref    = 273.0;
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etac);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
-	
+
 	//DENSITY PARAMETERS
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.0e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
@@ -604,10 +604,10 @@ CHKERRQ(ierr);
     EnergySourceConst              *matconstants_h_const;
     EnergyConductivityThreshold	   *matconstants_cond;
     EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
-    double alpha,beta,rho_ref,Cp,k,k0,k1,dT,T_threshold,dTdy;    
+    double alpha,beta,rho_ref,Cp,k,k0,k1,dT,T_threshold,dTdy;
     int 	 conductivity_type, density_type, conductivity_type_asthen;
-    
-    
+
+
     /* Get the energy data fields, and the field entries */
     DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
     DataFieldGetEntries(PField,(void**)&matconstants_e);
@@ -622,7 +622,7 @@ CHKERRQ(ierr);
     DataFieldGetEntries(PField,(void**)&matconstants_h_const);
 
     DataBucketGetDataFieldByName(materialconstants,EnergySourceAdiabaticAdvection_classname,&PField);
-    DataFieldGetEntries(PField,(void**)&matconstants_source_adi_adv);    
+    DataFieldGetEntries(PField,(void**)&matconstants_source_adi_adv);
 
     conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
     density_type      = ENERGYDENSITY_CONSTANT;
@@ -641,7 +641,7 @@ CHKERRQ(ierr);
     MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type_asthen,NULL);
     MaterialConstantsSetValues_ConductivityThreshold(0,matconstants_cond, k0, k1, T_threshold, dT);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[0],0.0);
-    MaterialConstantsSetValues_SourceAdiabaticAdv(0, matconstants_source_adi_adv, dTdy);    
+    MaterialConstantsSetValues_SourceAdiabaticAdv(0, matconstants_source_adi_adv, dTdy);
 
     //ISOVISCOUS ASTHENOSPHERE
     MaterialConstantsSetValues_EnergyMaterialConstants(6,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type_asthen,NULL);
@@ -658,7 +658,7 @@ CHKERRQ(ierr);
     MaterialConstantsSetValues_EnergyMaterialConstants(1,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
     EnergyConductivityConstSetField_k0(&matconstants_k_const[1],k);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[1],0.0);
-    
+
     //ISOVISCOUS LITHOSPHERIC MANTLE
     MaterialConstantsSetValues_EnergyMaterialConstants(7,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
     EnergyConductivityConstSetField_k0(&matconstants_k_const[7],k);
@@ -700,11 +700,11 @@ CHKERRQ(ierr);
     //phase = 2,3;
     //kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
     //H     = 0.9e-6/data->pressure_bar*data->time_bar;
-    
+
     //phase = 0, 1;
     //kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
     //H     = 0.0;
-    
+
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[0],ENERGYSOURCE_NONE);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[1],ENERGYSOURCE_NONE);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[2],ENERGYSOURCE_NONE);
@@ -714,7 +714,7 @@ CHKERRQ(ierr);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[6],ENERGYSOURCE_NONE);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[7],ENERGYSOURCE_NONE);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[8],ENERGYSOURCE_NONE);
-   
+
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_CONSTANT);
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[1],0,ENERGYSOURCE_CONSTANT);
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_CONSTANT);
@@ -727,11 +727,11 @@ CHKERRQ(ierr);
     //pseudo adiabat in the asthenosphere
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],1,ENERGYSOURCE_ADIABATIC_ADVECTION);
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[6],1,ENERGYSOURCE_ADIABATIC_ADVECTION);
-    
+
   }
-  
-  
-  
+
+
+
 	/* Read the options */
 	/* cutoff */
 	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
@@ -748,11 +748,11 @@ CHKERRQ(ierr);
 		ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
 		ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
 	}
-	
+
 	/* compute vxdown */
 	//dh_vx = data->hvbx1 - data->hvbx2;
 	//data->vx_down = -data->vx_up * (data->hc + data->hm +dh_vx/2.0) / (data->ha - dh_vx/2.0);
-	
+
 	/* reports before scaling */
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  input: -model_Rift_oblique3d_Lx : %+1.4e [SI]\n", data->Lx );
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  input: -model_Rift_oblique3d_Ly : %+1.4e [SI]\n", data->Ly );
@@ -761,17 +761,17 @@ CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  -model_Rift_oblique3d_rhoc [kg/m^3] :%+1.4e \n", data->rhoc );
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  -model_Rift_oblique3d_rhom [kg/m^3] :%+1.4e \n", data->rhom );
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  -model_Rift_oblique3d_rhoa [kg/m^3] :%+1.4e \n", data->rhoa );
-	
+
 	for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
 		MaterialConstantsPrintAll(materialconstants,regionidx);
 	}
-	
+
 	if (data->dimensional) {
 		/* Compute additional scaling parameters */
 		data->time_bar      = data->length_bar / data->velocity_bar;
 		data->pressure_bar  = data->viscosity_bar/data->time_bar;
 		data->density_bar   = data->pressure_bar / data->length_bar;
-		
+
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]:  during the solve scaling will be done using \n");
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  L*    : %1.4e [m]\n", data->length_bar );
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  U*    : %1.4e [m.s^-1]\n", data->velocity_bar );
@@ -799,24 +799,24 @@ CHKERRQ(ierr);
 		data->rhoc = data->rhoc/data->density_bar;
 		data->rhom = data->rhom/data->density_bar;
 		data->rhoa = data->rhoa/data->density_bar;
-		
-    
+
+
   //  printf("[crust phase 2] kappa %1.9e H %1.9e\n",
    //        1.0e-6/data->length_bar/data->length_bar*data->time_bar,
    //        0.9e-6/data->pressure_bar*data->time_bar);
    // 0.9e-6*data->time_bar/data->pressure_bar);
-    
+
 		// scale material properties
 		for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
 			MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
 			MaterialConstantsEnergyScaleAll(materialconstants,regionidx,data->length_bar,data->time_bar,data->pressure_bar);
 		}
-		
-		/* Reports scaled values */		
+
+		/* Reports scaled values */
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] scaled value    -model_Rift_oblique3d_Lx   :  %+1.4e \n", data->Lx );
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] scaled value    -model_Rift_oblique3d_Ly   :  %+1.4e \n", data->Ly );
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] scaled value    -model_Rift_oblique3d_Lz   :  %+1.4e \n", data->Lz );
-		
+
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] scaled value   -model_Rift_oblique3d_vx_up:%+1.4e    -model_Rift_oblique3d_vx_down:%+1.4e \n", data->vx_up ,data->vx_down);
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] scaled value   -model_Rift_oblique3d_rhoc:%+1.4e \n", data->rhoc );
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] scaled value   -model_Rift_oblique3d_rhom:%+1.4e \n", data->rhom );
@@ -826,15 +826,15 @@ CHKERRQ(ierr);
 			MaterialConstantsPrintAll(materialconstants,regionidx);
 		}
 	}
-	
+
 	data->output_markers = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_output_markers",&data->output_markers,NULL);CHKERRQ(ierr);
-	
+
 	/* USE ENERGY EQUATION */
 	if (use_energy) {
 		ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 	}
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -851,20 +851,20 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 	PetscReal      MeshMax[3],MeshMin[3],height,length,vxl,vxr,vybottom;
 	PetscBool      use_initial_up_field = PETSC_FALSE;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_use_initial_up_field",&use_initial_up_field,NULL);
-	
+
 	if (use_initial_up_field) {
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] Using velocity from boundary condition and mantle hydrostatic pressure as initial condition\n");
-		
+
 		ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
                 ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
 		ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
 		ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		
+
 		/* velocity intial condition - background strain */
 		ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
 		vxl = -data->vx_up;
@@ -873,13 +873,13 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 		height = MeshMax[1] - MeshMin[1];
 		length = MeshMax[0] - MeshMin[0];
 		vybottom = 2.0*data->vx_up * height / length;
-		
+
 		ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vxr-vxl)/(length),vxl,0.0);CHKERRQ(ierr);
 		ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-		
+
 		ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,(0.0-vybottom)/(height),vybottom,0.0);CHKERRQ(ierr);
 		ierr = DMDAVecTraverse3d(dau,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-		
+
 		/* pressure initial condition - hydrostatic */
 		ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 		HPctx.surface_pressure = 0.0;
@@ -889,20 +889,20 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 		HPctx.rho        = data->rhom;
 		ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
 		ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
-		
+
 		ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	}
-	
+
 	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
 	if (use_energy) {
 		PhysCompEnergy energy;
 		Vec            temperature;
 		DM             daT;
-		
+
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
-		
+
 		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse_InitialThermalField3D,(void*)&data->thermalparams);CHKERRQ(ierr);
 	}
 
@@ -922,10 +922,10 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	PetscInt       vbc_type;
 	PetscBool      flg;
 	PetscErrorCode ierr;
-	
-	
+
+
 	PetscFunctionBegin;
-	
+
 	/*vbc type setup*/
 	data->vbc_type = 2;
 	data->tmin = 8.0; // time (in Ma) when pull stops along X, used only when vbc_type = 3
@@ -942,30 +942,30 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-	
+
 	zero=0.0;
 	//    vbc_type = 1; /* in / out flow condition on the sides */
 	vbc_type = data->vbc_type; /* if 2, outflow condition on the sides, inflow condition on the base */
-	
+
 	/*if (vbc_type == 1) {
-		
+
 		// infilling free slip base
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		
+
 		// free surface top
-		
+
 		//extension along face of normal x
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_rift_oblique3dl,(void*)data);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_rift_oblique3dr,(void*)data);CHKERRQ(ierr);
-		
+
 		//free slip base
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		
+
 		// no flow in z
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	}*/
-	
+
 	/* vbc_type = 1 pull only on one wall at fullRate*/
 	if (vbc_type == 1) {
 		vxl = zero;
@@ -974,23 +974,23 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 		height = MeshMax[1] - MeshMin[1];
 		length = MeshMax[0] - MeshMin[0];
 		vybottom = 2*data->vx_up * height / length;
-		
+
 		/* infilling free slip base */
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		
+
 		/* free surface top*/
-		
+
 		/*extension along face of normal x */
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vxl);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vxr);CHKERRQ(ierr);
-		
+
 		/*free slip base*/
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vybottom);CHKERRQ(ierr);
-		
+
 		/* no flow in z*/
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	}	
+	}
 
 
 
@@ -1001,24 +1001,24 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 		height = MeshMax[1] - MeshMin[1];
 		length = MeshMax[0] - MeshMin[0];
 		vybottom = 2.*data->vx_up * height / length;
-		
+
 		/* infilling free slip base */
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		
+
 		/* free surface top*/
-		
+
 		/*extension along face of normal x */
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vxl);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vxr);CHKERRQ(ierr);
-		
+
 		/*free slip base*/
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vybottom);CHKERRQ(ierr);
-		
+
 		/* no flow in z*/
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	}
-	
+
 	/* changing BC with time */
 	if (vbc_type == 3) {
 		vxl = -data->vx_up;
@@ -1080,9 +1080,9 @@ PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *
 	ModelRift_oblique3dCtx *datal = (ModelRift_oblique3dCtx*)data;
 	PetscBool   impose_dirichlet = PETSC_TRUE;
 	PetscScalar vx,dh_vx;
-	
+
 	PetscFunctionBegin;
-	
+
 	dh_vx = datal->hvbx1 - datal->hvbx2;
 	if ( position[1] >= datal->ha ) {
 		vx = -datal->vx_up;
@@ -1100,9 +1100,9 @@ PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *
 	ModelRift_oblique3dCtx *datal = (ModelRift_oblique3dCtx*)data;
 	PetscBool   impose_dirichlet = PETSC_TRUE;
 	PetscScalar vx,dh_vx;
-	
+
 	PetscFunctionBegin;
-	
+
 	dh_vx = datal->hvbx1 - datal->hvbx2;
 	if ( position[1] >= datal->ha ) {
 		vx = datal->vx_up;
@@ -1124,35 +1124,35 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift_oblique3d(pTatinCtx c,void *ctx)
     BCList         u_bclist;
 	PetscBool      use_energy;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
     ierr = PhysCompStokesGetBCList(stokes,&u_bclist,NULL);CHKERRQ(ierr);
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
 	ierr = ModelRift_oblique3d_DefineBCList(u_bclist,dav,c,data);CHKERRQ(ierr);
-	
+
 	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
 	if (use_energy) {
 		PetscReal      val_T;
 		PhysCompEnergy energy;
 		BCList         bclist;
 		DM             daT;
-		
+
 		ierr   = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 		daT    = energy->daT;
 		bclist = energy->T_bclist;
-		
+
 		val_T = data->Ttop;
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
-		
+
 		val_T = data->Tbottom;
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
 	}
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -1161,14 +1161,14 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift_oblique3d(PetscInt nl,BCList b
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
 	PetscInt       n;
 	PetscErrorCode ierr;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	for (n=0; n<nl; n++) {
 		ierr = ModelRift_oblique3d_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
-	}	
-	
+	}
+
 	PetscFunctionReturn(0);
 }
 
@@ -1180,16 +1180,16 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 	PhysCompStokes         stokes;
 	DM                     stokes_pack,dau,dap;
 	PetscErrorCode         ierr;
-	
+
 	PetscFunctionBegin;
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-    
+
 	ierr = DMDASetUniformCoordinates(dau,0.0,data->Lx,0.0,data->Ly,0.0,data->Lz);CHKERRQ(ierr);
-	
+
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] Lx = %1.4e \n", data->Lx );
 
         // {
@@ -1220,7 +1220,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 	}
 
 
-	
+
 	{
 	    PetscReal gvec[] = { 0.0, -10.0, 0.0 };
 	    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
@@ -1245,12 +1245,12 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 	PetscBool              use_energy;
 	PetscMPIInt    rank;
 
-	
-	
+
+
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 
 	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 	srand(rank+1);// random seed, to avoid pattern repetition we use the rank number
@@ -1262,14 +1262,14 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
-	
+
 	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
 	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
-	
+
 	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
 	DataFieldGetAccess(PField_pls);
-	
+
 	ha_dimensional = data->ha * data->length_bar;
 	hm_dimensional = data->hm * data->length_bar;
 	x_center       = 0.5 * data->Lx * data->length_bar;
@@ -1277,10 +1277,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 	notch_width    = data->notch_width;//20.0e3;
 	notch_height   = data->notch_height;//10.0e3;
 	notch_base     = data->notch_base;
-	
+
 	/* marker loop */
 	DataBucketGetSizes(db,&n_mp_points,0,0);
-	
+
 	/*define notch type, 1: one notch; 2: two notches/weak seeds ; 3: random noise in damage zone with lateral buffers; 4: 3 seeds (2 on the edges, one in the centre) in a large noise zone */
 	notch_type = data->notch_type;
 	isoBorder = data->isoBorder;
@@ -1293,14 +1293,14 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 		double      eta,rho;
 		int         phase;
 		float       plastic_strain;
-		
+
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point_std);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&material_point_stokes);
 		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
-		
+
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point_std,&position);
-		
+
 		phase = 0;
 		eta=data->etaa;
 		rho=data->rhoa;
@@ -1314,7 +1314,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 			eta=data->etac;
 			rho=data->rhoc;
 		}
-		
+
 		/* make 25 km (0.25) stripes in the lower crust  in the x and z direction */
 		if (position[1] > data->ha + data->hm) {
 					int j=0;
@@ -1352,7 +1352,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 		yp_dimensional = position[1] * data->length_bar;
 		zp_dimensional = position[2] * data->length_bar;
 		plastic_strain = 0.0;
-		
+
 		if (notch_type == 0 ) {
 			plastic_strain = 0.0;
 		}
@@ -1364,7 +1364,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 				}
 			}
 		}
-		
+
 		if (notch_type == 2 ) {
 			if ((xp_dimensional >= x_center - data->dxn - 0.5*notch_width) && (xp_dimensional <= x_center - data->dxn + 0.5*notch_width)) {
 				if ((yp_dimensional <= ha_dimensional + hm_dimensional) && (yp_dimensional > ha_dimensional + hm_dimensional - notch_height)) {
@@ -1381,7 +1381,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 				}
 			}
 		}
-		
+
 		if (notch_type == 3 ) {
 			double beta,buff,dam;
 			double a,b;
@@ -1453,14 +1453,14 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 					}
 			}
 		}
-		
+
 		/* a cubic seed in the upper lithospheric mantle at the centre of the model */
 		if (notch_type == 5 ) {
 			if (((xp_dimensional >= x_center - 0.5*notch_width) && (xp_dimensional <= x_center + 0.5*notch_width)) && ((zp_dimensional >= z_center - 0.5*notch_width) && (zp_dimensional <= z_center + 0.5*notch_width)) && ((yp_dimensional >= ha_dimensional + hm_dimensional - 2.*notch_width) && (yp_dimensional < ha_dimensional + hm_dimensional  - notch_width))) {
 					plastic_strain = 1.0;
 				}
 			}
-		
+
 		if (isoBorder == 1) {
 			if (position[1] <= data->ha  && (position[2] < 1) )  {
 				phase = 6;
@@ -1532,7 +1532,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 				rho=data->rhom;
 				plastic_strain = 0.0;
 			}
-			
+
 			if (position[1] > (data->ha+data->hm) && (position[2] < 1)) {
 				phase = 8;
 				eta=data->etaa;
@@ -1580,7 +1580,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 				rho=data->rhom;
 				plastic_strain = 0.0;
 			}
-			
+
 			//2nd small mantle notch 20km wide, 10 km inside the model
 			if ((xp_dimensional >= x_center - 10e3) && (xp_dimensional <= x_center + 10e3) && (position[1] > data->ha) && (position[1] < (data->ha+data->hm)) && (position[2] > 10.9) ) {
 				phase = 7;
@@ -1588,7 +1588,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 				rho=data->rhom;
 				plastic_strain = 0.0;
 			}
-			
+
 			if (position[1] > (data->ha+data->hm) && (position[2] < 1)) {
 				phase = 8;
 				eta=data->etaa;
@@ -1609,11 +1609,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 		MPntPStokesSetField_eta_effective(material_point_stokes,eta);
 		MPntPStokesSetField_density(material_point_stokes,      rho);
 	}
-	
+
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_pls);
 	DataFieldRestoreAccess(PField_stokes);
-	
+
 	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
 	/*if (use_energy) {
 		ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
@@ -1644,7 +1644,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 		}
 		ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
 	}    */
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -1656,29 +1656,29 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift_oblique3d(pTatinCtx u
 	Vec                          Uloc,Ploc;
 	PetscScalar                  *LA_Uloc,*LA_Ploc;
 	PetscErrorCode               ierr;
-	
+
 	PetscFunctionBegin;
-	
+
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
-	
+
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
-	
+
 	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
 	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
 	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
-	
+
 	/* interpolate mesh velocity and pressure to markers and then sets viscosity */
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
-	
+
 	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
-	
+
 	ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
-	
+
 
 	PetscFunctionReturn(0);
 }
@@ -1698,33 +1698,33 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
 	int                p,n_mp_points;
 	MPAccess           mpX;
 	PetscErrorCode     ierr;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-		
+
 	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
-		
+
 	/* create face storage for markers */
 	DataBucketDuplicateFields(material_point_db,&material_point_face_db);
-	
+
 	for (f=0; f<n_face_list; f++) {
-		
+
 		/* traverse */
 		/* [0,1/east,west] ; [2,3/north,south] ; [4,5/front,back] */
 		Nxp[0]  = 1;
 		Nxp[1]  = 1;
 		perturb = 0.1;
-		
+
 		/* reset size */
 		DataBucketSetSizes(material_point_face_db,0,-1);
-		
+
 		/* assign coords */
 		ierr = SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(dav,Nxp,perturb, face_list[f], material_point_face_db);CHKERRQ(ierr);
-		
+
 		/* assign values */
 		DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
 		ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
@@ -1732,14 +1732,14 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
 			ierr = MaterialPointSet_phase_index(mpX,p,MATERIAL_POINT_PHASE_UNASSIGNED);CHKERRQ(ierr);
 		}
 		ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
-		
+
 		/* insert into volume bucket */
 		DataBucketInsertValues(material_point_db,material_point_face_db);
 	}
-	
+
 	/* Copy ALL values from nearest markers to newly inserted markers expect (xi,xip,pid) */
 	ierr = MaterialPointRegionAssignment_v1(material_point_db,dav);CHKERRQ(ierr);
-	
+
 	/* reset any variables */
 	DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
 	ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
@@ -1748,12 +1748,12 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
 		ierr = MaterialPointSet_yield_indicator(mpX,p,0);CHKERRQ(ierr);
 	}
 	ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
-	
+
 	/* re-assign pid's for new particles such that they are consistent with the original volume marker set */
-	
+
 	/* delete */
 	DataBucketDestroy(&material_point_face_db);
-#endif	
+#endif
 	PetscFunctionReturn(0);
 }
 
@@ -1770,27 +1770,27 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	Vec              velocity,pressure;
 	PetscErrorCode   ierr;
 
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
-	//if (c->step%(50) == 0) {	
+	//if (c->step%(50) == 0) {
 	/* fully lagrangian update */
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	
+
 
 
 	/* ONLY VERTICAL REMESHING */
 	//ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
-	
+
 	/* SURFACE REMESHING */
 	ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,NULL,step);
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	
+
         /* UPDATE mesh refinement scheme */
 	//remesh vertically and preserve topography
 	{
@@ -1810,11 +1810,11 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 		dir = 1;
 		ierr = DMDACoordinateRefinementTransferFunction(dav,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
 		ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
-	}	
-	
+	}
+
 	/* PSwarm update */
 	ierr = PSwarmFieldUpdateAll(data->pswarm);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -1835,15 +1835,15 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
   if (simple_output) {
     ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } 
+  }
 
   ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 
-  if (data->output_markers) { 
+  if (data->output_markers) {
     ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
   }
 
-  if (data->output_markers) { 
+  if (data->output_markers) {
     ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
     //  Write out just the stokes variable?
     //  const int nf = 1;
@@ -1863,7 +1863,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
   /* MPOINTS_CELL OUTPUT */
   Step = c->step;
   outFre = c->output_frequency;
-  if (Step%(outFre*2) == 0) 
+  if (Step%(outFre*2) == 0)
     /*{
       const int  nf = 4;
       const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain };
@@ -1903,14 +1903,14 @@ PetscErrorCode ModelDestroy_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
 	PetscErrorCode         ierr;
-	
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
-	
+
 	/* Free contents of structure */
 	/* destroy PSwarm*/
 	ierr = PSwarmDestroy(&data->pswarm);CHKERRQ(ierr);
-	
+
 	/* Free structure */
 	ierr = PetscFree(data);CHKERRQ(ierr);
 
@@ -1923,45 +1923,45 @@ PetscErrorCode pTatinModelRegister_Rift_oblique3d(void)
 	ModelRift_oblique3dCtx *data;
 	pTatinModel            m;
 	PetscErrorCode         ierr;
-	
+
 	PetscFunctionBegin;
-	
+
 	/* Allocate memory for the data structure for this model */
 	ierr = PetscMalloc(sizeof(ModelRift_oblique3dCtx),&data);CHKERRQ(ierr);
 	ierr = PetscMemzero(data,sizeof(ModelRift_oblique3dCtx));CHKERRQ(ierr);
-	
+
 	/* set initial values for model parameters */
 	//	data->Lx = 0.0;
 	//	data->param2 = 0;
-	
+
 	/* register user model */
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
-	
+
 	/* Set name, model select via -ptatin_model NAME */
 	ierr = pTatinModelSetName(m,"Rift_oblique3d");CHKERRQ(ierr);
-	
+
 	/* Set model data */
 	ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
-	
+
 	/* Set function pointers */
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Rift_oblique3d);CHKERRQ(ierr);
-	
+
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Rift_oblique3d);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Rift_oblique3d);CHKERRQ(ierr);
 		ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian);CHKERRQ(ierr);
-	
+
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Rift_oblique3d);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Rift_oblique3d);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_Rift_oblique3d);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,   (void (*)(void))ModelApplyInitialStokesVariableMarkers_Rift_oblique3d);CHKERRQ(ierr);
-	
+
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian);CHKERRQ(ierr);
-	
+
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_Rift_oblique3d);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_Rift_oblique3d);CHKERRQ(ierr);
-	
+
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }

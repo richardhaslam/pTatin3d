@@ -2043,7 +2043,7 @@ PetscErrorCode SolCxSolution(const PetscReal pos[],
   t1383 = t1170 * ZA;
   t1388 = 0.2e1 * t1138 * t1297 - 0.8e1 * t1148 * t1192 + 0.2e1 * t1138 * t1292 - 0.16e2 * t1119 * t1251 + 0.8e1 * t1175 * xc * t110 * t1113 * t3 - 0.2e1 * t1112 * t1153 * t1113 + 0.128e3 * t1369 * t1130 + 0.16e2 * t1119 * t1333 + 0.4e1 * t1138 * t78 * ZA * ZB + 0.8e1 * t1378 * t78 * t9 * ZB - 0.64e2 * t1383 * t1343 + 0.64e2 * t1383 * t1130;
   t1420 = 0.4e1 * t1138 * t119 * ZA - 0.128e3 * t1369 * t1343 - 0.4e1 * t187 * t1153 * t9 - 0.2e1 * t1138 * t1226 + 0.8e1 * t1296 * t1328 - 0.2e1 * t1112 * t1139 * t1113 - 0.8e1 * t1148 * t3 * t17 * t30 - 0.32e2 * t1296 * t1320 + 0.8e1 * t1176 * t1122 + 0.4e1 * t187 * t1292 * t9 + 0.8e1 * t1378 * t119 * t9 - 0.8e1 * t1103 * t1218;
-  
+
   _C4B = (-t424 * t508 + 0.8e1 * t412 * t750 - 0.2e1 * t232 * t595 - 0.4e1 * t126 * t323 + t1096 - t76 * t204 + t728 + 0.2e1 * t548 * t827 + 0.2e1 * t150 * t469 + t398 + 0.8e1 * t189 * t146 + t260 - 0.2e1 * t351 * t184 - 0.2e1 * t268 * t673 - 0.4e1 * t319 * t279 + t464 - 0.2e1 * t108 * t461 + 0.16e2 * t740 * t369 + 0.16e2 * t274 * t216 * t754 - 0.16e2 * t70 * t139 * t591 + 0.2e1 * t55 * t56 * t128 - 0.2e1 * t359 * t89 * t111 + 0.2e1 * t734 * t563 * t111 + 0.6e1 * t223 * t224 * t97 + 0.8e1 * t383 * t389 * t103 + 0.4e1 * t606 * ZA * t326 - 0.2e1 * t93 * t18 * t316 - 0.4e1 * t443 * t27 * t128 + 0.8e1 * t197 * t27 * t199 + 0.8e1 * t108 * t109 * t128 - t249 * t604 + 0.16e2 * t70 * t616 - 0.8e1 * t969 * t323 + t845 - t424 * t579 + 0.16e2 * t159 * t162 + t290 * t406 - 0.6e1 * t150 * t864 + t192 * t116 + 0.2e1 * t867 * t326 - 0.4e1 * t658 * t326 - 0.2e1 * t351 * t502 - t76 * t165 + t900 + 0.8e1 * t168 * t323 + t791 + 0.8e1 * t740 * t915 - 0.4e1 * t562 * t750 - 0.4e1 * t278 * t342 + 0.4e1 * t319 * t431 + 0.2e1 * t173 * t175 + t424 * t528 + 0.8e1 * t969 * t129 - 0.8e1 * t347 * t181 + t332 + t530 - 0.2e1 * t108 * t329 - 0.2e1 * t207 * t38 * t37 * t1 * ZA + t1001 + 0.4e1 * t408 * t379 + t76 * t448 + 0.2e1 * t102 * t184 + 0.2e1 * t426 * t329 + 0.16e2 * t740 * t98 - t282 * t127 - 0.16e2 * t1 * t44 * t69 * t552 * t116 + 0.2e1 * t168 * t169 + 0.2e1 * t28 * t134 - t290 * t604 - 0.16e2 * t484 * t485 - 0.8e1 * t740 * t480 + 0.2e1 * t173 * t601 - 0.2e1 * t335 * t336 + t600 + 0.2e1 * t62 * t864 + t952 + 0.8e1 * t347 * t134 - t192 * t355 + t192 * t194 + 0.2e1 * t228 * t461 + t663 + 0.4e1 * t383 * t27 * t417 * t16 + 0.4e1 * t138 * t20 * ZA * t10 - 0.4e1 * t20 * ZB * ZA * t326 + 0.4e1 * t196 * t88 * t77 * t744 - 0.16e2 * t67 * xc * t179 * t181 - 0.8e1 * t95 * t480 - t249 * t488 - t76 * t475 + t1055 - 0.4e1 * t408 * t22 - 0.10e2 * t28 * t379 + 0.2e1 * t335 * t974 + t153 - 0.8e1 * t95 * t1042 - 0.2e1 * t734 * t735) / (t1156 + t1201 + t1242 + t1282 + t1317 + t1350 + t1388 + t1420);
   /****************************************************************************************/
   /****************************************************************************************/
@@ -2279,7 +2279,7 @@ PetscErrorCode EvaluateV_SolCx(PetscReal pos[],PetscReal vel[],void *ctx)
 {
   ParamsSolCx *data = (ParamsSolCx*)ctx;
   PetscErrorCode ierr;
-  
+
   ierr = SolCxSolution((const PetscReal*)pos, data->etaA, data->etaB, data->xc, data->n,
                        vel,NULL,NULL,NULL);CHKERRQ(ierr);
   vel[2] = 0.0;
@@ -2291,22 +2291,22 @@ PetscErrorCode EvaluateE_SolCx(PetscReal pos[],PetscReal E[],void *ctx)
   ParamsSolCx *data = (ParamsSolCx*)ctx;
   PetscReal E_voigt[3];
   PetscErrorCode ierr;
-  
+
   ierr = SolCxSolution((const PetscReal*)pos, data->etaA, data->etaB, data->xc, data->n,
                        NULL,NULL,NULL,E_voigt);CHKERRQ(ierr);
-  
+
   E[0] = E_voigt[0]; /* E_xx */
   E[1] = E_voigt[2]; /* E_xy */
   E[2] = 0.0;        /* E_xz */
-  
+
   E[3] = E_voigt[2]; /* E_yx */
   E[4] = E_voigt[1]; /* E_yy */
   E[5] = 0.0;        /* E_yz */
-  
+
   E[6] = 0.0;
   E[7] = 0.0;
   E[8] = 0.0;
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -2314,7 +2314,7 @@ PetscErrorCode EvaluateP_SolCx(PetscReal pos[],PetscReal p[],void *ctx)
 {
   ParamsSolCx *data = (ParamsSolCx*)ctx;
   PetscErrorCode ierr;
-  
+
   ierr = SolCxSolution((const PetscReal*)pos, data->etaA, data->etaB, data->xc, data->n,
                        NULL,p,NULL,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

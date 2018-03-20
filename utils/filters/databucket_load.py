@@ -12,40 +12,40 @@ def unpack_MPntStd_allAtOnce(f,L):
   bytes_int   = ctypes.sizeof(ctypes.c_int)
   bytes_long   = ctypes.sizeof(ctypes.c_long)
   bytes_double = ctypes.sizeof(ctypes.c_double)
-  
+
   bytes_set = bytes_long + 3*bytes_double + 3*bytes_double + bytes_int + bytes_int
-  
+
   entry_byte = f.read(bytes_set*L)
-  
+
   points = struct.unpack("lddddddii"*L, entry_byte)
   return points
 
 class MPntStd:
   def __init__(self):
-    
+
     bytes_int    = ctypes.sizeof(ctypes.c_int)
     bytes_long   = ctypes.sizeof(ctypes.c_long)
     bytes_double = ctypes.sizeof(ctypes.c_double)
-    
+
     bytes_set = bytes_long + 3*bytes_double + 3*bytes_double + bytes_int + bytes_int
     self.point_bytes = bytes_set
     self.numberFlatMembers = 1 + 3 + 3 + 1 + 1
-  
+
   def load(self,file,L,atomicSize):
     self.L = L
-    
+
     if self.point_bytes != atomicSize:
       print('  ** atomic size mismatch **')
       sys.exit(1)
-    
+
     self.byte_array = unpack_MPntStd_allAtOnce(file,L)
-  
+
   def getValues(self,index):
     s = index * self.numberFlatMembers
     e = s + self.numberFlatMembers
     point = self.byte_array[ s : e ]
     return point
-  
+
   def getMemberCSizes(self):
     sizes = [[1 , "long int"],
              [3 , "double"],
@@ -53,7 +53,7 @@ class MPntStd:
              [1 , "int"],
              [1 , "int"]]
     return sizes
-  
+
   def getMemberNames(self):
     names = ["point_index",
              "global_coord",
@@ -65,7 +65,7 @@ class MPntStd:
 # MPntPStokes ===================================
 def unpack_MPntPStokes_allAtOnce(f,L):
   bytes_double = ctypes.sizeof(ctypes.c_double)
-  
+
   bytes_set = 2*bytes_double
   entry_byte = f.read(bytes_set*L)
   points = struct.unpack("dd"*L, entry_byte)
@@ -73,33 +73,33 @@ def unpack_MPntPStokes_allAtOnce(f,L):
 
 class MPntPStokes:
   def __init__(self):
-    
+
     bytes_double = ctypes.sizeof(ctypes.c_double)
-    
+
     bytes_set = 2*bytes_double
     self.point_bytes = bytes_set
     self.numberFlatMembers = 1 + 1
-  
+
   def load(self,file,L,atomicSize):
     self.L = L
-    
+
     if self.point_bytes != atomicSize:
       print('  ** atomic size mismatch **')
       sys.exit(1)
-    
+
     self.byte_array = unpack_MPntPStokes_allAtOnce(file,L)
-  
+
   def getValues(self,index):
     s = index * self.numberFlatMembers
     e = s + self.numberFlatMembers
     point = self.byte_array[ s : e ]
     return point
-  
+
   def getMemberCSizes(self):
     sizes = [[1 , "double"],
              [1 , "double"]]
     return sizes
-  
+
   def getMemberNames(self):
     names = ["eta_effective",
              "density"]
@@ -109,7 +109,7 @@ class MPntPStokes:
 def unpack_MPntPStokesPl_allAtOnce(f,L):
   bytes_float = ctypes.sizeof(ctypes.c_float)
   bytes_short = ctypes.sizeof(ctypes.c_short)
-  
+
   bytes_set = bytes_float + bytes_short
   entry_byte = f.read(bytes_set*L)
   points = struct.unpack("fh"*L, entry_byte)
@@ -119,7 +119,7 @@ def unpack_MPntPStokesPl_allAtOnce(f,L):
 def unpack_MPntPStokesPl_padded_allAtOnce(f,L):
   bytes_float = ctypes.sizeof(ctypes.c_float)
   bytes_short = ctypes.sizeof(ctypes.c_short)
-  
+
   bytes_set = bytes_float + bytes_float
   entry_byte = f.read(bytes_set*L)
   points = struct.unpack("ff"*L, entry_byte)
@@ -127,18 +127,18 @@ def unpack_MPntPStokesPl_padded_allAtOnce(f,L):
 
 class MPntPStokesPl:
   def __init__(self):
-    
+
     bytes_float = ctypes.sizeof(ctypes.c_float)
     bytes_short = ctypes.sizeof(ctypes.c_short)
-    
+
     bytes_set = bytes_float + bytes_short
     self.point_bytes = bytes_set
     self.numberFlatMembers = 1 + 1
     self.aligned = False
-  
+
   def load(self,file,L,atomicSize):
     self.L = L
-    
+
     if self.point_bytes != atomicSize:
       self.aligned = True
       print('  ** atomic size mismatch **')
@@ -155,16 +155,16 @@ class MPntPStokesPl:
     e = s + self.numberFlatMembers
     point = self.byte_array[ s : e ]
     return point
-  
+
   def getMemberCSizes(self):
     sizes = [[1 , "float"],
              [1 , "short"]]
     if self.aligned == True:
       sizes = [[1 , "float"],
                [1 , "short-->float"]]
-         
+
     return sizes
-  
+
   def getMemberNames(self):
     names = ["plastic_strain",
              "yield_indicator"]
@@ -173,7 +173,7 @@ class MPntPStokesPl:
 # MPntPEnergy ===================================
 def unpack_MPntPEnergy_allAtOnce(f,L):
   bytes_double = ctypes.sizeof(ctypes.c_double)
-  
+
   bytes_set = 2*bytes_double
   entry_byte = f.read(bytes_set*L)
   points = struct.unpack("dd"*L, entry_byte)
@@ -181,33 +181,33 @@ def unpack_MPntPEnergy_allAtOnce(f,L):
 
 class MPntPEnergy:
   def __init__(self):
-    
+
     bytes_double = ctypes.sizeof(ctypes.c_double)
-    
+
     bytes_set = 2*bytes_double
     self.point_bytes = bytes_set
     self.numberFlatMembers = 1 + 1
-  
+
   def load(self,file,L,atomicSize):
     self.L = L
-    
+
     if self.point_bytes != atomicSize:
       print('  ** atomic size mismatch **')
       sys.exit(1)
-    
+
     self.byte_array = unpack_MPntPEnergy_allAtOnce(file,L)
-  
+
   def getValues(self,index):
     s = index * self.numberFlatMembers
     e = s + self.numberFlatMembers
     point = self.byte_array[ s : e ]
     return point
-  
+
   def getMemberCSizes(self):
     sizes = [[1 , "double"],
              [1 , "double"]]
     return sizes
-  
+
   def getMemberNames(self):
     names = ["diffusivity",
              "heat_source"]
@@ -228,7 +228,7 @@ class GenericData:
     self.name = name
     self.totalBytes = totalBytes
     self.L = L
-  
+
   def load(self,file):
     self.bytes = read_bytes_allAtOnce(file,self.totalBytes)
 
@@ -247,7 +247,7 @@ class GenericData:
     e = s + self.blockSize
     point = self.byte_array[ s : e ]
     return point
-  
+
   def getMemberCSizes(self):
     if self.cType == ctypes.c_double:
       sizes = [[self.blockSize , "double"]]
@@ -308,17 +308,17 @@ def loadDataBucket(inputfile):
   dbfile = open(filename_p, "rb")
 
   for f in range(0,nfields):
-    
+
     print('Loading field named: ' + metaField[f]["fieldName"])
     header_byte = dbfile.read(bytes_long)
     total = struct.unpack("l", header_byte)[0]
     print('  bytes total to load ', total)
-    
+
     if metaField[f]["fieldName"] == "MPntStd":
       print('  matched MPntStd')
       point = MPntStd()
       point.load(dbfile,tlen,metaField[f]["atomicSize"])
-      
+
       # Merge dict
       loaded = {"MPntStd":point}
       databucket = dict(databucket, **loaded)
@@ -327,7 +327,7 @@ def loadDataBucket(inputfile):
       print('  matched MPntPStokes')
       point = MPntPStokes()
       point.load(dbfile,tlen,metaField[f]["atomicSize"])
-      
+
       loaded = {"MPntPStokes":point}
       databucket = dict(databucket, **loaded)
 
@@ -335,18 +335,18 @@ def loadDataBucket(inputfile):
       print('  matched MPntPStokesPl')
       point = MPntPStokesPl()
       point.load(dbfile,tlen,metaField[f]["atomicSize"])
-      
+
       loaded = {"MPntPStokesPl":point}
       databucket = dict(databucket, **loaded)
-    
+
     elif metaField[f]["fieldName"] == "MPntPEnergy":
       print('  matched MPntPEnergy')
       point = MPntPEnergy()
       point.load(dbfile,tlen,metaField[f]["atomicSize"])
-      
+
       loaded = {"MPntPEnergy":point}
       databucket = dict(databucket, **loaded)
-    
+
     else:
       print('An unknown data type was encounted. Loading raw bytes')
       point = GenericData(metaField[f]["fieldName"],total,tlen)

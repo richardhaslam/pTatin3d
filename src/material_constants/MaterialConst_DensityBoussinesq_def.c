@@ -62,17 +62,17 @@ const char *MaterialConst_DensityBoussinesq_member_names[] = {
 /* ===================================== */
 /* Getters for MaterialConst_DensityBoussinesq */
 /* ===================================== */
-void MaterialConst_DensityBoussinesqGetField_density(MaterialConst_DensityBoussinesq *point,double *data) 
+void MaterialConst_DensityBoussinesqGetField_density(MaterialConst_DensityBoussinesq *point,double *data)
 {
   *data = point->density;
 }
 
-void MaterialConst_DensityBoussinesqGetField_thermalexpension(MaterialConst_DensityBoussinesq *point,double *data) 
+void MaterialConst_DensityBoussinesqGetField_thermalexpension(MaterialConst_DensityBoussinesq *point,double *data)
 {
   *data = point->alpha;
 }
 
-void MaterialConst_DensityBoussinesqGetField_compressibility(MaterialConst_DensityBoussinesq *point,double *data) 
+void MaterialConst_DensityBoussinesqGetField_compressibility(MaterialConst_DensityBoussinesq *point,double *data)
 {
   *data = point->beta;
 }
@@ -81,17 +81,17 @@ void MaterialConst_DensityBoussinesqGetField_compressibility(MaterialConst_Densi
 /* ===================================== */
 /* Setters for MaterialConst_DensityBoussinesq */
 /* ===================================== */
-void MaterialConst_DensityBoussinesqSetField_density(MaterialConst_DensityBoussinesq *point,double data) 
+void MaterialConst_DensityBoussinesqSetField_density(MaterialConst_DensityBoussinesq *point,double data)
 {
   point->density = data;
 }
 
-void MaterialConst_DensityBoussinesqSetField_thermalexpension(MaterialConst_DensityBoussinesq *point,double data) 
+void MaterialConst_DensityBoussinesqSetField_thermalexpension(MaterialConst_DensityBoussinesq *point,double data)
 {
   point->alpha = data;
 }
 
-void MaterialConst_DensityBoussinesqSetField_compressibility(MaterialConst_DensityBoussinesq *point,double data) 
+void MaterialConst_DensityBoussinesqSetField_compressibility(MaterialConst_DensityBoussinesq *point,double data)
 {
   point->beta = data;
 }
@@ -123,7 +123,7 @@ void MaterialConst_DensityBoussinesqView(MaterialConst_DensityBoussinesq *point)
 /* ===================================== */
 /* VTK viewer for MaterialConst_DensityBoussinesq */
 /* ===================================== */
-void MaterialConst_DensityBoussinesqVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_DensityBoussinesq points[]) 
+void MaterialConst_DensityBoussinesqVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const MaterialConst_DensityBoussinesq points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"density\" format=\"ascii\">\n");
@@ -147,7 +147,7 @@ void MaterialConst_DensityBoussinesqVTKWriteAsciiAllFields(FILE *vtk_fp,const in
 /* ===================================== */
 /* PVTU viewer for MaterialConst_DensityBoussinesq */
 /* ===================================== */
-void MaterialConst_DensityBoussinesqPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void MaterialConst_DensityBoussinesqPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"density\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"alpha\" NumberOfComponents=\"1\"/>\n");
@@ -158,7 +158,7 @@ void MaterialConst_DensityBoussinesqPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for MaterialConst_DensityBoussinesq */
 /* ===================================== */
-void MaterialConst_DensityBoussinesqVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_DensityBoussinesq points[]) 
+void MaterialConst_DensityBoussinesqVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const MaterialConst_DensityBoussinesq points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"density\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -175,7 +175,7 @@ void MaterialConst_DensityBoussinesqVTKWriteBinaryAppendedHeaderAllFields(FILE *
 /* ================================================== */
 /* VTK binary (appended data) viewer for MaterialConst_DensityBoussinesq */
 /* ==================================================== */
-void MaterialConst_DensityBoussinesqVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_DensityBoussinesq points[]) 
+void MaterialConst_DensityBoussinesqVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const MaterialConst_DensityBoussinesq points[])
 {
   int p,length;
   size_t atomic_size;

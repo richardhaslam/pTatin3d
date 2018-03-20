@@ -34,22 +34,22 @@ const char *EnergyConductivityThreshold_member_names[] = {
 /* ================================================================= */
 /*   Getters for EnergyConductivityThreshold */
 /* ================================================================= */
-void EnergyConductivityThresholdGetField_k0(EnergyConductivityThreshold *point,double *data) 
+void EnergyConductivityThresholdGetField_k0(EnergyConductivityThreshold *point,double *data)
 {
   *data = point->k0;
 }
 
-void EnergyConductivityThresholdGetField_k1(EnergyConductivityThreshold *point,double *data) 
+void EnergyConductivityThresholdGetField_k1(EnergyConductivityThreshold *point,double *data)
 {
   *data = point->k1;
 }
 
-void EnergyConductivityThresholdGetField_ThresholdTemperature(EnergyConductivityThreshold *point,double *data) 
+void EnergyConductivityThresholdGetField_ThresholdTemperature(EnergyConductivityThreshold *point,double *data)
 {
   *data = point->T_threshold;
 }
 
-void EnergyConductivityThresholdGetField_DeltaT(EnergyConductivityThreshold *point,double *data) 
+void EnergyConductivityThresholdGetField_DeltaT(EnergyConductivityThreshold *point,double *data)
 {
   *data = point->dT;
 }
@@ -58,22 +58,22 @@ void EnergyConductivityThresholdGetField_DeltaT(EnergyConductivityThreshold *poi
 /* ================================================================= */
 /*   Setters for EnergyConductivityThreshold */
 /* ================================================================= */
-void EnergyConductivityThresholdSetField_k0(EnergyConductivityThreshold *point,double data) 
+void EnergyConductivityThresholdSetField_k0(EnergyConductivityThreshold *point,double data)
 {
   point->k0 = data;
 }
 
-void EnergyConductivityThresholdSetField_k1(EnergyConductivityThreshold *point,double data) 
+void EnergyConductivityThresholdSetField_k1(EnergyConductivityThreshold *point,double data)
 {
   point->k1 = data;
 }
 
-void EnergyConductivityThresholdSetField_ThresholdTemperature(EnergyConductivityThreshold *point,double data) 
+void EnergyConductivityThresholdSetField_ThresholdTemperature(EnergyConductivityThreshold *point,double data)
 {
   point->T_threshold = data;
 }
 
-void EnergyConductivityThresholdSetField_DeltaT(EnergyConductivityThreshold *point,double data) 
+void EnergyConductivityThresholdSetField_DeltaT(EnergyConductivityThreshold *point,double data)
 {
   point->dT = data;
 }
@@ -110,30 +110,30 @@ void EnergyConductivityThresholdView(EnergyConductivityThreshold *point)
 /* ================================================================= */
 /*   Getters for default parameters (EnergyConductivityThreshold) */
 /* ================================================================= */
-void EnergyConductivityThresholdGetDefault_k0(double *data) 
+void EnergyConductivityThresholdGetDefault_k0(double *data)
 {
   *data = (double)0.0;
 }
 
-void EnergyConductivityThresholdGetDefault_k1(double *data) 
+void EnergyConductivityThresholdGetDefault_k1(double *data)
 {
   *data = (double)0.0;
 }
 
-void EnergyConductivityThresholdGetDefault_ThresholdTemperature(double *data) 
+void EnergyConductivityThresholdGetDefault_ThresholdTemperature(double *data)
 {
   *data = (double)0.0;
 }
 
-void EnergyConductivityThresholdGetDefault_DeltaT(double *data) 
+void EnergyConductivityThresholdGetDefault_DeltaT(double *data)
 {
   *data = (double)0.0;
 }
 
-void MaterialConstantsSetDefaultAll_ConductivityThreshold( 
+void MaterialConstantsSetDefaultAll_ConductivityThreshold(
     int nr,EnergyConductivityThreshold _data[])
 {
-  int r; 
+  int r;
 
   for (r=0; r<nr; r++) {
     { double value;
@@ -158,7 +158,7 @@ void MaterialConstantsSetDefaultAll_ConductivityThreshold(
 
   }
 
-} 
+}
 
 PetscErrorCode MaterialConstantsSetFromOptions_ConductivityThreshold(const char model_name[],const int region_id,EnergyConductivityThreshold _data[],PetscBool essential)
 {
@@ -212,9 +212,9 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityThreshold(const char 
   }}
 
   PetscFunctionReturn(0);
-} 
+}
 
-PetscErrorCode MaterialConstantsPrintValues_ConductivityThreshold(const char model_name[],const int region_id,EnergyConductivityThreshold _data[]) 
+PetscErrorCode MaterialConstantsPrintValues_ConductivityThreshold(const char model_name[],const int region_id,EnergyConductivityThreshold _data[])
 {
   EnergyConductivityThreshold *data = &_data[region_id];
   char   opt_name[PETSC_MAX_PATH_LEN];
@@ -225,32 +225,32 @@ PetscErrorCode MaterialConstantsPrintValues_ConductivityThreshold(const char mod
   sprintf(opt_name,"-%s_k0_%d", model_name,region_id);
   { double value;
     EnergyConductivityThresholdGetField_k0(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    k0 = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    k0 = %1.4e (%s) \n", value,opt_name);
   }
 
   /* options for k1 ==>> k1 */
   sprintf(opt_name,"-%s_k1_%d", model_name,region_id);
   { double value;
     EnergyConductivityThresholdGetField_k1(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    k1 = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    k1 = %1.4e (%s) \n", value,opt_name);
   }
 
   /* options for ThresholdTemperature ==>> T_threshold */
   sprintf(opt_name,"-%s_ThresholdTemperature_%d", model_name,region_id);
   { double value;
     EnergyConductivityThresholdGetField_ThresholdTemperature(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    ThresholdTemperature = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    ThresholdTemperature = %1.4e (%s) \n", value,opt_name);
   }
 
   /* options for DeltaT ==>> dT */
   sprintf(opt_name,"-%s_DeltaT_%d", model_name,region_id);
   { double value;
     EnergyConductivityThresholdGetField_DeltaT(data,(double*)&value);
-    PetscPrintf(PETSC_COMM_WORLD,"    DeltaT = %1.4e (%s) \n", value,opt_name); 
+    PetscPrintf(PETSC_COMM_WORLD,"    DeltaT = %1.4e (%s) \n", value,opt_name);
   }
 
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsSetValues_ConductivityThreshold(const int region_id,EnergyConductivityThreshold _data[],
     double k0,
@@ -264,7 +264,7 @@ PetscErrorCode MaterialConstantsSetValues_ConductivityThreshold(const int region
   data->T_threshold =  T_threshold;
   data->dT =  dT;
   PetscFunctionReturn(0);
-} 
+}
 
 PetscErrorCode MaterialConstantsScaleValues_ConductivityThreshold(const int region_id,EnergyConductivityThreshold _data[],
     double k0,
@@ -299,5 +299,5 @@ PetscErrorCode MaterialConstantsScaleValues_ConductivityThreshold(const int regi
   }
 
   PetscFunctionReturn(0);
-} 
+}
 

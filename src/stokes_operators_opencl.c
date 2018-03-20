@@ -124,7 +124,7 @@ static PetscErrorCode checkError(cl_int err)
       ERROR_CHECKER_CASE(CL_INVALID_BUFFER_SIZE);
       ERROR_CHECKER_CASE(CL_INVALID_MIP_LEVEL);
       ERROR_CHECKER_CASE(CL_INVALID_GLOBAL_WORK_SIZE);
-        
+
       default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"Unknown OpenCL error. Maybe OpenCL SDK not properly installed?");
     }
   }
@@ -406,7 +406,7 @@ PetscErrorCode MFA11Destroy_OpenCL(MatA11MF mf)
   PetscErrorCode ierr;
   PetscInt       i;
   MFA11OpenCL    ctx;
-  
+
   PetscFunctionBegin;
   ctx = mf->ctx;
   if (!ctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"OpenCL MF-SpMV implementation should have a valid context");
@@ -538,7 +538,7 @@ PetscErrorCode MFStokesWrapper_A11_OpenCL(MatA11MF mf,Quadrature volQ,DM dau,Pet
     if (!openclctx->gaussdata_w) {
       openclctx->gaussdata_w = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY,nel * NQP * sizeof(PetscReal),NULL,&ierr);ERR_CHECK(ierr);
     }
-    
+
     if (mf->state != openclctx->state) {
       ierr = clEnqueueWriteBuffer(openclctx->queue,openclctx->LA_gcoords,CL_TRUE,0,localsize * sizeof(PetscReal),(void*)LA_gcoords,0,NULL,NULL);ERR_CHECK(ierr);
 

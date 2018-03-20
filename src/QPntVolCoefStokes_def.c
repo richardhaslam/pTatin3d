@@ -64,22 +64,22 @@ const char *QPntVolCoefStokes_member_names[] = {
 /* ===================================== */
 /* Getters for QPntVolCoefStokes */
 /* ===================================== */
-void QPntVolCoefStokesGetField_eta_effective(QPntVolCoefStokes *point,double *data) 
+void QPntVolCoefStokesGetField_eta_effective(QPntVolCoefStokes *point,double *data)
 {
   *data = point->eta;
 }
 
-void QPntVolCoefStokesGetField_rho_effective(QPntVolCoefStokes *point,double *data) 
+void QPntVolCoefStokesGetField_rho_effective(QPntVolCoefStokes *point,double *data)
 {
   *data = point->rho;
 }
 
-void QPntVolCoefStokesGetField_momentum_rhs(QPntVolCoefStokes *point,double *data[]) 
+void QPntVolCoefStokesGetField_momentum_rhs(QPntVolCoefStokes *point,double *data[])
 {
   *data = point->Fu;
 }
 
-void QPntVolCoefStokesGetField_continuity_rhs(QPntVolCoefStokes *point,double *data) 
+void QPntVolCoefStokesGetField_continuity_rhs(QPntVolCoefStokes *point,double *data)
 {
   *data = point->Fp;
 }
@@ -88,22 +88,22 @@ void QPntVolCoefStokesGetField_continuity_rhs(QPntVolCoefStokes *point,double *d
 /* ===================================== */
 /* Setters for QPntVolCoefStokes */
 /* ===================================== */
-void QPntVolCoefStokesSetField_eta_effective(QPntVolCoefStokes *point,double data) 
+void QPntVolCoefStokesSetField_eta_effective(QPntVolCoefStokes *point,double data)
 {
   point->eta = data;
 }
 
-void QPntVolCoefStokesSetField_rho_effective(QPntVolCoefStokes *point,double data) 
+void QPntVolCoefStokesSetField_rho_effective(QPntVolCoefStokes *point,double data)
 {
   point->rho = data;
 }
 
-void QPntVolCoefStokesSetField_momentum_rhs(QPntVolCoefStokes *point,double data[]) 
+void QPntVolCoefStokesSetField_momentum_rhs(QPntVolCoefStokes *point,double data[])
 {
   memcpy( &point->Fu[0], data, sizeof(double)*3 );
 }
 
-void QPntVolCoefStokesSetField_continuity_rhs(QPntVolCoefStokes *point,double data) 
+void QPntVolCoefStokesSetField_continuity_rhs(QPntVolCoefStokes *point,double data)
 {
   point->Fp = data;
 }
@@ -142,7 +142,7 @@ void QPntVolCoefStokesView(QPntVolCoefStokes *point)
 /* ===================================== */
 /* VTK viewer for QPntVolCoefStokes */
 /* ===================================== */
-void QPntVolCoefStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPntVolCoefStokes points[]) 
+void QPntVolCoefStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPntVolCoefStokes points[])
 {
   int p;
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta\" format=\"ascii\">\n");
@@ -166,7 +166,7 @@ void QPntVolCoefStokesVTKWriteAsciiAllFields(FILE *vtk_fp,const int N,const QPnt
 /* ===================================== */
 /* PVTU viewer for QPntVolCoefStokes */
 /* ===================================== */
-void QPntVolCoefStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp) 
+void QPntVolCoefStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 {
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"eta\" NumberOfComponents=\"1\"/>\n");
   fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"rho\" NumberOfComponents=\"1\"/>\n");
@@ -177,7 +177,7 @@ void QPntVolCoefStokesPVTUWriteAllPPointDataFields(FILE *vtk_fp)
 /* ===================================== */
 /* VTK binary (appended header) viewer for QPntVolCoefStokes */
 /* ===================================== */
-void QPntVolCoefStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const QPntVolCoefStokes points[]) 
+void QPntVolCoefStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *offset,const int N,const QPntVolCoefStokes points[])
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"eta\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
@@ -196,7 +196,7 @@ void QPntVolCoefStokesVTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,int *of
 /* ================================================== */
 /* VTK binary (appended data) viewer for QPntVolCoefStokes */
 /* ==================================================== */
-void QPntVolCoefStokesVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const QPntVolCoefStokes points[]) 
+void QPntVolCoefStokesVTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,const int N,const QPntVolCoefStokes points[])
 {
   int p,length;
   size_t atomic_size;

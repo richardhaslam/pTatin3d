@@ -121,7 +121,7 @@ void DataFieldRestoreEntries(const DataField gfield,void **data);
 void DataFieldInsertPoint( const DataField field, const int index, const void *ctx );
 void DataFieldCopyPoint( const int pid_x, const DataField field_x,
 												const int pid_y, const DataField field_y );
-void DataFieldZeroPoint( const DataField field, const int index ); 
+void DataFieldZeroPoint( const DataField field, const int index );
 
 void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield);
 void DataBucketQueryDataFieldByName(DataBucket db,const char name[],BTruth *found);

@@ -74,10 +74,10 @@ PetscErrorCode AdvDiffComputeTau_BrooksHughes(PetscScalar el_coords[],PetscScala
 PetscErrorCode AdvDiffComputeTau_TezduyarOsawa(PetscScalar el_coords[],PetscScalar el_vel[],PetscScalar kappa_cell,PetscScalar theta,PetscScalar dt,PetscScalar *tau);
 PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscScalar *tau);
 
-PetscErrorCode AElement_FormJacobian_T_tau( 
+PetscErrorCode AElement_FormJacobian_T_tau(
 																					 PetscScalar Re[],PetscReal dt,
 																					 PetscScalar tau,
-																					 PetscScalar el_coords[], 
+																					 PetscScalar el_coords[],
 																					 PetscScalar gp_kappa[],
 																					 PetscScalar el_V[],
 																					 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] );

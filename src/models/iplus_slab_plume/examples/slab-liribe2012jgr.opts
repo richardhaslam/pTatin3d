@@ -2,14 +2,14 @@
 #  The model geometry defined here is described in the following publication:
 #
 #    "Dynamics of free subduction from 3-D boundary element modeling"
-#    Zhong-Hai Li and Neil M. Ribe, 
+#    Zhong-Hai Li and Neil M. Ribe,
 #    JOURNAL OF GEOPHYSICAL RESEARCH
 #    Volume 117, 2012
 #    B06408, doi:10.1029/2012JB009165
 #
 #
 
-## =============================================================== 
+## ===============================================================
 ##
 ##   pTatin options file
 ##
@@ -18,7 +18,7 @@
 ##   Machine          : otsu.local
 ##   Using driver     : ./ptatin_driver_nonlinear_ts.app
 ##
-## =============================================================== 
+## ===============================================================
 #PETSc Option Table entries:
 
 -iplus_slab_eta  25250.0

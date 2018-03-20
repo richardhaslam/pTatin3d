@@ -1,12 +1,12 @@
 #
 # NOTES
-# a) Low resolution test to verify time dependent behaviour 
+# a) Low resolution test to verify time dependent behaviour
 # b) Fixed time step of 1 second is used
 # c) Its apparent that the time integration scheme with the free surface
 #    is unstable, hence one should use the non-linear driver
 #
 
-## =============================================================== 
+## ===============================================================
 ##
 ##   pTatin options file
 ##
@@ -15,7 +15,7 @@
 ##   Machine          : otsu.ethz.ch
 ##   Using driver     : ./ptatin_driver_linear_ts.app
 ##
-## =============================================================== 
+## ===============================================================
 #PETSc Option Table entries:
 -A11_operator_type 0,1,1
 -dt_max 1.0

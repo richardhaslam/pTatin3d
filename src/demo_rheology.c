@@ -61,12 +61,12 @@ void StokesIsotropicViscosityEvaluate_standard(Stokes_A_Isotropic rlist[],DataBu
 	ParticleTypeStd *basep;
 	ParticleTypeViscous *vp;
 	int np;
-	
+
 	DataBucketGetField(db,"baseparticle",&basep);
 	DataBucketGetField(db,"viscousparticle",&vp);
 	for (p=0; p<np; p++) {
 		phase            = basep[p];
-		
+
 		switch(rlist[phase]->rheology_type){
 				case STOKES_IVTYPE_CONSTANT:
 					vp[p]->viscosity = rlist[phase]->CNST_eta_0;
@@ -74,10 +74,10 @@ void StokesIsotropicViscosityEvaluate_standard(Stokes_A_Isotropic rlist[],DataBu
 			case STOKES_IVTYPE_FK:
 				vp[p]->viscosity = rlist[phase]->FK_theta;
 				break;
-				
+
 				break;
 		}
-		
+
 	}
 }
 
@@ -88,7 +88,7 @@ void StokesIsotropicViscosityEvaluate_director(Stokes_A_Isotropic rlist[],DataBu
 	ParticleTypeViscous  *vp;
 	ParticleTypeDirector *dvp;
 	int np;
-	
+
 	DataBucketGetField(db,"baseparticle",&basep);
 	DataBucketGetField(db,"director_variables_particle",&dvp);
 	DataBucketGetField(db,"viscousparticle",&vp);
@@ -110,15 +110,15 @@ void StokesIsotropicViscosityEvaluate_composite(Stokes_A_Isotropic rlist[],DataB
 	ParticleTypeStd      *basep;
 	ParticleTypeViscous  *vp;
 	int np;
-	
+
 	DataBucketGetField(db,"baseparticle",&basep);
 	DataBucketGetField(db,"viscousparticle",&vp);
 	for (p=0; p<np; p++) {
 		phase            = basep[p];
 		if (rlist[phase]->rheology_type != STOKES_IVTYPE_COMPOSITE) { exit(0); }
-		
-		
-		
+
+
+
 	}
 }
 
@@ -129,17 +129,17 @@ void StokesIsotropicViscosityEvaluate(Stokes_A_Isotropic rlist[],DataBucket db,S
 	while(sut[i]!=NULL) {
 		t = sut[i];
 		if (t==STANDARD_VARIABLES) {
-			
+
 		}
 		else if (t==DIRECTOR_VARIABLES) {
-			
+
 		}
 		else if (t==COMPOSITE_VARIABLES) {
-			
-			
+
+
 		}
 		else {
-			
+
 		}
 		i++;
 	}

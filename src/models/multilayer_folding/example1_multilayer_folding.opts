@@ -20,7 +20,7 @@
 -fieldsplit_u_mg_coarse_ksp_type cg
 -fieldsplit_u_mg_coarse_pc_type  asm
 -fieldsplit_u_mg_coarse_pc_asm_overlap 3
- 
+
 -fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1
 -fieldsplit_u_mg_levels_ksp_max_it 20
@@ -29,7 +29,7 @@
 -fieldsplit_u_mg_levels_pc_type jacobi
 -ksp_atol 1.0e-6
 
-## MORE ROBUST ON DEFORMED MESHES? 
+## MORE ROBUST ON DEFORMED MESHES?
 -fieldsplit_u_mg_levels_ksp_type cg
 
 #-ksp_monitor_true_residual
@@ -45,7 +45,7 @@
 -model_multilayer_folding_n_interfaces 9
 -model_multilayer_folding_vx 0.005
 -model_multilayer_folding_exx -0.2
--model_multilayer_folding_bc_type 1                              
+-model_multilayer_folding_bc_type 1
 -mx 64
 -mz 64
 
@@ -68,7 +68,7 @@
 -stk_velocity_da_refine_hierarchy_y 1,1
 -stk_velocity_da_refine_hierarchy_z 2,2
 
-# dump the geometric multi-grid mesh hierarchy 
+# dump the geometric multi-grid mesh hierarchy
 #-stk_velocity_da_view_hierarchy
 
 #End of PETSc Option Table entries
