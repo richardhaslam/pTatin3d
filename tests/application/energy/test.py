@@ -13,7 +13,7 @@ def test() :
 
   def comparefunc(t) :
     # This doesn't test much, just that the correct number of steps run
-    t.compareLiteral("[[ModelOutput_AdvDiffExample]]");
+    t.compareLiteral(re.escape("[[ModelOutput_AdvDiffExample]]"));
 
   # Create Test Object
   t = pth.pthUnitTest(testName,ranks,launch,expectedFile)
