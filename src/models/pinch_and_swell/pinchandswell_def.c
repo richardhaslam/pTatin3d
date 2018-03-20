@@ -57,12 +57,12 @@
 typedef enum { MATRIX_IDX=0, LAYER_IDX } MaterialDomain;
 
 typedef struct {
-    PetscReal x_bar,v_bar,t_bar,eta_bar,p_bar;
-    PetscReal rhs_scale;
-    PetscBool output_si;
-    PetscViewer logviewer;
-    PetscReal domain[3];
-    PetscReal exx,ezz;
+  PetscReal x_bar,v_bar,t_bar,eta_bar,p_bar;
+  PetscReal rhs_scale;
+  PetscBool output_si;
+  PetscViewer logviewer;
+  PetscReal domain[3];
+  PetscReal exx,ezz;
 } ModelCtx;
 
 
@@ -72,119 +72,119 @@ PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
   ModelCtx           *modeldata = (ModelCtx*)modelctx;
   RheologyConstants  *rheology;
   DataBucket         materialconstants;
-    PetscInt           regionidx,midx;
-    PetscReal          n_exp,F,preexp_A;
-    PetscBool          flg;
+  PetscInt           regionidx,midx;
+  PetscReal          n_exp,F,preexp_A;
+  PetscBool          flg;
   PetscErrorCode     ierr;
 
 
-    /* --------------------------------- scaling params --------------------------------- */
-    modeldata->v_bar   = 1.0;
-    modeldata->x_bar   = 1.0;  /* m */
-    modeldata->eta_bar = 1.0; /* eta */
+  /* --------------------------------- scaling params --------------------------------- */
+  modeldata->v_bar   = 1.0;
+  modeldata->x_bar   = 1.0;  /* m */
+  modeldata->eta_bar = 1.0; /* eta */
 
-    PetscOptionsGetReal(NULL,NULL,"-model_charc_v",&modeldata->v_bar,0);
-    PetscOptionsGetReal(NULL,NULL,"-model_charc_x",&modeldata->x_bar,0);
-    PetscOptionsGetReal(NULL,NULL,"-model_charc_eta",&modeldata->eta_bar,0);
+  PetscOptionsGetReal(NULL,NULL,"-model_charc_v",&modeldata->v_bar,0);
+  PetscOptionsGetReal(NULL,NULL,"-model_charc_x",&modeldata->x_bar,0);
+  PetscOptionsGetReal(NULL,NULL,"-model_charc_eta",&modeldata->eta_bar,0);
 
-    modeldata->t_bar = modeldata->x_bar/modeldata->v_bar; /* time (sec) */
-    modeldata->p_bar = modeldata->eta_bar * modeldata->v_bar / modeldata->x_bar; /* stress */
+  modeldata->t_bar = modeldata->x_bar/modeldata->v_bar; /* time (sec) */
+  modeldata->p_bar = modeldata->eta_bar * modeldata->v_bar / modeldata->x_bar; /* stress */
 
-    modeldata->rhs_scale = modeldata->eta_bar * modeldata->v_bar / (modeldata->x_bar * modeldata->x_bar); /* [ eta.u/(L.L) ]^-1 */
-    modeldata->rhs_scale = 1.0 / modeldata->rhs_scale;
+  modeldata->rhs_scale = modeldata->eta_bar * modeldata->v_bar / (modeldata->x_bar * modeldata->x_bar); /* [ eta.u/(L.L) ]^-1 */
+  modeldata->rhs_scale = 1.0 / modeldata->rhs_scale;
 
-    modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,NULL,"-model_output_si",&modeldata->output_si,0);
+  modeldata->output_si = PETSC_FALSE;
+  PetscOptionsGetBool(NULL,NULL,"-model_output_si",&modeldata->output_si,0);
 
-    /* --------------------------------- domain size --------------------------------- */
-    modeldata->domain[0] = 1.0;
-    modeldata->domain[1] = 1.0;
-    modeldata->domain[2] = 1.0;
-    {
-        PetscInt nd = 3;
+  /* --------------------------------- domain size --------------------------------- */
+  modeldata->domain[0] = 1.0;
+  modeldata->domain[1] = 1.0;
+  modeldata->domain[2] = 1.0;
+  {
+    PetscInt nd = 3;
 
-        flg = PETSC_FALSE;
-        PetscOptionsGetRealArray(NULL,NULL,"-model_domain_size",modeldata->domain,&nd,&flg);
-        if (flg) {
-            if (nd != 3) {
-                SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"param:\"model domain size\" - status:\"missing entry\" => expected 3 entries, only found %D",nd);
-            }
-        }
+    flg = PETSC_FALSE;
+    PetscOptionsGetRealArray(NULL,NULL,"-model_domain_size",modeldata->domain,&nd,&flg);
+    if (flg) {
+      if (nd != 3) {
+        SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"param:\"model domain size\" - status:\"missing entry\" => expected 3 entries, only found %D",nd);
+      }
     }
+  }
 
   /* --------------------------------- rheology prescription --------------------------------- */
   ierr = pTatinGetRheology(ptatinctx,&rheology);CHKERRQ(ierr);
   rheology->rheology_type = RHEOLOGY_VISCOUS;
-    rheology->nphases_active = 2;
+  rheology->nphases_active = 2;
 
   rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
   rheology->eta_upper_cutoff_global = 1.0e+25 / modeldata->eta_bar;
   rheology->eta_lower_cutoff_global = 1.0e-25 / modeldata->eta_bar;
 
-    /* Material constant */
+  /* Material constant */
   ierr = pTatinGetMaterialConstants(ptatinctx,&materialconstants);CHKERRQ(ierr);
-    ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
+  ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
 
-    /* background */
-    regionidx = MATRIX_IDX;
+  /* background */
+  regionidx = MATRIX_IDX;
   MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 
-    F        = 1.0e21;
+  F        = 1.0e21;
+  preexp_A = 1.0;
+  n_exp    = 1.0;
+
+  MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3150.0 * 9.81 / 10.0);
+  /* eta = F . pow(preexp_A,-1/n) . pow(e,1/n-1) . exp(E/nRT) */
+  MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexp_A, F, 0.0, 0.0, n_exp, 1.0);
+  MaterialConstantsScaleValues_ViscosityArrh(materialconstants,regionidx, modeldata->eta_bar, modeldata->p_bar );
+
+  /* layer */
+  for (midx=1; midx<(PetscInt)LAYER_IDX; midx++) {
+    regionidx = midx;
+
+    MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+
+    //F        = 0.5;
+    //preexp_A = 2.0 * 4.75e11;
+    F        = 4.75e11; /* mu_0 */
     preexp_A = 1.0;
-    n_exp    = 1.0;
+    n_exp    = 4.0;
 
-    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3150.0 * 9.81 / 10.0);
-    /* eta = F . pow(preexp_A,-1/n) . pow(e,1/n-1) . exp(E/nRT) */
-    MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexp_A, F, 0.0, 0.0, n_exp, 1.0);
+    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3300.0 * 9.81 / 10.0);
+    /* eta = F . pow(preexp_A,-1/n) . pow(e,1/n-1) . exp(E/nR(T+T0)) */
+    MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexp_A, F, 0.0, 0.0, n_exp, 1.0); /* set T0 = 1 to ensure I can calc E/nR(T-T0) */
     MaterialConstantsScaleValues_ViscosityArrh(materialconstants,regionidx, modeldata->eta_bar, modeldata->p_bar );
+  }
 
-    /* layer */
-    for (midx=1; midx<(PetscInt)LAYER_IDX; midx++) {
-        regionidx = midx;
-
-        MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
-
-        //F        = 0.5;
-        //preexp_A = 2.0 * 4.75e11;
-        F        = 4.75e11; /* mu_0 */
-        preexp_A = 1.0;
-        n_exp    = 4.0;
-
-        MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3300.0 * 9.81 / 10.0);
-        /* eta = F . pow(preexp_A,-1/n) . pow(e,1/n-1) . exp(E/nR(T+T0)) */
-        MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexp_A, F, 0.0, 0.0, n_exp, 1.0); /* set T0 = 1 to ensure I can calc E/nR(T-T0) */
-        MaterialConstantsScaleValues_ViscosityArrh(materialconstants,regionidx, modeldata->eta_bar, modeldata->p_bar );
-    }
-
-    /* Material constant */
+  /* Material constant */
   for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
     ierr= MaterialConstantsSetFromOptions(materialconstants,"pas",regionidx,PETSC_FALSE);CHKERRQ(ierr);
   }
 
-    /* output */
+  /* output */
   for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
     MaterialConstantsPrintAll(materialconstants,regionidx);
   }
 
-    /* --------------------------------- logfile --------------------------------- */
-    {
-        char logfile[PETSC_MAX_PATH_LEN];
+  /* --------------------------------- logfile --------------------------------- */
+  {
+    char logfile[PETSC_MAX_PATH_LEN];
 
-        sprintf(logfile,"%s/model.logfile",ptatinctx->outputpath);
-        ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&modeldata->logviewer);CHKERRQ(ierr);
+    sprintf(logfile,"%s/model.logfile",ptatinctx->outputpath);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&modeldata->logviewer);CHKERRQ(ierr);
 
-        PetscViewerASCIIPrintf(modeldata->logviewer,"# Model logfile\n");
-        PetscViewerASCIIPrintf(modeldata->logviewer,"#  pTatin3d scaling used:\n");
-        PetscViewerASCIIPrintf(modeldata->logviewer,"#    x*     = %1.4e (m) \n",modeldata->x_bar);
-        PetscViewerASCIIPrintf(modeldata->logviewer,"#    v*     = %1.4e (m/s) \n",modeldata->v_bar);
-        PetscViewerASCIIPrintf(modeldata->logviewer,"#    eta*   = %1.4e (Pa s) \n",modeldata->eta_bar);
-        PetscViewerASCIIPrintf(modeldata->logviewer,"#    t*     = %1.4e (sec) \n",modeldata->t_bar);
-        PetscViewerASCIIPrintf(modeldata->logviewer,"#    p*     = %1.4e (Pa) \n",modeldata->p_bar);
-        PetscViewerASCIIPrintf(modeldata->logviewer,"#    rho.g* = %1.4e (N/m/m) \n",modeldata->rhs_scale);
-        PetscViewerASCIIPrintf(modeldata->logviewer,"\n");
-    }
+    PetscViewerASCIIPrintf(modeldata->logviewer,"# Model logfile\n");
+    PetscViewerASCIIPrintf(modeldata->logviewer,"#  pTatin3d scaling used:\n");
+    PetscViewerASCIIPrintf(modeldata->logviewer,"#    x*     = %1.4e (m) \n",modeldata->x_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"#    v*     = %1.4e (m/s) \n",modeldata->v_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"#    eta*   = %1.4e (Pa s) \n",modeldata->eta_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"#    t*     = %1.4e (sec) \n",modeldata->t_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"#    p*     = %1.4e (Pa) \n",modeldata->p_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"#    rho.g* = %1.4e (N/m/m) \n",modeldata->rhs_scale);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"\n");
+  }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyInitialMeshGeometry_PAS(pTatinCtx ptatinctx,void *modelctx)
@@ -192,7 +192,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PAS(pTatinCtx ptatinctx,void *model
   ModelCtx         *modeldata = (ModelCtx*)modelctx;
   PhysCompStokes   stokes;
   DM               stokes_pack,dav,dap;
-    PetscBool        flg;
+  PetscBool        flg;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
@@ -205,11 +205,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PAS(pTatinCtx ptatinctx,void *model
 
   ierr = DMDASetUniformCoordinates(dav,-modeldata->domain[0]/2.0,modeldata->domain[0]/2.0, -modeldata->domain[1]/2.0,modeldata->domain[1]/2.0, -modeldata->domain[2]/2.0,modeldata->domain[2]/2.0);CHKERRQ(ierr);
 
-    flg = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,NULL,"-model_domain_2d",&flg,0);
-    if (flg) {
-        ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(ptatinctx);CHKERRQ(ierr);
-    }
+  flg = PETSC_FALSE;
+  PetscOptionsGetBool(NULL,NULL,"-model_domain_2d",&flg,0);
+  if (flg) {
+    ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(ptatinctx);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -230,59 +230,59 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PAS(pTatinCtx c,void *ctx)
 
   ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 
-    ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
-    stokes_pack = stokes->stokes_pack;
-    ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+  stokes_pack = stokes->stokes_pack;
+  ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
   ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
   DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
   ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
-    /* set region index for all materials */
-    /* mantle - background */
-    for (p=0; p<n_mpoints; p++) {
-    ierr = MaterialPointSet_phase_index(mpX,p, MATRIX_IDX);CHKERRQ(ierr);
-    }
-
-    /* layer */
-    srand(0);
+  /* set region index for all materials */
+  /* mantle - background */
   for (p=0; p<n_mpoints; p++) {
-        double *position_p;
-        double shift,dL;
+    ierr = MaterialPointSet_phase_index(mpX,p, MATRIX_IDX);CHKERRQ(ierr);
+  }
+
+  /* layer */
+  srand(0);
+  for (p=0; p<n_mpoints; p++) {
+    double *position_p;
+    double shift,dL;
 
     ierr = MaterialPointGet_global_coord(mpX,p,&position_p);CHKERRQ(ierr);
 
-        dL = 0.33;
-        shift = -1.0 + 2.0 * rand()/((double)(RAND_MAX));
-        shift = shift * dL * (1.0/33.0);
-        if (position_p[1] > -dL*0.5) {
-            if (position_p[1] < dL*0.5 + shift) {
-                ierr = MaterialPointSet_phase_index(mpX,p, LAYER_IDX);CHKERRQ(ierr);
-            }
-        }
+    dL = 0.33;
+    shift = -1.0 + 2.0 * rand()/((double)(RAND_MAX));
+    shift = shift * dL * (1.0/33.0);
+    if (position_p[1] > -dL*0.5) {
+      if (position_p[1] < dL*0.5 + shift) {
+        ierr = MaterialPointSet_phase_index(mpX,p, LAYER_IDX);CHKERRQ(ierr);
+      }
+    }
   }
-    ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
   DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
   ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
-    /* set initial eta,rho */
-    for (p=0; p<n_mpoints; p++) {
-        int ridx;
+  /* set initial eta,rho */
+  for (p=0; p<n_mpoints; p++) {
+    int ridx;
 
     ierr = MaterialPointGet_phase_index(mpX,p, &ridx);CHKERRQ(ierr);
 
-        if (ridx == MATRIX_IDX) {
-            /* background */
-            ierr = MaterialPointSet_viscosity(mpX,  p, (1.0e21/20.0)/data->eta_bar);CHKERRQ(ierr);
-            ierr = MaterialPointSet_density(mpX,    p, -data->rhs_scale * 3150.0 * 9.81);CHKERRQ(ierr);
-        } else {
-            /* layer */
-            ierr = MaterialPointSet_viscosity(mpX,  p, (1.0e21/1.0)/data->eta_bar);CHKERRQ(ierr);
-            ierr = MaterialPointSet_density(mpX,    p, -data->rhs_scale * 3300.0 * 9.81);CHKERRQ(ierr);
-        }
+    if (ridx == MATRIX_IDX) {
+      /* background */
+      ierr = MaterialPointSet_viscosity(mpX,  p, (1.0e21/20.0)/data->eta_bar);CHKERRQ(ierr);
+      ierr = MaterialPointSet_density(mpX,    p, -data->rhs_scale * 3150.0 * 9.81);CHKERRQ(ierr);
+    } else {
+      /* layer */
+      ierr = MaterialPointSet_viscosity(mpX,  p, (1.0e21/1.0)/data->eta_bar);CHKERRQ(ierr);
+      ierr = MaterialPointSet_density(mpX,    p, -data->rhs_scale * 3300.0 * 9.81);CHKERRQ(ierr);
     }
-    ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  }
+  ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -294,17 +294,17 @@ PetscErrorCode PAS_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,ModelCtx 
 
   PetscFunctionBegin;
 
-    ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,1.0);CHKERRQ(ierr);
-    ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE,-1.0);CHKERRQ(ierr);
+  ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,1.0);CHKERRQ(ierr);
+  ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE,-1.0);CHKERRQ(ierr);
 
-   // ierr = DirichletBC_SetConstant(bclist,dav,WEST_FACE,0,0.0);CHKERRQ(ierr);
+  // ierr = DirichletBC_SetConstant(bclist,dav,WEST_FACE,0,0.0);CHKERRQ(ierr);
 
-    ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,SOUTH_FACE,0.0);CHKERRQ(ierr);
+  ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,SOUTH_FACE,0.0);CHKERRQ(ierr);
 
-    ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,FRONT_FACE,0.0);CHKERRQ(ierr);
-    ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,BACK_FACE,0.0);CHKERRQ(ierr);
+  ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,FRONT_FACE,0.0);CHKERRQ(ierr);
+  ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,BACK_FACE,0.0);CHKERRQ(ierr);
 
-    //ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,NORTH_FACE,0.0);CHKERRQ(ierr);
+  //ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,NORTH_FACE,0.0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -347,52 +347,52 @@ PetscErrorCode ModelOutput_PAS(pTatinCtx ptatinctx,Vec X,const char prefix[],voi
   ModelCtx         *modeldata = (ModelCtx*)modelctx;
   PhysCompStokes   stokes;
   DM               stokes_pack,dav,dap;
-    Vec              coords,velocity,pressure;
-    DataBucket       materialpoint_db;
+  Vec              coords,velocity,pressure;
+  DataBucket       materialpoint_db;
 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
-    /* get the velocity mesh */
-    ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
-    stokes_pack = stokes->stokes_pack;
-    ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+  /* get the velocity mesh */
+  ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
+  stokes_pack = stokes->stokes_pack;
+  ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
-    if (modeldata->output_si) {
+  if (modeldata->output_si) {
 
-        /* get the coordinates of the velocity mesh and scale into SI units <note, local and ghosted coordinates should be scaled> */
-        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
-        ierr = VecScale(coords,modeldata->x_bar);CHKERRQ(ierr);
-        ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
-        ierr = VecScale(coords,modeldata->x_bar);CHKERRQ(ierr);
+    /* get the coordinates of the velocity mesh and scale into SI units <note, local and ghosted coordinates should be scaled> */
+    ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
+    ierr = VecScale(coords,modeldata->x_bar);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
+    ierr = VecScale(coords,modeldata->x_bar);CHKERRQ(ierr);
 
-        /* unscale vel, p */
-        ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-        ierr = VecScale(velocity,modeldata->v_bar);CHKERRQ(ierr);
-        ierr = VecScale(pressure,modeldata->p_bar);CHKERRQ(ierr);
-        ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    }
+    /* unscale vel, p */
+    ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = VecScale(velocity,modeldata->v_bar);CHKERRQ(ierr);
+    ierr = VecScale(pressure,modeldata->p_bar);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  }
 
   /* ---- Velocity-Pressure Mesh Output ---- */
-    /* Light weight viewer: Only v is written out. v and coords are expressed as floats */
-    ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(ptatinctx,X,prefix);CHKERRQ(ierr);
-    ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(ptatinctx,X,prefix);CHKERRQ(ierr);
+  /* Light weight viewer: Only v is written out. v and coords are expressed as floats */
+  ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(ptatinctx,X,prefix);CHKERRQ(ierr);
+  ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(ptatinctx,X,prefix);CHKERRQ(ierr);
 
-    if (modeldata->output_si) {
-        /* undo the coordinate scaling of velocity mesh <note, local and ghosted coordinates should be scaled> */
-        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
-        ierr = VecScale(coords,1.0/modeldata->x_bar);CHKERRQ(ierr);
-        ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
-        ierr = VecScale(coords,1.0/modeldata->x_bar);CHKERRQ(ierr);
+  if (modeldata->output_si) {
+    /* undo the coordinate scaling of velocity mesh <note, local and ghosted coordinates should be scaled> */
+    ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
+    ierr = VecScale(coords,1.0/modeldata->x_bar);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
+    ierr = VecScale(coords,1.0/modeldata->x_bar);CHKERRQ(ierr);
 
-        /* unscale vel, p */
-        ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-        ierr = VecScale(pressure,1.0/modeldata->p_bar);CHKERRQ(ierr);
-        ierr = VecScale(velocity,1.0/modeldata->v_bar);CHKERRQ(ierr);
-        ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    }
+    /* unscale vel, p */
+    ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = VecScale(pressure,1.0/modeldata->p_bar);CHKERRQ(ierr);
+    ierr = VecScale(velocity,1.0/modeldata->v_bar);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  }
 
   /* ---- Material Point Output ---- */
   /* [1] Basic viewer: Only reports coords, regionid and other internal data */
@@ -401,27 +401,27 @@ PetscErrorCode ModelOutput_PAS(pTatinCtx ptatinctx,Vec X,const char prefix[],voi
      */
 
   /* [2] Customized viewer: User defines specific fields they want to view - NOTE not .pvd file will be created */
-    {
-        DataBucket                materialpoint_db;
-        const int                 nf = 2;
-        const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes };
-        char                      mp_file_prefix[256];
+  {
+    DataBucket                materialpoint_db;
+    const int                 nf = 2;
+    const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes };
+    char                      mp_file_prefix[256];
 
-        ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
-        sprintf(mp_file_prefix,"%s_mpoints",prefix);
-        ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,ptatinctx->outputpath,mp_file_prefix);CHKERRQ(ierr);
-    }
+    ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
+    sprintf(mp_file_prefix,"%s_mpoints",prefix);
+    ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,ptatinctx->outputpath,mp_file_prefix);CHKERRQ(ierr);
+  }
 
   /* [3] Customized marker->cell viewer: Marker data is projected onto the velocity mesh. User defines specific fields */
-    {
-        const int                    nf = 2;
-        const MaterialPointVariable  mp_prop_list[] = { MPV_viscosity, MPV_density };
+  {
+    const int                    nf = 2;
+    const MaterialPointVariable  mp_prop_list[] = { MPV_viscosity, MPV_density };
 
-        ierr = pTatin3d_ModelOutput_MarkerCellFields(ptatinctx,nf,mp_prop_list,prefix);CHKERRQ(ierr);
-    }
+    ierr = pTatin3d_ModelOutput_MarkerCellFields(ptatinctx,nf,mp_prop_list,prefix);CHKERRQ(ierr);
+  }
 
-    /* SD3D output */
-    ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
+  /* SD3D output */
+  ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

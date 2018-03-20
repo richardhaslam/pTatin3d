@@ -27,17 +27,15 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-
 #ifndef __ptatinmodel_rift3d_T_ctx_h__
 #define __ptatinmodel_rift3d_T_ctx_h__
 
-
 typedef struct {
   PetscInt  nmaterials;
-    PetscBool runmises;
+  PetscBool runmises;
   PetscReal Lx,Ly,Lz,Ox,Oy,Oz,vx,vy,vz,rho0;
-    PetscReal Tbottom,Ttop,thermal_age0;
-    PetscReal thermal_age_anom,wx_anom,wz_anom,cx_anom,cz_anom;
+  PetscReal Tbottom,Ttop,thermal_age0;
+  PetscReal thermal_age_anom,wx_anom,wz_anom,cx_anom,cz_anom;
   PetscBool dimensional;
   PetscReal density_bar;
   PetscReal length_bar;
@@ -49,8 +47,6 @@ typedef struct {
   PetscBool output_markers;
   GeometryObject G[100];
   PetscInt  ngo;
-
 } ModelRift3D_TCtx;
-
 
 #endif

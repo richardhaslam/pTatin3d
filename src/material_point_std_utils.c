@@ -1207,8 +1207,8 @@ PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const
 
 PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM dav,PetscInt Nxp2[],PetscInt region_idx,PetscReal vertex_coor[])
 {
-    PetscInt       Npxi,Npeta,i,j,n;
-    PetscReal      xip[2],dxi,deta,Nip[4];
+  PetscInt       Npxi,Npeta,i,j,n;
+  PetscReal      xip[2],dxi,deta,Nip[4];
   MPAccess       mpX;
   double         tolerance;
   int            max_its;
@@ -1221,12 +1221,11 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
   int            _region_idx;
   PetscErrorCode ierr;
 
-    Npxi  = Nxp2[0];
-    Npeta = Nxp2[1];
+  Npxi  = Nxp2[0];
+  Npeta = Nxp2[1];
 
-    dxi  = 2.0/((PetscReal)(Npxi-1));
-    deta = 2.0/((PetscReal)(Npeta-1));
-
+  dxi  = 2.0/((PetscReal)(Npxi-1));
+  deta = 2.0/((PetscReal)(Npeta-1));
 
   tolerance         = 1.0e-10;
   max_its           = 10;
@@ -1243,54 +1242,54 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
 
   PetscMPIIntCast(region_idx,&_region_idx);
 
-    for (j=0; j<Npeta; j++) {
-        for (i=0; i<Npxi; i++) {
-            PetscBool point_on_edge;
-            int n_mpoints_orig;
-            MPntStd mp_std;
+  for (j=0; j<Npeta; j++) {
+    for (i=0; i<Npxi; i++) {
+      PetscBool point_on_edge;
+      int n_mpoints_orig;
+      MPntStd mp_std;
 
-            xip[0] = -1.0 + i * dxi;
-            xip[1] = -1.0 + j * deta;
+      xip[0] = -1.0 + i * dxi;
+      xip[1] = -1.0 + j * deta;
 
-            P3D_ConstructNi_Q1_2D(xip,Nip);
+      P3D_ConstructNi_Q1_2D(xip,Nip);
 
-            mp_std.coor[0] = mp_std.coor[1] = mp_std.coor[2] = 0.0;
-            for (n=0; n<4; n++) {
-                mp_std.coor[0] += (double)vertex_coor[3*n+0] * Nip[n];
-                mp_std.coor[1] += (double)vertex_coor[3*n+1] * Nip[n];
-                mp_std.coor[2] += (double)vertex_coor[3*n+2] * Nip[n];
-            }
+      mp_std.coor[0] = mp_std.coor[1] = mp_std.coor[2] = 0.0;
+      for (n=0; n<4; n++) {
+        mp_std.coor[0] += (double)vertex_coor[3*n+0] * Nip[n];
+        mp_std.coor[1] += (double)vertex_coor[3*n+1] * Nip[n];
+        mp_std.coor[2] += (double)vertex_coor[3*n+2] * Nip[n];
+      }
 
-            InverseMappingDomain_3dQ2(tolerance,max_its,
-                                      use_nonzero_guess,
-                                      monitor,
-                                      (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, (const PetscInt*)elnidx_u,
-                                      1, &mp_std );
+      InverseMappingDomain_3dQ2(tolerance,max_its,
+          use_nonzero_guess,
+          monitor,
+          (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, (const PetscInt*)elnidx_u,
+          1, &mp_std );
 
-            point_on_edge = PETSC_FALSE;
-            if (mp_std.wil != -1) {
-                point_on_edge = PETSC_TRUE;
-            }
+      point_on_edge = PETSC_FALSE;
+      if (mp_std.wil != -1) {
+        point_on_edge = PETSC_TRUE;
+      }
 
-            if (point_on_edge) {
-                int pidx;
+      if (point_on_edge) {
+        int pidx;
 
-                DataBucketGetSizes(db,&n_mpoints_orig,0,0);
-                DataBucketSetSizes(db,n_mpoints_orig+1,-1);
-                pidx = n_mpoints_orig;
+        DataBucketGetSizes(db,&n_mpoints_orig,0,0);
+        DataBucketSetSizes(db,n_mpoints_orig+1,-1);
+        pidx = n_mpoints_orig;
 
-                ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+        ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
 
-                ierr = MaterialPointSet_global_coord(mpX,pidx,mp_std.coor);CHKERRQ(ierr);
-                ierr = MaterialPointSet_local_coord(mpX,pidx,mp_std.xi);CHKERRQ(ierr);
-                ierr = MaterialPointSet_local_element_index(mpX,pidx,mp_std.wil);CHKERRQ(ierr);
+        ierr = MaterialPointSet_global_coord(mpX,pidx,mp_std.coor);CHKERRQ(ierr);
+        ierr = MaterialPointSet_local_coord(mpX,pidx,mp_std.xi);CHKERRQ(ierr);
+        ierr = MaterialPointSet_local_element_index(mpX,pidx,mp_std.wil);CHKERRQ(ierr);
 
-                ierr = MaterialPointSet_phase_index(mpX,pidx,_region_idx);CHKERRQ(ierr);
+        ierr = MaterialPointSet_phase_index(mpX,pidx,_region_idx);CHKERRQ(ierr);
 
-                ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
-            }
-        }
+        ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+      }
     }
+  }
   ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

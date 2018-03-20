@@ -1383,31 +1383,31 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
     switch (ptype) {
 
       case 0:
-      {
-        Vec scale;
+        {
+          Vec scale;
 
-        /* This introduces scaling effects I need to deal with */
-        ierr = DMCreateInterpolationScale(clone[k-1],clone[k],R[k],&scale);CHKERRQ(ierr);
+          /* This introduces scaling effects I need to deal with */
+          ierr = DMCreateInterpolationScale(clone[k-1],clone[k],R[k],&scale);CHKERRQ(ierr);
 
-        ierr = MatRestrict(R[k],properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
-        ierr = MatRestrict(R[k],properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
+          ierr = MatRestrict(R[k],properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
+          ierr = MatRestrict(R[k],properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
 
-        ierr = VecPointwiseMult(properties_A1[k-1],properties_A1[k-1],scale);CHKERRQ(ierr);
-        ierr = VecPointwiseMult(properties_A2[k-1],properties_A2[k-1],scale);CHKERRQ(ierr);
+          ierr = VecPointwiseMult(properties_A1[k-1],properties_A1[k-1],scale);CHKERRQ(ierr);
+          ierr = VecPointwiseMult(properties_A2[k-1],properties_A2[k-1],scale);CHKERRQ(ierr);
 
-        ierr = VecDestroy(&scale);CHKERRQ(ierr);
-      }
+          ierr = VecDestroy(&scale);CHKERRQ(ierr);
+        }
         break;
 
       case 1:
-      {
-                Mat inject;
+        {
+          Mat inject;
 
-        ierr = DMCreateInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
-                ierr = MatMult(inject,properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
-                ierr = MatMult(inject,properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
-                ierr = MatDestroy(&inject);CHKERRQ(ierr);
-      }
+          ierr = DMCreateInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
+          ierr = MatMult(inject,properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
+          ierr = MatMult(inject,properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
+          ierr = MatDestroy(&inject);CHKERRQ(ierr);
+        }
         break;
 
       default:
@@ -1416,8 +1416,8 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
     }
 
     ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
-                    clone[k-1],properties_A1[k-1],properties_A2[k-1],
-          Q[k-1]);CHKERRQ(ierr);
+        clone[k-1],properties_A1[k-1],properties_A2[k-1],
+        Q[k-1]);CHKERRQ(ierr);
 
     if (view) {
       PetscViewer viewer;
@@ -1617,18 +1617,18 @@ PetscErrorCode QPntVolCoefEnergyComputeMemberOffsets(size_t property_offsets[])
 
 PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q)
 {
-  PetscInt  dof;
-  DM        clone;
-  Vec       properties_A,properties_B;
-  int               npoints;
-  DataField         PField_std;
-  DataField         PField_material_point_property;
-  MPntStd           *mp_std;
-  void              *material_point_property;
-  size_t            mp_field_offset, mp_offset;
-  size_t            mp_stokes_property_offsets[MPntPStokes_nmembers];
-  size_t            qp_stokes_property_offsets[QPntVolCoefStokes_nmembers];
-  PetscBool view;
+  PetscInt       dof;
+  DM             clone;
+  Vec            properties_A,properties_B;
+  int            npoints;
+  DataField      PField_std;
+  DataField      PField_material_point_property;
+  MPntStd        *mp_std;
+  void           *material_point_property;
+  size_t         mp_field_offset, mp_offset;
+  size_t         mp_stokes_property_offsets[MPntPStokes_nmembers];
+  size_t         qp_stokes_property_offsets[QPntVolCoefStokes_nmembers];
+  PetscBool      view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

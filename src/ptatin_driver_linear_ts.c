@@ -86,7 +86,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
   PetscReal      Ae[Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS];
   PetscReal      fac,diagD[NSTRESS],B[6][3*Q2_NODES_PER_EL_3D];
   PetscInt       NUM_GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
-    ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog;
   const PetscInt *GINDICES;
   const PetscInt *GINDICES_cell;
   const PetscInt *GINDICES_coarse;
@@ -94,7 +94,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
   PetscInt       NUM_GINDICES_coarse,ge_eqnums_coarse[3*Q2_NODES_PER_EL_3D];
   PetscScalar    *Ac_entries;
   PetscLogDouble t0,t1,t[6];
-    PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
 
   ierr = MatZeroEntries(Ac);CHKERRQ(ierr);
@@ -149,17 +149,17 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
   ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   /* indices */
-    ierr = DMGetLocalToGlobalMapping(dav_fine, &ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(dav_fine, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
   ierr = BCListApplyDirichletMask(NUM_GINDICES,(PetscInt*)GINDICES,u_bclist_fine);CHKERRQ(ierr);
-    ierr = DMGetLocalToGlobalMapping(daf, &ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_cell);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_cell);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(daf, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_cell);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_cell);CHKERRQ(ierr);
 
-    ierr = DMGetLocalToGlobalMapping(dav_coarse, &ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_coarse);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_coarse);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(dav_coarse, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_coarse);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_coarse);CHKERRQ(ierr);
 
   /* loop and assemble */
   ierr = DMDAGetElements_pTatinQ2P1(dav_fine,&nel,&nen_v,&elnidx_v);CHKERRQ(ierr);
@@ -331,7 +331,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 
         t0 = t1;
         //ierr = MatPtAPNumeric(Acell,P,Ac_el);CHKERRQ(ierr);
-                ierr = MatPtAP(Acell,P,MAT_REUSE_MATRIX,1.0,&Ac_el);CHKERRQ(ierr);
+        ierr = MatPtAP(Acell,P,MAT_REUSE_MATRIX,1.0,&Ac_el);CHKERRQ(ierr);
         PetscTime(&t1);
         t[4] += (t1-t0);
 
@@ -369,9 +369,9 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
   PetscPrintf(PETSC_COMM_WORLD,"  Time[Total]               %1.4e (sec)\n",t[1]-t[0]);
 
   ierr = BCListRemoveDirichletMask(NUM_GINDICES,(PetscInt*)GINDICES,u_bclist_fine);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_cell);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_coarse);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_cell);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_coarse);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
   ierr = MatDestroy(&Acell);CHKERRQ(ierr);
@@ -380,31 +380,31 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
   ierr = DMDestroy(&dac);CHKERRQ(ierr);
 
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
-    pTatinCtx         user;
-    DM                stokes_pack,dau,dap;
+  pTatinCtx         user;
+  DM                stokes_pack,dau,dap;
   IS                *is;
   PhysCompStokes    stokes;
-    Vec               Uloc,Ploc;
-    PetscScalar       *LA_Uloc,*LA_Ploc;
+  Vec               Uloc,Ploc;
+  PetscScalar       *LA_Uloc,*LA_Ploc;
   PetscBool         is_mffd = PETSC_FALSE;
   PetscBool         is_nest = PETSC_FALSE;
   PetscBool         is_shell = PETSC_FALSE;
-    PetscErrorCode    ierr;
+  PetscErrorCode    ierr;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
 
   user = (pTatinCtx)ctx;
 
   ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
   stokes_pack = stokes->stokes_pack;
 
-    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-    ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 
   ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
   ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
@@ -461,9 +461,9 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 
     ierr = MatDestroy(&Buu);CHKERRQ(ierr);
     ierr = MatDestroy(&Bpp);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* clean up */
   ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
@@ -473,9 +473,9 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
   ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 
-    ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_hierarchy[])
@@ -509,7 +509,7 @@ PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_h
   /* inject coordinates */
   ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarchy[])
@@ -556,9 +556,9 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 }
 
 PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_stokes_field[],
-                                             PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
-                                             BCList u_bclist[],Quadrature volQ[],
-                                             Mat *_A,Mat operatorA11[],Mat *_B,Mat operatorB11[])
+    PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
+    BCList u_bclist[],Quadrature volQ[],
+    Mat *_A,Mat operatorA11[],Mat *_B,Mat operatorB11[])
 {
   Mat            A,B;
   PetscInt       level_type[10];
@@ -638,158 +638,158 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
     switch ((OperatorType)level_type[k]) {
 
       case OP_TYPE_REDISC_ASM:
-      {
-        Mat Auu;
-        PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
-        Vec X;
-        MatNullSpace nullsp;
+        {
+          Mat Auu;
+          PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
+          Vec X;
+          MatNullSpace nullsp;
 
-        /* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
-        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-        ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
-        ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
-        ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
-        if (same1||same2||same3) {
-          ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+          /* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
+          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
+          ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
+          ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
+          ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+          if (same1||same2||same3) {
+            ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+          }
+          /* should move assembly into jacobian */
+          ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
+          ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
+
+          operatorA11[k] = Auu;
+          operatorB11[k] = Auu;
+          ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+          ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
+          ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
+          ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
+          ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+
         }
-        /* should move assembly into jacobian */
-        ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
-        ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
-
-        operatorA11[k] = Auu;
-        operatorB11[k] = Auu;
-        ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
-        ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
-        ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
-        ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
-        ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
-
-      }
         break;
 
       case OP_TYPE_REDISC_MF:
-      {
-        Mat Auu;
-        MatA11MF mf,A11Ctx;
-
-        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
-        ierr = MatA11MFCreate(&A11Ctx);CHKERRQ(ierr);
-        ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
-
-        ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
-        ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
-        ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-        mf->daU = NULL;
-        operatorA11[k] = Auu;
-
         {
-          PetscBool use_low_order_geometry = PETSC_FALSE;
+          Mat Auu;
+          MatA11MF mf,A11Ctx;
 
-          ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
-          if (use_low_order_geometry==PETSC_TRUE) {
-            Mat Buu;
+          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
+          ierr = MatA11MFCreate(&A11Ctx);CHKERRQ(ierr);
+          ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
 
-            if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"  Activiting low order A11 operator \n");
-            ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
-            ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
-            ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-            mf->daU = NULL;
-            operatorB11[k] = Buu;
+          ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
+          ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
+          ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
+          mf->daU = NULL;
+          operatorA11[k] = Auu;
 
-          } else {
-            operatorB11[k] = Auu;
-            ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+          {
+            PetscBool use_low_order_geometry = PETSC_FALSE;
+
+            ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+            if (use_low_order_geometry==PETSC_TRUE) {
+              Mat Buu;
+
+              if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"  Activiting low order A11 operator \n");
+              ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
+              ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
+              ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
+              mf->daU = NULL;
+              operatorB11[k] = Buu;
+
+            } else {
+              operatorB11[k] = Auu;
+              ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+            }
           }
-        }
 
-        ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
-      }
+          ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
+        }
         break;
 
       case OP_TYPE_GALERKIN:
-      {
-        Mat Auu;
-        Vec X;
-        MatNullSpace nullsp;
+        {
+          Mat Auu;
+          Vec X;
+          MatNullSpace nullsp;
 
-        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembled operator \n", k);
-        if (k==nlevels-1) {
-          SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
-        }
-        if (!allow_galerkin){
-          if (level_type[k+1] == OP_TYPE_REDISC_MF) {
-            SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid. Finest level above must be of type OP_TYPE_REDISC_ASM, OP_TYPE_GALERKIN or OP_TYPE_MFGALERKIN, or provide the flag -A11_allow_galerkin_from_mf",k+1);
+          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembled operator \n", k);
+          if (k==nlevels-1) {
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
           }
-        } else {
-          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembling operator A_%D to construct A_%D = Pt.A_%D.P \n", k,k+1,k,k+1);
-        }
-
-        /* should move coarse grid assembly into jacobian */
-        if (!allow_galerkin) {
-          ierr = MatPtAP(operatorA11[k+1],interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
-        } else {
-          Mat A_kp1;
-          PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
-
-          ierr = DMCreateMatrix(dav_hierarchy[k+1],& A_kp1);CHKERRQ(ierr);
-          ierr = MatSetOptionsPrefix(A_kp1,"Buu_");CHKERRQ(ierr);
-          ierr = MatSetFromOptions(A_kp1);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATSBAIJ,&same1);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
-          ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATMPISBAIJ,&same3);CHKERRQ(ierr);
-          if (same1 || same2 || same3) {
-            ierr = MatSetOption(A_kp1,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+          if (!allow_galerkin){
+            if (level_type[k+1] == OP_TYPE_REDISC_MF) {
+              SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid. Finest level above must be of type OP_TYPE_REDISC_ASM, OP_TYPE_GALERKIN or OP_TYPE_MFGALERKIN, or provide the flag -A11_allow_galerkin_from_mf",k+1);
+            }
+          } else {
+            if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembling operator A_%D to construct A_%D = Pt.A_%D.P \n", k,k+1,k,k+1);
           }
-          ierr = MatZeroEntries(A_kp1);CHKERRQ(ierr);
-          ierr = MatAssemble_StokesA_AUU(A_kp1,dav_hierarchy[k+1],u_bclist[k+1],volQ[k+1]);CHKERRQ(ierr);
 
-          ierr = MatPtAP(A_kp1,interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
-          ierr = MatDestroy(&A_kp1);CHKERRQ(ierr);
+          /* should move coarse grid assembly into jacobian */
+          if (!allow_galerkin) {
+            ierr = MatPtAP(operatorA11[k+1],interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
+          } else {
+            Mat A_kp1;
+            PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
+
+            ierr = DMCreateMatrix(dav_hierarchy[k+1],& A_kp1);CHKERRQ(ierr);
+            ierr = MatSetOptionsPrefix(A_kp1,"Buu_");CHKERRQ(ierr);
+            ierr = MatSetFromOptions(A_kp1);CHKERRQ(ierr);
+            ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATSBAIJ,&same1);CHKERRQ(ierr);
+            ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+            ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+            if (same1 || same2 || same3) {
+              ierr = MatSetOption(A_kp1,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+            }
+            ierr = MatZeroEntries(A_kp1);CHKERRQ(ierr);
+            ierr = MatAssemble_StokesA_AUU(A_kp1,dav_hierarchy[k+1],u_bclist[k+1],volQ[k+1]);CHKERRQ(ierr);
+
+            ierr = MatPtAP(A_kp1,interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
+            ierr = MatDestroy(&A_kp1);CHKERRQ(ierr);
+          }
+
+          operatorA11[k] = Auu;
+          operatorB11[k] = Auu;
+          ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+          ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
+          ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
+          ierr = MatSetBlockSize(Auu,3);CHKERRQ(ierr);
+          ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
+          ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
         }
-
-        operatorA11[k] = Auu;
-        operatorB11[k] = Auu;
-        ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
-        ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
-        ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
-        ierr = MatSetBlockSize(Auu,3);CHKERRQ(ierr);
-        ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
-        ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
-      }
         break;
 
       case OP_TYPE_MFGALERKIN:
-      {
-        Mat Auu;
-        Vec X;
-        MatNullSpace nullsp;
+        {
+          Mat Auu;
+          Vec X;
+          MatNullSpace nullsp;
 
-        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: MFGalerkin :: assembled operator \n", k);
-        if (k==nlevels-1) {
-          SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use mf-galerkin coarse grid on the finest level");
+          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: MFGalerkin :: assembled operator \n", k);
+          if (k==nlevels-1) {
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use mf-galerkin coarse grid on the finest level");
+          }
+          if (level_type[k+1] != OP_TYPE_REDISC_MF) {
+            SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use mf-galerkin. Next finest level[%D] must be of type OP_TYPE_REDISC_MF",k+1);
+          }
+
+          ierr = DMSetMatType(dav_hierarchy[k],MATAIJ);CHKERRQ(ierr);
+          ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
+          ierr = MatAssembleMFGalerkin(dav_hierarchy[k+1],u_bclist[k+1],volQ[k+1],dav_hierarchy[k],Auu);CHKERRQ(ierr);
+
+          operatorA11[k] = Auu;
+          operatorB11[k] = Auu;
+          ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+
+          ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
+          ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
+          ierr = MatSetBlockSize(Auu,3);CHKERRQ(ierr);
+          ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
+          ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+
         }
-        if (level_type[k+1] != OP_TYPE_REDISC_MF) {
-          SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use mf-galerkin. Next finest level[%D] must be of type OP_TYPE_REDISC_MF",k+1);
-        }
-
-        ierr = DMSetMatType(dav_hierarchy[k],MATAIJ);CHKERRQ(ierr);
-        ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
-        ierr = MatAssembleMFGalerkin(dav_hierarchy[k+1],u_bclist[k+1],volQ[k+1],dav_hierarchy[k],Auu);CHKERRQ(ierr);
-
-        operatorA11[k] = Auu;
-        operatorB11[k] = Auu;
-        ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
-
-        ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
-        ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
-        ierr = MatSetBlockSize(Auu,3);CHKERRQ(ierr);
-        ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
-        ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
-
-      }
         break;
 
       default:
@@ -831,8 +831,8 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
   if (!ispcfs) PetscFunctionReturn(0);
   ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
 
-    ierr = KSPSetDM(sub_ksp[0],dav_hierarchy[nlevels-1]);CHKERRQ(ierr);
-    ierr = KSPSetDMActive(sub_ksp[0],PETSC_FALSE);CHKERRQ(ierr);
+  ierr = KSPSetDM(sub_ksp[0],dav_hierarchy[nlevels-1]);CHKERRQ(ierr);
+  ierr = KSPSetDMActive(sub_ksp[0],PETSC_FALSE);CHKERRQ(ierr);
 
   ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)pc_i,PCMG,&ispcmg);CHKERRQ(ierr);
@@ -844,7 +844,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
   ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
   ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
-    ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
+  ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 
   for( k=1; k<nlevels; k++ ){
     ierr = PCMGSetInterpolation(pc_i,k,interpolation_v[k]);CHKERRQ(ierr);
@@ -855,8 +855,8 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
   ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0]);CHKERRQ(ierr);
 
-    ierr = KSPSetDM(ksp_coarse,dav_hierarchy[0]);CHKERRQ(ierr);
-    ierr = KSPSetDMActive(ksp_coarse,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp_coarse,dav_hierarchy[0]);CHKERRQ(ierr);
+  ierr = KSPSetDMActive(ksp_coarse,PETSC_FALSE);CHKERRQ(ierr);
 
   for( k=1; k<nlevels; k++ ){
     PetscBool use_low_order_geometry = PETSC_FALSE;
@@ -867,14 +867,14 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
     ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
     if (use_low_order_geometry==PETSC_TRUE) {
       ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
-            //ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
+      //ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
     } else {
       // Use A for smoother, lo
       ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
     }
 
-        ierr = KSPSetDM(ksp_smoother,dav_hierarchy[k]);CHKERRQ(ierr);
-        ierr = KSPSetDMActive(ksp_smoother,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = KSPSetDM(ksp_smoother,dav_hierarchy[k]);CHKERRQ(ierr);
+    ierr = KSPSetDMActive(ksp_smoother,PETSC_FALSE);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(sub_ksp);CHKERRQ(ierr);
@@ -898,10 +898,10 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   Quadrature     volQ[10];
   BCList         u_bclist[10];
   PetscInt       step;
-    pTatinModel    model;
+  pTatinModel    model;
   PetscLogDouble time[2];
   PetscReal      surface_displacement_max = 1.0e32;
-    PetscBool      write_icbc = PETSC_FALSE;
+  PetscBool      write_icbc = PETSC_FALSE;
 
   PetscErrorCode ierr;
 
@@ -942,7 +942,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
     ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
   }
-    ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);
+  ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);
 
   ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 
@@ -1035,7 +1035,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   }
 
   /* update markers = >> gauss points [fine level] */
-    ierr = pTatin_EvaluateCoefficientNonlinearities_Stokes(user,X);CHKERRQ(ierr);
+  ierr = pTatin_EvaluateCoefficientNonlinearities_Stokes(user,X);CHKERRQ(ierr);
 
   /* update markers = >> gauss points */
   {
@@ -1057,13 +1057,13 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 
   /* configure stokes opertors */
   ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
-                                         nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
-                                         &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
+      nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
+      &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
 
   /* write the initial fields */
-    if (write_icbc) {
-        ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
-    }
+  if (write_icbc) {
+    ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
+  }
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
@@ -1084,7 +1084,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   /* configure uu split for galerkin multi-grid */
   ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
 
-    //ierr = SNESStokes_KSPSetConvergenceTest_ScaledResiduals(snes,user);CHKERRQ(ierr);
+  //ierr = SNESStokes_KSPSetConvergenceTest_ScaledResiduals(snes,user);CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
   ierr = pTatinLogBasic(user);CHKERRQ(ierr);
@@ -1095,8 +1095,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   ierr = SNESViewFromOptions(snes,NULL,"-snes_view_once");CHKERRQ(ierr);
   ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
   ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
-    ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
-    ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
+  ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
+  ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
   ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
 
   /* dump */
@@ -1209,8 +1209,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
     /* solve */
     /* a) configure stokes opertors */
     ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
-                                             nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
-                                             &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
+        nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
+        &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
     /* b) create solver */
     ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
@@ -1233,21 +1233,21 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
     PetscTime(&time[0]);
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     PetscTime(&time[1]);
-        ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
-        ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
-        ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
-        ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
+    ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
+    ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
+    ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
+    ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
     /*
-         {
-         Vec velocity,pressure;
-         PetscReal un,pn,Xn;
-         VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
-         ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-         VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
-         VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
-         ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-         }
-         */
+       {
+       Vec velocity,pressure;
+       PetscReal un,pn,Xn;
+       VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
+       ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+       VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
+       VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
+       ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+       }
+       */
 
     /* output */
     if ( (step%user->output_frequency == 0) || (step == 1) ) {
@@ -1266,7 +1266,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
     ierr = pTatin_SetTimestep(user,"StkSurfaceCourant",timestep);CHKERRQ(ierr);
 
     ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-        PetscPrintf(PETSC_COMM_WORLD,"  timestep[%D] dt_courant = %1.4e \n", step,user->dt );
+    PetscPrintf(PETSC_COMM_WORLD,"  timestep[%D] dt_courant = %1.4e \n", step,user->dt );
 
     /* CHECKPOINT */
     ierr = pTatin3dCheckpointManager(user,X);CHKERRQ(ierr);

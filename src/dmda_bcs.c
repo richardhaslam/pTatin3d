@@ -1042,6 +1042,3 @@ PetscErrorCode BCListInsertScaling(Mat A,PetscInt N_EQNS, PetscInt gidx[],BCList
 
   PetscFunctionReturn(0);
 }
-
-
-

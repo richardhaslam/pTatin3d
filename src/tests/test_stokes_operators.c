@@ -52,15 +52,15 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
   DMDACoor3d ***coors;
   PetscInt i,j,k,mstart,nstart,pstart,m,n,p;
   DM cda;
-    ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog;
   PetscInt NUM_GINDICES;
   const PetscInt *GINDICES;
 
 
 
-    ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&tmp);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
         ierr = VecSetValue(x,GIDX,f,INSERT_VALUES);CHKERRQ(ierr);
       }}}
   ierr = DMDAVecRestoreArray(cda,tmp,&coors);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
 {
   PetscErrorCode ierr;
   PetscInt i,j,k,mstart,nstart,pstart,m,n,p;
-    ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog;
   PetscInt NUM_GINDICES;
   const PetscInt *GINDICES;
   PetscInt M,N,P;
@@ -108,9 +108,9 @@ PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
   dz = 2.0/(PetscReal)(P-1);
 
 
-    ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
 
   ierr = DMDAGetGhostCorners(da,&mstart,&nstart,&pstart,&m,&n,&p);CHKERRQ(ierr);
 
@@ -129,7 +129,7 @@ PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
 
         ierr = VecSetValue(x,GIDX,f,INSERT_VALUES);CHKERRQ(ierr);
       }}}
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
@@ -207,13 +207,13 @@ PetscErrorCode ass_B22(PhysCompStokes stk)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
   /*
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = _GenerateTestVector(da,3,0,x);CHKERRQ(ierr);
-  ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
-  ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
+     ierr = VecSet(x,0.0);CHKERRQ(ierr);
+     ierr = _GenerateTestVector(da,3,0,x);CHKERRQ(ierr);
+     ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
+     ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 
-  ierr = MatMult(B,x,y);CHKERRQ(ierr);
-  */
+     ierr = MatMult(B,x,y);CHKERRQ(ierr);
+     */
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
@@ -288,11 +288,11 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
   PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(ASM):     time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
   /*
-  PetscPrintf(PETSC_COMM_WORLD,"y_mfo\n");
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"y_asm\n");
-  ierr = VecView(y2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  */
+     PetscPrintf(PETSC_COMM_WORLD,"y_mfo\n");
+     ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     PetscPrintf(PETSC_COMM_WORLD,"y_asm\n");
+     ierr = VecView(y2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     */
 
   /* compare result */
   ierr = VecDot(y,y,&cmp);CHKERRQ(ierr);
@@ -475,7 +475,7 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
   ierr = DMCompositeGetAccess(pack,x,&xu,&xp);CHKERRQ(ierr);
   ierr = VecSetRandom(xu,NULL);CHKERRQ(ierr);
   ierr = VecSetRandom(xp,NULL);CHKERRQ(ierr);
-//    ierr = VecZeroEntries(xp);CHKERRQ(ierr);
+  //    ierr = VecZeroEntries(xp);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(pack,x,&xu,&xp);CHKERRQ(ierr);
 
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
@@ -483,8 +483,8 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
   ierr = StokesQ2P1CreateMatrix_Operator(user,&A);CHKERRQ(ierr);
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
 
-//  PetscPrintf(PETSC_COMM_WORLD,"y_mfo\n");
-//  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //  PetscPrintf(PETSC_COMM_WORLD,"y_mfo\n");
+  //  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* assembled */
   ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
@@ -492,8 +492,8 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
   ierr = StokesQ2P1CreateMatrixNest_Operator(user,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,&B);CHKERRQ(ierr);
   ierr = MatMult(B,x,y2);CHKERRQ(ierr);
 
-//   PetscPrintf(PETSC_COMM_WORLD,"y_asm\n");
-//   ierr = VecView(y2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //   PetscPrintf(PETSC_COMM_WORLD,"y_asm\n");
+  //   ierr = VecView(y2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
 
   /* compare result */
@@ -885,8 +885,8 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
   /* perform tests */
   PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
 
-//  ierr = ass_A11(user->stokes_ctx);CHKERRQ(ierr);
-//  ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
+  //  ierr = ass_A11(user->stokes_ctx);CHKERRQ(ierr);
+  //  ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
 
 
   found  = PETSC_FALSE;

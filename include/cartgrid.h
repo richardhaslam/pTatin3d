@@ -41,22 +41,22 @@ extern const char *CartGridDataTypeNames[];
 typedef struct _p_CartGrid *CartGrid;
 
 struct _p_CartGrid {
-    PetscInt     dim;
-    PetscReal    range_x[2],range_y[2],range_z[2];
-    CartGridDataType data_type;
-    size_t       bytes;
-    PetscInt     start[3],end[3];
-    PetscInt     mx,my,mz;
-    CartGridType     type;
-    CartGridEndian   endian;
-  PetscReal    dx,dy,dz;
-    char         metadatafile_name[PETSC_MAX_PATH_LEN];
-    char         datafile_name[PETSC_MAX_PATH_LEN];
-    FILE         *data_fp;
-  void         *data;
-    PetscErrorCode (*getindex)(CartGrid,PetscInt,PetscInt,PetscInt,PetscInt*);
-    PetscErrorCode (*getvalue)(CartGrid,PetscReal*,void*,PetscBool*);
-    PetscErrorCode (*destroy)(CartGrid);
+  PetscInt         dim;
+  PetscReal        range_x[2],range_y[2],range_z[2];
+  CartGridDataType data_type;
+  size_t           bytes;
+  PetscInt         start[3],end[3];
+  PetscInt         mx,my,mz;
+  CartGridType     type;
+  CartGridEndian   endian;
+  PetscReal        dx,dy,dz;
+  char             metadatafile_name[PETSC_MAX_PATH_LEN];
+  char             datafile_name[PETSC_MAX_PATH_LEN];
+  FILE             *data_fp;
+  void             *data;
+  PetscErrorCode (*getindex)(CartGrid,PetscInt,PetscInt,PetscInt,PetscInt*);
+  PetscErrorCode (*getvalue)(CartGrid,PetscReal*,void*,PetscBool*);
+  PetscErrorCode (*destroy)(CartGrid);
 };
 
 PetscErrorCode CartGridCreate(CartGrid *map);

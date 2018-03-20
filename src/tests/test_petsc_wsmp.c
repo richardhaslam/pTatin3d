@@ -46,12 +46,12 @@ PetscErrorCode wssmp_ex1_serial_petsc_lu(void)
   PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
   PetscErrorCode ierr;
 
-    PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
+  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* ------------------Test from wssmp_ex1.f ------------------------- */
@@ -139,9 +139,9 @@ PetscErrorCode wssmp_ex1_serial_petsc_wsmp(void)
   PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* ------------------Test from wssmp_ex1.f ------------------------- */
@@ -248,23 +248,23 @@ PetscErrorCode wssmp_ex1_mpi_petsc_wsmp(void)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    if (size == 3) { /* special case to match the example in the manual */
-        if (rank == 0) {
-            ierr = MatSetSizes(A,3,3,m,m);CHKERRQ(ierr);
-        }
-        if (rank == 1) {
-            ierr = MatSetSizes(A,2,2,m,m);CHKERRQ(ierr);
-        }
-        if (rank == 2) {
-            ierr = MatSetSizes(A,4,4,m,m);CHKERRQ(ierr);
-        }
-    } else {
-        ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  if (size == 3) { /* special case to match the example in the manual */
+    if (rank == 0) {
+      ierr = MatSetSizes(A,3,3,m,m);CHKERRQ(ierr);
     }
-    ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
+    if (rank == 1) {
+      ierr = MatSetSizes(A,2,2,m,m);CHKERRQ(ierr);
+    }
+    if (rank == 2) {
+      ierr = MatSetSizes(A,4,4,m,m);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
+  }
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
   /* ------------------Test from wssmp_ex1.f ------------------------- */

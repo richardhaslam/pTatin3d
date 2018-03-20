@@ -52,7 +52,7 @@ PetscErrorCode DMDAEDestroy(DMDAE *dae)
   DMDAE d;
   PetscErrorCode ierr;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
   if (!dae){ PetscFunctionReturn(0); }
   d = (*dae);
   ierr = PetscFree(d->lsip);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ PetscErrorCode DMDAEDeepCopy(DMDAE dae1,PetscInt NP[],DMDAE dae2)
 {
   PetscErrorCode ierr;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
   dae2->ne  = dae1->ne;
   dae2->lne = dae1->lne;
 
@@ -115,7 +115,7 @@ PetscErrorCode DMDAEDeepCopy(DMDAE dae1,PetscInt NP[],DMDAE dae2)
 PetscErrorCode DMDAECopy(DMDAE dae1,DMDAE dae2)
 {
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
   dae2->ne  = dae1->ne;
   dae2->lne = dae1->lne;
 
@@ -190,7 +190,7 @@ PetscErrorCode DMDestroyDMDAE(DM dm)
   PetscContainer container;
   PetscErrorCode ierr;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm,"DMDAEobject",(PetscObject*)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"DMDAEobject\" was composed with DM");
   ierr = PetscContainerGetPointer(container,(void**)&d);CHKERRQ(ierr);
@@ -202,9 +202,9 @@ PetscErrorCode DMDestroyDMDAE(DM dm)
 }
 
 PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
-                                       PetscInt *m,PetscInt *n,PetscInt *p,
-                                       PetscInt **si,PetscInt **sj,PetscInt **sk,
-                                       PetscInt **mx,PetscInt **my,PetscInt **mz)
+    PetscInt *m,PetscInt *n,PetscInt *p,
+    PetscInt **si,PetscInt **sj,PetscInt **sk,
+    PetscInt **mx,PetscInt **my,PetscInt **mz)
 {
   DMDAE dae;
   PetscInt pM,pN,pP;

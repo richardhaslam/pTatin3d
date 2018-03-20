@@ -215,7 +215,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
     ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
   }
-   ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);
+  ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);
 
   ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 
@@ -369,7 +369,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
   }
 
   /* B operator */
-//  ierr = StokesQ2P1CreateMatrixNest_PCOperator(user->stokes_ctx,PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,&B);CHKERRQ(ierr);
+  //  ierr = StokesQ2P1CreateMatrixNest_PCOperator(user->stokes_ctx,PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,&B);CHKERRQ(ierr);
   {
     Mat         Aup,Apu,Spp,bA[2][2];
     MatStokesMF StkCtx;
@@ -426,72 +426,72 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
     switch ((OperatorType)level_type[k]) {
 
       case OP_TYPE_REDISC_ASM:
-      {
-        Mat Auu;
-        PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
+        {
+          Mat Auu;
+          PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
 
-        /* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
-        PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-        ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
-        ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
-        ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
-        ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
-        ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
-        if (same1||same2||same3) {
-          ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+          /* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
+          PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
+          ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+          ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
+          ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
+          ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+          ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+          if (same1||same2||same3) {
+            ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+          }
+          /* should move assembly into jacobian */
+          ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
+          ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
+
+          operatorA11[k] = Auu;
+          operatorB11[k] = Auu;
+          ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+
         }
-        /* should move assembly into jacobian */
-        ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
-        ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
-
-        operatorA11[k] = Auu;
-        operatorB11[k] = Auu;
-        ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
-
-      }
         break;
 
       case OP_TYPE_REDISC_MF:
-      {
-        Mat Auu;
-        MatA11MF mf,A11Ctx;
+        {
+          Mat Auu;
+          MatA11MF mf,A11Ctx;
 
-        PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
-        ierr = MatA11MFCreate(&A11Ctx);CHKERRQ(ierr);
-        ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
+          PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
+          ierr = MatA11MFCreate(&A11Ctx);CHKERRQ(ierr);
+          ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
 
-        ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
-        ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
-        ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-        mf->daU = NULL;
+          ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
+          ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
+          ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
+          mf->daU = NULL;
 
-        operatorA11[k] = Auu;
-        operatorB11[k] = Auu;
-        ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+          operatorA11[k] = Auu;
+          operatorB11[k] = Auu;
+          ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
 
-        ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
-      }
+          ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
+        }
         break;
 
       case OP_TYPE_GALERKIN:
-      {
-        Mat Auu;
+        {
+          Mat Auu;
 
-        if (k==nlevels-1) {
-          SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
+          if (k==nlevels-1) {
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
+          }
+
+          PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembled operator \n", k);
+
+          /* should move coarse grid assembly into jacobian */
+          ierr = MatPtAP(operatorA11[k+1],interpolatation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
+
+          operatorA11[k] = Auu;
+          operatorB11[k] = Auu;
+          ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
         }
-
-        PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembled operator \n", k);
-
-        /* should move coarse grid assembly into jacobian */
-        ierr = MatPtAP(operatorA11[k+1],interpolatation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
-
-        operatorA11[k] = Auu;
-        operatorB11[k] = Auu;
-        ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
-      }
         break;
 
       default:
@@ -530,7 +530,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
   ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-//  ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+  //  ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 
@@ -609,8 +609,8 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
     /* 3 Update local coordinates and communicate */
     ierr = MaterialPointStd_UpdateCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],user->materialpoint_ex);CHKERRQ(ierr);
 
-      /* add / remove points if cells are over populated or depleted of points */
-//    ierr = MaterialPointPopulationControl(user);CHKERRQ(ierr);
+    /* add / remove points if cells are over populated or depleted of points */
+    //    ierr = MaterialPointPopulationControl(user);CHKERRQ(ierr);
 
 
     user->time += user->dt;
@@ -674,28 +674,28 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 
 PetscBool EvaluateTestVelocityField_0(PetscScalar coor[],PetscScalar *value,void *ctx)
 {
-    PetscInt dof;
-    PetscReal fac,x,y,z;
+  PetscInt dof;
+  PetscReal fac,x,y,z;
 
-    dof = *((PetscInt*)ctx);
-    x = coor[0];
-    y = coor[1];
-    z = coor[2];
+  dof = *((PetscInt*)ctx);
+  x = coor[0];
+  y = coor[1];
+  z = coor[2];
 
-    switch (dof) {
-        case 0:
-            fac = 0.5*(cos(M_PI*x)+1.0);
-            *value = fac * ( sin(y*3.3) + sin(z) );
-            break;
-        case 1:
-            fac = 0.5*(cos(M_PI*y)+1.0);
-            *value = fac * ( sin(y*1.3) * x + z );
-            break;
-        case 2:
-            fac = 0.5*(cos(M_PI*z)+1.0);
-            *value = fac * ( cos(x*1.1) * y*z + x );
-            break;
-    }
+  switch (dof) {
+    case 0:
+      fac = 0.5*(cos(M_PI*x)+1.0);
+      *value = fac * ( sin(y*3.3) + sin(z) );
+      break;
+    case 1:
+      fac = 0.5*(cos(M_PI*y)+1.0);
+      *value = fac * ( sin(y*1.3) * x + z );
+      break;
+    case 2:
+      fac = 0.5*(cos(M_PI*z)+1.0);
+      *value = fac * ( cos(x*1.1) * y*z + x );
+      break;
+  }
 
   return PETSC_TRUE;
 }
@@ -703,81 +703,81 @@ PetscBool EvaluateTestVelocityField_0(PetscScalar coor[],PetscScalar *value,void
 #include <petsc/ptatin_petsc_ex43-solcx.h>
 PetscBool EvaluateTestVelocityField_1(PetscScalar coor[],PetscScalar *value,void *ctx)
 {
-    PetscInt  dof;
-    PetscReal x,y,z;
-    PetscReal coorxy[2],coorxz[2],cooryz[2];
-    PetscReal vxy[2],vxz[2],vyz[2];
+  PetscInt  dof;
+  PetscReal x,y,z;
+  PetscReal coorxy[2],coorxz[2],cooryz[2];
+  PetscReal vxy[2],vxz[2],vyz[2];
 
-    dof = *((PetscInt*)ctx);
-    x = coor[0];
-    y = coor[1];
-    z = coor[2];
+  dof = *((PetscInt*)ctx);
+  x = coor[0];
+  y = coor[1];
+  z = coor[2];
 
-    coorxy[0] = x;
-    coorxy[1] = y;
+  coorxy[0] = x;
+  coorxy[1] = y;
 
-    coorxz[0] = x;
-    coorxz[1] = x;
+  coorxz[0] = x;
+  coorxz[1] = x;
 
-    cooryz[0] = y;
-    cooryz[1] = z;
+  cooryz[0] = y;
+  cooryz[1] = z;
 
-    evaluate_solCx(coorxy,
-                   1.0,50.0,   /* Input parameters: coord, viscosity_A, viscosity_B */
-                   0.5,1,       /* Input parameters: viscosity jump location, wave number in y */
-                   vxy,NULL,NULL,NULL);
+  evaluate_solCx(coorxy,
+      1.0,50.0,   /* Input parameters: coord, viscosity_A, viscosity_B */
+      0.5,1,       /* Input parameters: viscosity jump location, wave number in y */
+      vxy,NULL,NULL,NULL);
 
-    evaluate_solCx(coorxz,
-                   1.0,1.0,   /* Input parameters: coord, viscosity_A, viscosity_B */
-                   0.5,2,       /* Input parameters: viscosity jump location, wave number in y */
-                   vxz,NULL,NULL,NULL);
+  evaluate_solCx(coorxz,
+      1.0,1.0,   /* Input parameters: coord, viscosity_A, viscosity_B */
+      0.5,2,       /* Input parameters: viscosity jump location, wave number in y */
+      vxz,NULL,NULL,NULL);
 
-    evaluate_solCx(cooryz,
-                   1.0,1.0,   /* Input parameters: coord, viscosity_A, viscosity_B */
-                   0.5,1,       /* Input parameters: viscosity jump location, wave number in y */
-                   vyz,NULL,NULL,NULL);
+  evaluate_solCx(cooryz,
+      1.0,1.0,   /* Input parameters: coord, viscosity_A, viscosity_B */
+      0.5,1,       /* Input parameters: viscosity jump location, wave number in y */
+      vyz,NULL,NULL,NULL);
 
-    *value = 0.0;
-    switch (dof) {
-        case 0:
-            *value = vxy[0];
-            break;
-        case 1:
-            *value = vxy[1];// + 0.1*vyz[0];
-            break;
-        case 2:
-            *value = 0.0;// + 0.1*vyz[1];
-            break;
-    }
+  *value = 0.0;
+  switch (dof) {
+    case 0:
+      *value = vxy[0];
+      break;
+    case 1:
+      *value = vxy[1];// + 0.1*vyz[0];
+      break;
+    case 2:
+      *value = 0.0;// + 0.1*vyz[1];
+      break;
+  }
 
   return PETSC_TRUE;
 }
 
 PetscErrorCode DefineTestVelocityField(PetscInt vfield_idx,DM dmv,Vec velocity)
 {
-    PetscErrorCode ierr;
-    PetscInt dof_idx;
+  PetscErrorCode ierr;
+  PetscInt dof_idx;
 
-    switch (vfield_idx) {
-        case 0:
-            dof_idx = 0;
-            ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_0,(void*)&dof_idx);CHKERRQ(ierr);
-            dof_idx = 1;
-            ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_0,(void*)&dof_idx);CHKERRQ(ierr);
-            dof_idx = 2;
-            ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_0,(void*)&dof_idx);CHKERRQ(ierr);
-            break;
-        case 1:
-            dof_idx = 0;
-            ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_1,(void*)&dof_idx);CHKERRQ(ierr);
-            dof_idx = 1;
-            ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_1,(void*)&dof_idx);CHKERRQ(ierr);
-            dof_idx = 2;
-            ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_1,(void*)&dof_idx);CHKERRQ(ierr);
-            break;
-        case 2:
-            break;
-    }
+  switch (vfield_idx) {
+    case 0:
+      dof_idx = 0;
+      ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_0,(void*)&dof_idx);CHKERRQ(ierr);
+      dof_idx = 1;
+      ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_0,(void*)&dof_idx);CHKERRQ(ierr);
+      dof_idx = 2;
+      ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_0,(void*)&dof_idx);CHKERRQ(ierr);
+      break;
+    case 1:
+      dof_idx = 0;
+      ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_1,(void*)&dof_idx);CHKERRQ(ierr);
+      dof_idx = 1;
+      ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_1,(void*)&dof_idx);CHKERRQ(ierr);
+      dof_idx = 2;
+      ierr = DMDAVecTraverse3d(dmv,velocity,dof_idx,EvaluateTestVelocityField_1,(void*)&dof_idx);CHKERRQ(ierr);
+      break;
+    case 2:
+      break;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -786,21 +786,21 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
   pTatinCtx       user;
   PhysCompStokes  stokes;
   DM              multipys_pack,dmv,dmp,dmx;
-    Vec             X;
-    IS              *is_up_field;
-    PetscInt        f,nfields;
+  Vec             X;
+  IS              *is_up_field;
+  PetscInt        f,nfields;
   DataBucket      materialpoint_db;
-    PetscInt        step;
-    Vec             velocity,pressure;
-    PetscReal       timestep;
-    PetscReal       dt_factor = 1.0;
-    PetscInt        vfield_idx = 0;
-    PetscErrorCode  ierr;
-    PSwarm          pswarm,*pswarm2,*psi;
+  PetscInt        step;
+  Vec             velocity,pressure;
+  PetscReal       timestep;
+  PetscReal       dt_factor = 1.0;
+  PetscInt        vfield_idx = 0;
+  PetscErrorCode  ierr;
+  PSwarm          pswarm,*pswarm2,*psi;
 
   PetscFunctionBegin;
 
-    ierr = PetscOptionsGetInt(NULL,NULL,"-flow_field",&vfield_idx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-flow_field",&vfield_idx,NULL);CHKERRQ(ierr);
 
   ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
@@ -810,30 +810,30 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
   /* Generate physics modules [Stokes] */
   ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
   ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr); /* Fetch local variables */
-    ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(dmv,&dmx);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dmv,&dmx);CHKERRQ(ierr);
 
   /* Pack all physics together */
   user->pack = stokes->stokes_pack;
-    PetscObjectReference((PetscObject)user->pack);
+  PetscObjectReference((PetscObject)user->pack);
   multipys_pack = user->pack;
 
   /* -- NOTE -- DM{Get/Create}GlobalVector must be called before DMCompositeGetGlobalISs() */
-    ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 
-    ierr = DMCompositeGetNumberDM(multipys_pack,&nfields);CHKERRQ(ierr);
+  ierr = DMCompositeGetNumberDM(multipys_pack,&nfields);CHKERRQ(ierr);
   ierr = DMCompositeGetGlobalISs(multipys_pack,&is_up_field);CHKERRQ(ierr);
 
-    ierr = pTatin3dCreateMaterialPoints(user,dmv);CHKERRQ(ierr); /* Allocate data bucket for material points */
+  ierr = pTatin3dCreateMaterialPoints(user,dmv);CHKERRQ(ierr); /* Allocate data bucket for material points */
   ierr = pTatinGetMaterialPoints(user,&materialpoint_db,NULL);CHKERRQ(ierr);
 
-    ierr = PSwarmCreate(PETSC_COMM_WORLD,&pswarm);CHKERRQ(ierr);
-    ierr = PSwarmSetOptionsPrefix(pswarm,"passive_");CHKERRQ(ierr);
-    ierr = PSwarmSetPtatinCtx(pswarm,user);CHKERRQ(ierr);
-    ierr = PSwarmSetTransportModeType(pswarm,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
+  ierr = PSwarmCreate(PETSC_COMM_WORLD,&pswarm);CHKERRQ(ierr);
+  ierr = PSwarmSetOptionsPrefix(pswarm,"passive_");CHKERRQ(ierr);
+  ierr = PSwarmSetPtatinCtx(pswarm,user);CHKERRQ(ierr);
+  ierr = PSwarmSetTransportModeType(pswarm,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
 
-    ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
+  ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
 
   ierr = PSwarmCreateMultipleInstances(PETSC_COMM_WORLD,&pswarm2);CHKERRQ(ierr);
   psi = &pswarm2[0];
@@ -851,48 +851,48 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
   /* interpolate material point coordinates (needed if mesh was modified) */
   ierr = MaterialPointCoordinateSetUp(user,dmv);CHKERRQ(ierr); /* <<<< User call back >>>> */
   //ierr = pTatinModel_ApplyInitialMaterialGeometry(model,user);CHKERRQ(ierr);
-    {
-        DataField PField_std;
-        int p,n_mp_points;
+  {
+    DataField PField_std;
+    int p,n_mp_points;
 
-        DataBucketGetDataFieldByName(materialpoint_db,MPntStd_classname,&PField_std);
-        DataFieldGetAccess(PField_std);
-        DataBucketGetSizes(materialpoint_db,&n_mp_points,0,0);
-        for (p=0; p<n_mp_points; p++) {
-            MPntStd *material_point;
-            int     region,regionIJK[3],II,JJ,KK;
-            double  *position;
-            double  ddx=0.5,ddy=0.5,ddz=0.5;
+    DataBucketGetDataFieldByName(materialpoint_db,MPntStd_classname,&PField_std);
+    DataFieldGetAccess(PField_std);
+    DataBucketGetSizes(materialpoint_db,&n_mp_points,0,0);
+    for (p=0; p<n_mp_points; p++) {
+      MPntStd *material_point;
+      int     region,regionIJK[3],II,JJ,KK;
+      double  *position;
+      double  ddx=0.5,ddy=0.5,ddz=0.5;
 
-            DataFieldAccessPoint(PField_std,p,(void**)&material_point);
-            MPntStdGetField_global_coord(material_point,&position);
-            region = 0;
-            II = (int)(position[0]/ddx);
-            JJ = (int)(position[1]/ddy);
-            KK = (int)(position[2]/ddz);
+      DataFieldAccessPoint(PField_std,p,(void**)&material_point);
+      MPntStdGetField_global_coord(material_point,&position);
+      region = 0;
+      II = (int)(position[0]/ddx);
+      JJ = (int)(position[1]/ddy);
+      KK = (int)(position[2]/ddz);
 
-            regionIJK[0] = regionIJK[1] = regionIJK[2] = 0;
-            if (II%2) {
-                regionIJK[0] = 1;
-            }
-            if (JJ%2) {
-                regionIJK[1] = 1;
-            }
-            if (KK%2) {
-                regionIJK[2] = 1;
-            }
-            region = regionIJK[0] + regionIJK[1]*2 + regionIJK[2]*4;
-            MPntStdSetField_phase_index(material_point,region);
-       }
-        DataFieldRestoreAccess(PField_std);
+      regionIJK[0] = regionIJK[1] = regionIJK[2] = 0;
+      if (II%2) {
+        regionIJK[0] = 1;
+      }
+      if (JJ%2) {
+        regionIJK[1] = 1;
+      }
+      if (KK%2) {
+        regionIJK[2] = 1;
+      }
+      region = regionIJK[0] + regionIJK[1]*2 + regionIJK[2]*4;
+      MPntStdSetField_phase_index(material_point,region);
     }
+    DataFieldRestoreAccess(PField_std);
+  }
 
   //ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr); /* <<<< User call back >>>> */
 
   /* work vector for solution and residual */
   ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 
-    ierr = PSwarmAttachStateVecVelocityPressure(pswarm,X);CHKERRQ(ierr);
+  ierr = PSwarmAttachStateVecVelocityPressure(pswarm,X);CHKERRQ(ierr);
   psi = &pswarm2[0];
   while (*psi) {
     ierr = PSwarmAttachStateVecVelocityPressure(*psi,X);CHKERRQ(ierr);
@@ -901,9 +901,9 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 
   /* insert boundary conditions into solution vector X */
   {
-        BCList bclist_u;
+    BCList bclist_u;
 
-        ierr = PhysCompStokesGetBCList(stokes,&bclist_u,NULL);CHKERRQ(ierr);
+    ierr = PhysCompStokesGetBCList(stokes,&bclist_u,NULL);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
     ierr = BCListInsert(bclist_u,velocity);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -912,10 +912,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 
   /* initial condition */
   //ierr = pTatinModel_ApplyInitialSolution(model,user,X);CHKERRQ(ierr); /* <<<< User call back >>>> */
-    /* Define user velocity field */
-    ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    ierr = DefineTestVelocityField(vfield_idx,dmv,velocity);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  /* Define user velocity field */
+  ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  ierr = DefineTestVelocityField(vfield_idx,dmv,velocity);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
   /* output ic */
   ierr = pTatinOutputLiteParaViewMeshVelocity(multipys_pack,X,user->outputpath,"step000000_v");CHKERRQ(ierr);
@@ -924,12 +924,12 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 
   /* compute timestep */
   user->dt = 1.0e32;
-    /* -- NOTE -- We can ignore last physics entry */
-    ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    ierr = SwarmUpdatePosition_ComputeCourantStep(dmv,velocity,&timestep);CHKERRQ(ierr);
-    ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"  timestep[stokes] dt_courant = %1.4e \n", user->dt );
+  /* -- NOTE -- We can ignore last physics entry */
+  ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  ierr = SwarmUpdatePosition_ComputeCourantStep(dmv,velocity,&timestep);CHKERRQ(ierr);
+  ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"  timestep[stokes] dt_courant = %1.4e \n", user->dt );
 
   user->step = 1;
   user->time = user->time + user->dt;
@@ -948,9 +948,9 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     /* update marker time dependent terms */
     /* e.g. e_plastic^1 = e_plastic^0 + dt * [ strain_rate_inv(u^0) ] */
     /*
-     NOTE: for a consistent forward difference time integration we evaluate u^0 at x^0
-     - thus this update is performed BEFORE we advect the markers
-     */
+NOTE: for a consistent forward difference time integration we evaluate u^0 at x^0
+- thus this update is performed BEFORE we advect the markers
+*/
     ierr = pTatin_UpdateCoefficientTemporalDependence_Stokes(user,X);CHKERRQ(ierr);
 
     /* update marker positions */
@@ -958,7 +958,7 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     ierr = MaterialPointStd_UpdateGlobalCoordinates(materialpoint_db,dmv,velocity,user->dt);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
-        ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
+    ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
     psi = &pswarm2[0];
     while (*psi) {
       ierr = PSwarmFieldUpdateAll(*psi);CHKERRQ(ierr);
@@ -980,7 +980,7 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     /* output material points */
     if (step%user->output_frequency == 0) {
       PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
-            ierr = pTatin3d_ModelOutput_MPntStd(user,stepname);CHKERRQ(ierr);
+      ierr = pTatin3d_ModelOutput_MPntStd(user,stepname);CHKERRQ(ierr);
 
       ierr = PSwarmView(pswarm,PSW_VT_SINGLETON);CHKERRQ(ierr);
       psi = &pswarm2[0];
@@ -1007,14 +1007,14 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
       break;
     }
 
-        /* update time */
+    /* update time */
     user->step++;
     user->time = user->time + user->dt;
-    }
+  }
 
-    /* clean up */
-    ierr = PSwarmViewInfo(pswarm);CHKERRQ(ierr);
-    ierr = PSwarmDestroy(&pswarm);CHKERRQ(ierr);
+  /* clean up */
+  ierr = PSwarmViewInfo(pswarm);CHKERRQ(ierr);
+  ierr = PSwarmDestroy(&pswarm);CHKERRQ(ierr);
 
   psi = &pswarm2[0];
   while (*psi) {
@@ -1027,12 +1027,12 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
   }
   PetscFree(pswarm2);
 
-    ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
   for (f=0; f<nfields; f++) {
-        ierr = ISDestroy(&is_up_field[f]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(is_up_field);CHKERRQ(ierr);
-    ierr = pTatin3dDestroyContext(&user);
+    ierr = ISDestroy(&is_up_field[f]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(is_up_field);CHKERRQ(ierr);
+  ierr = pTatin3dDestroyContext(&user);
 
   PetscFunctionReturn(0);
 }
@@ -1045,17 +1045,17 @@ int main(int argc,char **argv)
   ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 
 
-    ierr = PetscOptionsGetBool(NULL,NULL,"-use_model_vel_field",&model_vel_field,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_model_vel_field",&model_vel_field,NULL);CHKERRQ(ierr);
 
-    /*
+  /*
      This requires a model to be specified.
      It performs a single solve, then continuously advects material points
      */
-    if (model_vel_field) {
-        ierr = test_mp_advection(argc,argv);CHKERRQ(ierr);
-    } else {
-        ierr = MaterialPointAdvectionTest2();CHKERRQ(ierr);
-    }
+  if (model_vel_field) {
+    ierr = test_mp_advection(argc,argv);CHKERRQ(ierr);
+  } else {
+    ierr = MaterialPointAdvectionTest2();CHKERRQ(ierr);
+  }
 
   ierr = pTatinFinalize();CHKERRQ(ierr);
   return 0;

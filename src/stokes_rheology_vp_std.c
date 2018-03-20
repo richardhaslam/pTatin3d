@@ -109,29 +109,29 @@ static inline void ComputeStrainRate3d(double ux[],double uy[],double uz[],doubl
 }
 
 /*
-static inline void ComputeDeformationGradient3d(double ux[],double uy[],double uz[],double dNudx[],double dNudy[],double dNudz[],double L[NSD][NSD])
-{
-  int i,j,k;
+   static inline void ComputeDeformationGradient3d(double ux[],double uy[],double uz[],double dNudx[],double dNudy[],double dNudz[],double L[NSD][NSD])
+   {
+   int i,j,k;
 
-  for (i=0; i<3; i++) {
-    for (j=0; j<3; j++) {
-      L[i][j] = 0.0;
-    }
-  }
-  for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-    // du/dx_i
-    L[0][0] += dNudx[k] * ux[k];
-    L[0][1] += dNudy[k] * ux[k];
-    L[0][2] += dNudz[k] * ux[k];
-    // dv/dx_i
-    L[1][0] += dNudx[k] * uy[k];
-    L[1][1] += dNudy[k] * uy[k];
-    L[1][2] += dNudz[k] * uy[k];
-    // dw/dx_i
-    L[2][0] += dNudx[k] * uz[k];
-    L[2][1] += dNudy[k] * uz[k];
-    L[2][2] += dNudz[k] * uz[k];
-  }
+   for (i=0; i<3; i++) {
+   for (j=0; j<3; j++) {
+   L[i][j] = 0.0;
+   }
+   }
+   for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+// du/dx_i
+L[0][0] += dNudx[k] * ux[k];
+L[0][1] += dNudy[k] * ux[k];
+L[0][2] += dNudz[k] * ux[k];
+// dv/dx_i
+L[1][0] += dNudx[k] * uy[k];
+L[1][1] += dNudy[k] * uy[k];
+L[1][2] += dNudz[k] * uy[k];
+// dw/dx_i
+L[2][0] += dNudx[k] * uz[k];
+L[2][1] += dNudy[k] * uz[k];
+L[2][2] += dNudz[k] * uz[k];
+}
 }
 */
 
@@ -148,14 +148,14 @@ static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 }
 
 /*
-static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
-{
-  const double one_third = 0.333333333333333;
+   static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
+   {
+   const double one_third = 0.333333333333333;
 
-  *A2 = one_third * ( A[0][0] + A[1][1] + A[2][2] );
+ *A2 = one_third * ( A[0][0] + A[1][1] + A[2][2] );
 
-}
-*/
+ }
+ */
 
 PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],DM daT,PetscScalar Tfield[])
 {
@@ -194,7 +194,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
   DataField      PField_ViscConst,PField_ViscZ,PField_ViscFK,PField_ViscArrh;
   DataField      PField_PlasticMises,PField_PlasticDP;
   DataField      PField_SoftLin,PField_SoftExpo;
-    /* structs or material constants */
+  /* structs or material constants */
   MaterialConst_MaterialType      *MatType_data;
   MaterialConst_DensityConst      *DensityConst_data;
   MaterialConst_DensityBoussinesq *DensityBoussinesq_data;
@@ -220,9 +220,9 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
   DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
   DataFieldGetAccess(PField_std);
 
-    /* PField_std global index marker, phase marker, ...*/
-    /* PField_stokes contains: etaf, rhof */
-    /* PField_pls contains: accumulated plastic strain, yield type */
+  /* PField_std global index marker, phase marker, ...*/
+  /* PField_stokes contains: etaf, rhof */
+  /* PField_pls contains: accumulated plastic strain, yield type */
   DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
   DataFieldGetAccess(PField_stokes);
 
@@ -381,276 +381,295 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
     //MPntPStokesGetField_eta_effective(mpprop_stokes,&eta_mp);
     switch (viscous_type) {
 
-      case VISCOUS_CONSTANT: {
-        eta_mp = ViscConst_data[ region_idx ].eta0;
-      }
-        break;
-
-      case VISCOUS_Z: {
-        y_mp = mpprop_std->coor[1];
-        eta_mp = ViscZ_data[ region_idx ].eta0*exp(-(ViscZ_data[ region_idx ].zref-y_mp)/ViscZ_data[ region_idx ].zeta);
-
-      }
-        break;
-
-      case VISCOUS_FRANKK: {
-        eta_mp  = ViscFK_data[ region_idx ].eta0*exp(-ViscFK_data[ region_idx ].theta*T_mp);
-      }
-        break;
-
-      case VISCOUS_ARRHENIUS: {
-        PetscScalar R       = 8.31440;
-        PetscReal nexp      = ViscArrh_data[ region_idx ].nexp;
-        PetscReal entalpy   = ViscArrh_data[ region_idx ].entalpy;
-        PetscReal preexpA   = ViscArrh_data[ region_idx ].preexpA;
-        PetscReal Vmol      = ViscArrh_data[ region_idx ].Vmol;
-        PetscReal Tref      = ViscArrh_data[ region_idx ].Tref;
-        PetscReal Ascale    = ViscArrh_data[ region_idx ].Ascale;
-        PetscReal T_arrh    = T_mp + Tref ;
-        PetscReal sr, eta, pressure;
-
-        ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-                ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
-
-                sr = inv2_D_mp/ViscArrh_data[ region_idx ].Eta_scale*ViscArrh_data[ region_idx ].P_scale;
-        if (sr < 1.0e-17) {
-          sr = 1.0e-17;
+      case VISCOUS_CONSTANT: 
+        {
+          eta_mp = ViscConst_data[ region_idx ].eta0;
         }
-
-        pressure = ViscArrh_data[ region_idx ].P_scale*pressure_mp;
-
-                if (pressure >= 0.0) {
-                    entalpy = entalpy + pressure*Vmol;
-                }
-
-        eta  = Ascale*0.25*pow(sr,1.0/nexp - 1.0)*pow(0.75*preexpA,-1.0/nexp)*exp(entalpy/(nexp*R*T_arrh));
-        eta_mp = eta/ViscArrh_data[ region_idx ].Eta_scale;
-      }
         break;
 
-      case VISCOUS_ARRHENIUS_2: {
-        PetscScalar R       = 8.31440;
-        PetscReal nexp      = ViscArrh_data[ region_idx ].nexp;
-        PetscReal entalpy   = ViscArrh_data[ region_idx ].entalpy;
-        PetscReal preexpA   = ViscArrh_data[ region_idx ].preexpA;
-        PetscReal Vmol      = ViscArrh_data[ region_idx ].Vmol;
-        PetscReal Tref      = ViscArrh_data[ region_idx ].Tref;
-        PetscReal Ascale    = ViscArrh_data[ region_idx ].Ascale;
-        PetscReal T_arrh    = T_mp + Tref ;
-        PetscReal sr, eta, pressure;
+      case VISCOUS_Z: 
+        {
+          y_mp = mpprop_std->coor[1];
+          eta_mp = ViscZ_data[ region_idx ].eta0*exp(-(ViscZ_data[ region_idx ].zref-y_mp)/ViscZ_data[ region_idx ].zeta);
 
-        ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-                ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
-
-                sr = inv2_D_mp/ViscArrh_data[ region_idx ].Eta_scale*ViscArrh_data[ region_idx ].P_scale;
-        if (sr < 1.0e-17) {
-          sr = 1.0e-17;
         }
-
-        pressure = ViscArrh_data[ region_idx ].P_scale*pressure_mp;
-
-                if (pressure >= 0.0) {
-                    entalpy = entalpy + pressure*Vmol;
-                }
-
-        eta  = Ascale*pow(sr,1.0/nexp - 1.0)*pow(preexpA,-1.0/nexp)*exp(entalpy/(nexp*R*T_arrh));
-        eta_mp = eta/ViscArrh_data[ region_idx ].Eta_scale;
-      }
         break;
 
-            default:
-                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default ViscousType specified. Valid choices are VISCOUS_CONSTANT, VISCOUS_Z, VISCOUS_FRANKK, VISCOUS_ARRHENIUS, VISCOUS_ARRHENIUS_2");
+      case VISCOUS_FRANKK: 
+        {
+          eta_mp  = ViscFK_data[ region_idx ].eta0*exp(-ViscFK_data[ region_idx ].theta*T_mp);
+        }
+        break;
+
+      case VISCOUS_ARRHENIUS: 
+        {
+          PetscScalar R       = 8.31440;
+          PetscReal nexp      = ViscArrh_data[ region_idx ].nexp;
+          PetscReal entalpy   = ViscArrh_data[ region_idx ].entalpy;
+          PetscReal preexpA   = ViscArrh_data[ region_idx ].preexpA;
+          PetscReal Vmol      = ViscArrh_data[ region_idx ].Vmol;
+          PetscReal Tref      = ViscArrh_data[ region_idx ].Tref;
+          PetscReal Ascale    = ViscArrh_data[ region_idx ].Ascale;
+          PetscReal T_arrh    = T_mp + Tref ;
+          PetscReal sr, eta, pressure;
+
+          ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+          ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+
+          sr = inv2_D_mp/ViscArrh_data[ region_idx ].Eta_scale*ViscArrh_data[ region_idx ].P_scale;
+          if (sr < 1.0e-17) {
+            sr = 1.0e-17;
+          }
+
+          pressure = ViscArrh_data[ region_idx ].P_scale*pressure_mp;
+
+          if (pressure >= 0.0) {
+            entalpy = entalpy + pressure*Vmol;
+          }
+
+          eta  = Ascale*0.25*pow(sr,1.0/nexp - 1.0)*pow(0.75*preexpA,-1.0/nexp)*exp(entalpy/(nexp*R*T_arrh));
+          eta_mp = eta/ViscArrh_data[ region_idx ].Eta_scale;
+        }
+        break;
+
+      case VISCOUS_ARRHENIUS_2: 
+        {
+          PetscScalar R       = 8.31440;
+          PetscReal nexp      = ViscArrh_data[ region_idx ].nexp;
+          PetscReal entalpy   = ViscArrh_data[ region_idx ].entalpy;
+          PetscReal preexpA   = ViscArrh_data[ region_idx ].preexpA;
+          PetscReal Vmol      = ViscArrh_data[ region_idx ].Vmol;
+          PetscReal Tref      = ViscArrh_data[ region_idx ].Tref;
+          PetscReal Ascale    = ViscArrh_data[ region_idx ].Ascale;
+          PetscReal T_arrh    = T_mp + Tref ;
+          PetscReal sr, eta, pressure;
+
+          ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+          ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+
+          sr = inv2_D_mp/ViscArrh_data[ region_idx ].Eta_scale*ViscArrh_data[ region_idx ].P_scale;
+          if (sr < 1.0e-17) {
+            sr = 1.0e-17;
+          }
+
+          pressure = ViscArrh_data[ region_idx ].P_scale*pressure_mp;
+
+          if (pressure >= 0.0) {
+            entalpy = entalpy + pressure*Vmol;
+          }
+
+          eta  = Ascale*pow(sr,1.0/nexp - 1.0)*pow(preexpA,-1.0/nexp)*exp(entalpy/(nexp*R*T_arrh));
+          eta_mp = eta/ViscArrh_data[ region_idx ].Eta_scale;
+        }
+        break;
+
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default ViscousType specified. Valid choices are VISCOUS_CONSTANT, VISCOUS_Z, VISCOUS_FRANKK, VISCOUS_ARRHENIUS, VISCOUS_ARRHENIUS_2");
 
     }
 
     switch (plastic_type) {
 
-      case PLASTIC_NONE: {
-      }
+      case PLASTIC_NONE: 
+        {
+        }
         break;
 
-      case PLASTIC_MISES: {
-        double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
-        double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield_inf;
+      case PLASTIC_MISES: 
+        {
+          double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
+          double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield_inf;
 
-        switch (softening_type) {
-          case SOFTENING_NONE: {
+          switch (softening_type) {
+            case SOFTENING_NONE: 
+              {
 
-          }
-            break;
+              }
+              break;
 
-          case SOFTENING_LINEAR: {
-            float     eplastic;
-            PetscReal emin = SoftLin_data[ region_idx ].eps_min;
-            PetscReal emax = SoftLin_data[ region_idx ].eps_max;
+            case SOFTENING_LINEAR: 
+              {
+                float     eplastic;
+                PetscReal emin = SoftLin_data[ region_idx ].eps_min;
+                PetscReal emax = SoftLin_data[ region_idx ].eps_max;
 
-            MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-            ComputeLinearSoft(eplastic,emin,emax,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
-          }
-            break;
+                MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+                ComputeLinearSoft(eplastic,emin,emax,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
+              }
+              break;
 
-          case SOFTENING_EXPONENTIAL: {
-            float eplastic;
-            PetscReal emin     = SoftExpo_data[ region_idx ].eps_min;
-            PetscReal efold    = SoftExpo_data[ region_idx ].eps_fold;
-            MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-            ComputeExponentialSoft(eplastic,emin,efold,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
-          }
-            break;
-                    default:
-                        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
-        }
-
-        /* mark all markers as not yielding */
-                MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_NONE);
-
-        /* strain rate */
-        ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-        /* stress */
-        ComputeStressIsotropic3d(eta_mp,D_mp,Tpred_mp);
-        /* second inv stress */
-        ComputeSecondInvariant3d(Tpred_mp,&inv2_Tpred_mp);
-
-        if (inv2_Tpred_mp > tau_yield_mp) {
-          ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
-
-          eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
-          npoints_yielded++;
-          MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_MISES);
-        }
-      }
-        break;
-
-      case PLASTIC_MISES_H: {
-        double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
-        double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield;
-        double eta_flow_mp,eta_yield_mp;
-
-        switch (MatType_data[ region_idx ].softening_type) {
-          case SOFTENING_NONE: {
-
-          }
-            break;
-
-          case SOFTENING_LINEAR: {
-            float     eplastic;
-            PetscReal emin = SoftLin_data[ region_idx ].eps_min;
-            PetscReal emax = SoftLin_data[ region_idx ].eps_max;
-
-            MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-            ComputeLinearSoft(eplastic,emin,emax,tau_yield_mp,tau_yield_inf,&tau_yield_mp);
-          }
-            break;
-
-          case SOFTENING_EXPONENTIAL: {
-            float eplastic;
-            PetscReal emin     = SoftExpo_data[ region_idx ].eps_min;
-            PetscReal efold    = SoftExpo_data[ region_idx ].eps_fold;
-            MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-            ComputeExponentialSoft(eplastic,emin,efold,tau_yield_mp,tau_yield_inf,&tau_yield_mp);
-          }
-            break;
-                    default:
-                        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
-        }
-
-                eta_flow_mp = eta_mp;
-
-        /* strain rate */
-        ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-                ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
-
-                eta_yield_mp = 0.5 * tau_yield_mp / inv2_D_mp;
-
-                eta_mp = 1.0/ (  1.0/eta_flow_mp + 1.0/eta_yield_mp );
-
-                npoints_yielded++;
-      }
-        break;
-
-      case PLASTIC_DP: {
-        double    tau_yield_mp;
-        short     yield_type;
-        PetscReal phi     = PlasticDP_data[ region_idx ].phi;
-        PetscReal Co      = PlasticDP_data[ region_idx ].Co;
-        PetscReal phi_inf = PlasticDP_data[ region_idx ].phi_inf;
-        PetscReal Co_inf  = PlasticDP_data[ region_idx ].Co_inf;
-
-
-        switch (MatType_data[ region_idx ].softening_type) {
-
-          case SOFTENING_NONE: {
-
-          }
-            break;
-
-          case SOFTENING_LINEAR: {
-            float     eplastic;
-            PetscReal emin = SoftLin_data[ region_idx ].eps_min;
-            PetscReal emax = SoftLin_data[ region_idx ].eps_max;
-
-            MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-            ComputeLinearSoft(eplastic,emin,emax,Co , Co_inf, &Co);
-            ComputeLinearSoft(eplastic,emin,emax,phi, phi_inf, &phi);
-          }
-            break;
-
-          case SOFTENING_EXPONENTIAL: {
-            float     eplastic;
-            PetscReal emin  = SoftExpo_data[ region_idx ].eps_min;
-            PetscReal efold = SoftExpo_data[ region_idx ].eps_fold;
-
-            MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-            ComputeExponentialSoft(eplastic,emin,efold,Co , Co_inf, &Co);
-            ComputeExponentialSoft(eplastic,emin,efold,phi, phi_inf, &phi);
-          }
-            break;
-                    default:
-                        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
-        }
-
-        /* mark all markers as not yielding */
-        MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_NONE);
-
-        /* compute yield surface */
-        tau_yield_mp = sin(phi) * pressure_mp + Co * cos(phi);
-
-        /* identify yield type */
-        yield_type = YTYPE_MISES;
-
-        if ( tau_yield_mp < PlasticDP_data[region_idx].tens_cutoff) {
-          /* failure in tension cutoff */
-          tau_yield_mp = PlasticDP_data[region_idx].tens_cutoff;
-          yield_type = 2;
-        } else if (tau_yield_mp > PlasticDP_data[region_idx].hst_cutoff) {
-          /* failure at High stress cut off à la boris */
-          tau_yield_mp = PlasticDP_data[region_idx].hst_cutoff;
-          yield_type = 3;
-        }
-
-        /* strain rate */
-        ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-        /* stress */
-        ComputeStressIsotropic3d(eta_mp,D_mp,Tpred_mp);
-        /* second inv stress */
-        ComputeSecondInvariant3d(Tpred_mp,&inv2_Tpred_mp);
-
-        if (inv2_Tpred_mp > tau_yield_mp) {
-          ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
-
-          eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
-          npoints_yielded++;
-          MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield_type);
-        }
-      }
-        break;
-
-            case PLASTIC_DP_H: {
-
-            }
-
+            case SOFTENING_EXPONENTIAL: 
+              {
+                float eplastic;
+                PetscReal emin     = SoftExpo_data[ region_idx ].eps_min;
+                PetscReal efold    = SoftExpo_data[ region_idx ].eps_fold;
+                MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+                ComputeExponentialSoft(eplastic,emin,efold,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
+              }
+              break;
             default:
-                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default PlasticType set. Valid choices are PLASTIC_NONE, PLASTIC_MISES, PLASTIC_DP");
+              SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
+          }
+
+          /* mark all markers as not yielding */
+          MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_NONE);
+
+          /* strain rate */
+          ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+          /* stress */
+          ComputeStressIsotropic3d(eta_mp,D_mp,Tpred_mp);
+          /* second inv stress */
+          ComputeSecondInvariant3d(Tpred_mp,&inv2_Tpred_mp);
+
+          if (inv2_Tpred_mp > tau_yield_mp) {
+            ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+
+            eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
+            npoints_yielded++;
+            MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_MISES);
+          }
+        }
+        break;
+
+      case PLASTIC_MISES_H: 
+        {
+          double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
+          double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield;
+          double eta_flow_mp,eta_yield_mp;
+
+          switch (MatType_data[ region_idx ].softening_type) {
+            case SOFTENING_NONE: 
+              {
+
+              }
+              break;
+
+            case SOFTENING_LINEAR: 
+              {
+                float     eplastic;
+                PetscReal emin = SoftLin_data[ region_idx ].eps_min;
+                PetscReal emax = SoftLin_data[ region_idx ].eps_max;
+
+                MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+                ComputeLinearSoft(eplastic,emin,emax,tau_yield_mp,tau_yield_inf,&tau_yield_mp);
+              }
+              break;
+
+            case SOFTENING_EXPONENTIAL: 
+              {
+                float eplastic;
+                PetscReal emin     = SoftExpo_data[ region_idx ].eps_min;
+                PetscReal efold    = SoftExpo_data[ region_idx ].eps_fold;
+                MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+                ComputeExponentialSoft(eplastic,emin,efold,tau_yield_mp,tau_yield_inf,&tau_yield_mp);
+              }
+              break;
+            default:
+              SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
+          }
+
+          eta_flow_mp = eta_mp;
+
+          /* strain rate */
+          ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+          ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+
+          eta_yield_mp = 0.5 * tau_yield_mp / inv2_D_mp;
+
+          eta_mp = 1.0/ (  1.0/eta_flow_mp + 1.0/eta_yield_mp );
+
+          npoints_yielded++;
+        }
+        break;
+
+      case PLASTIC_DP: 
+        {
+          double    tau_yield_mp;
+          short     yield_type;
+          PetscReal phi     = PlasticDP_data[ region_idx ].phi;
+          PetscReal Co      = PlasticDP_data[ region_idx ].Co;
+          PetscReal phi_inf = PlasticDP_data[ region_idx ].phi_inf;
+          PetscReal Co_inf  = PlasticDP_data[ region_idx ].Co_inf;
+
+
+          switch (MatType_data[ region_idx ].softening_type) {
+
+            case SOFTENING_NONE: 
+              {
+
+              }
+              break;
+
+            case SOFTENING_LINEAR: 
+              {
+                float     eplastic;
+                PetscReal emin = SoftLin_data[ region_idx ].eps_min;
+                PetscReal emax = SoftLin_data[ region_idx ].eps_max;
+
+                MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+                ComputeLinearSoft(eplastic,emin,emax,Co , Co_inf, &Co);
+                ComputeLinearSoft(eplastic,emin,emax,phi, phi_inf, &phi);
+              }
+              break;
+
+            case SOFTENING_EXPONENTIAL: 
+              {
+                float     eplastic;
+                PetscReal emin  = SoftExpo_data[ region_idx ].eps_min;
+                PetscReal efold = SoftExpo_data[ region_idx ].eps_fold;
+
+                MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+                ComputeExponentialSoft(eplastic,emin,efold,Co , Co_inf, &Co);
+                ComputeExponentialSoft(eplastic,emin,efold,phi, phi_inf, &phi);
+              }
+              break;
+            default:
+              SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
+          }
+
+          /* mark all markers as not yielding */
+          MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_NONE);
+
+          /* compute yield surface */
+          tau_yield_mp = sin(phi) * pressure_mp + Co * cos(phi);
+
+          /* identify yield type */
+          yield_type = YTYPE_MISES;
+
+          if ( tau_yield_mp < PlasticDP_data[region_idx].tens_cutoff) {
+            /* failure in tension cutoff */
+            tau_yield_mp = PlasticDP_data[region_idx].tens_cutoff;
+            yield_type = 2;
+          } else if (tau_yield_mp > PlasticDP_data[region_idx].hst_cutoff) {
+            /* failure at High stress cut off à la boris */
+            tau_yield_mp = PlasticDP_data[region_idx].hst_cutoff;
+            yield_type = 3;
+          }
+
+          /* strain rate */
+          ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+          /* stress */
+          ComputeStressIsotropic3d(eta_mp,D_mp,Tpred_mp);
+          /* second inv stress */
+          ComputeSecondInvariant3d(Tpred_mp,&inv2_Tpred_mp);
+
+          if (inv2_Tpred_mp > tau_yield_mp) {
+            ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+
+            eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
+            npoints_yielded++;
+            MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield_type);
+          }
+        }
+        break;
+
+      case PLASTIC_DP_H: 
+        {
+
+        }
+
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default PlasticType set. Valid choices are PLASTIC_NONE, PLASTIC_MISES, PLASTIC_DP");
     }
 
 
@@ -664,26 +683,28 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 
     switch (density_type) {
 
-      case DENSITY_CONSTANT: {
-        PetscReal rho_mp;
+      case DENSITY_CONSTANT: 
+        {
+          PetscReal rho_mp;
 
-        rho_mp = DensityConst_data[region_idx].density;
-        MPntPStokesSetField_density(mpprop_stokes,rho_mp);
-      }
+          rho_mp = DensityConst_data[region_idx].density;
+          MPntPStokesSetField_density(mpprop_stokes,rho_mp);
+        }
         break;
 
-      case DENSITY_BOUSSINESQ: {
-        PetscReal rho_mp;
-        PetscReal rho0  = DensityBoussinesq_data[region_idx].density;
-        PetscReal alpha = DensityBoussinesq_data[region_idx].alpha;
-        PetscReal beta  = DensityBoussinesq_data[region_idx].beta;
+      case DENSITY_BOUSSINESQ: 
+        {
+          PetscReal rho_mp;
+          PetscReal rho0  = DensityBoussinesq_data[region_idx].density;
+          PetscReal alpha = DensityBoussinesq_data[region_idx].alpha;
+          PetscReal beta  = DensityBoussinesq_data[region_idx].beta;
 
-        rho_mp = rho0*(1-alpha*T_mp+beta*pressure_mp);
-        MPntPStokesSetField_density(mpprop_stokes,rho_mp);
-      }
+          rho_mp = rho0*(1-alpha*T_mp+beta*pressure_mp);
+          MPntPStokesSetField_density(mpprop_stokes,rho_mp);
+        }
         break;
-            default:
-                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default DensityType set. Valid choices are DENSITY_CONSTANT, DENSITY_BOUSSINESQ");
+      default:
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default DensityType set. Valid choices are DENSITY_CONSTANT, DENSITY_BOUSSINESQ");
 
     }
 
@@ -716,7 +737,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
   PetscTime(&t1);
 
   PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %ld; cpu time %1.2e (sec)\n",
-                min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
+      min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
 
   PetscFunctionReturn(0);
 }
@@ -863,7 +884,7 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
   double         *xi_mp;
   double         D_mp[NSD][NSD];
   double         inv2_D_mp;
-    short          yield_type;
+  short          yield_type;
   PetscReal      dt;
   PetscFunctionBegin;
 
@@ -897,39 +918,39 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
     DataFieldAccessPoint(PField,     pidx,(void**)&mpprop);
 
 
-        MPntPStokesPlGetField_yield_indicator(mpprop,&yield_type);
-        if (yield_type > 0) {
-            eidx_mp = mpprop_std->wil;
+    MPntPStokesPlGetField_yield_indicator(mpprop,&yield_type);
+    if (yield_type > 0) {
+      eidx_mp = mpprop_std->wil;
 
-            /* Get element coordinates */
-            ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx_mp],LA_gcoords);CHKERRQ(ierr);
-            /* Get element velocity */
-            ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx_mp],ufield);CHKERRQ(ierr);
-            /* get velocity components */
-            for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-                ux[k] = elu[3*k  ];
-                uy[k] = elu[3*k+1];
-                uz[k] = elu[3*k+2];
-            }
+      /* Get element coordinates */
+      ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx_mp],LA_gcoords);CHKERRQ(ierr);
+      /* Get element velocity */
+      ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx_mp],ufield);CHKERRQ(ierr);
+      /* get velocity components */
+      for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+        ux[k] = elu[3*k  ];
+        uy[k] = elu[3*k+1];
+        uz[k] = elu[3*k+2];
+      }
 
-            /* Get local coordinate of marker */
-            xi_mp = mpprop_std->xi;
+      /* Get local coordinate of marker */
+      xi_mp = mpprop_std->xi;
 
-            /* Prepare basis functions */
-            /* grad.Ni */
-            P3D_ConstructGNi_Q2_3D(xi_mp,GNI);
-            /* Get shape function derivatives */
-            P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
+      /* Prepare basis functions */
+      /* grad.Ni */
+      P3D_ConstructGNi_Q2_3D(xi_mp,GNI);
+      /* Get shape function derivatives */
+      P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
 
-            /* strain rate */
-            ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-            /* second inv stress */
-            ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+      /* strain rate */
+      ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+      /* second inv stress */
+      ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
 
-            MPntPStokesPlGetField_plastic_strain(mpprop,&strain_mp);
-            strain_mp = strain_mp + dt * inv2_D_mp;
-            MPntPStokesPlSetField_plastic_strain(mpprop,strain_mp);
-        }
+      MPntPStokesPlGetField_plastic_strain(mpprop,&strain_mp);
+      strain_mp = strain_mp + dt * inv2_D_mp;
+      MPntPStokesPlSetField_plastic_strain(mpprop,strain_mp);
+    }
   }
 
   DataFieldRestoreAccess(PField_std);

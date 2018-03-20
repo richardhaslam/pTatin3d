@@ -56,16 +56,16 @@ struct _p_MFA11OpenCL {
   cl_kernel        kernel0;
   cl_kernel        kernel1;
 
-  cl_mem ufield;
-  cl_mem LA_gcoords;
-  cl_mem gaussdata_w;  // Data at Gauss points multiplied by respective quadrature weight
-  PetscInt   element_colors;
-  PetscInt  *elements_per_color;
-  cl_mem    *el_ids_colored;
-  cl_mem elnidx_u;
-  cl_mem Yu;
-  cl_mem D;
-  cl_mem B;
+  cl_mem           ufield;
+  cl_mem           LA_gcoords;
+  cl_mem           gaussdata_w;  // Data at Gauss points multiplied by respective quadrature weight
+  PetscInt         element_colors;
+  PetscInt         *elements_per_color;
+  cl_mem           *el_ids_colored;
+  cl_mem           elnidx_u;
+  cl_mem           Yu;
+  cl_mem           D;
+  cl_mem           B;
 };
 
 /* OpenCL error checking */
@@ -163,18 +163,18 @@ static const char * opencl_spmv_kernel_sources =
 
 "  for (PetscInt l=0; l<3; l++) { \n"
 
-  // u[l,k,j,c] = R[c,i] x[l,k,j,i]
+// u[l,k,j,c] = R[c,i] x[l,k,j,i]
 "    PetscReal result = 0; \n"
 "    v[warp_in_block][id_in_warp] = x[l]; \n"
 "    for (PetscInt i=0; i<3; i++) result += R[i] * v[warp_in_block][kj*3+i]; \n"
 "    u[warp_in_block][id_in_warp] = result; \n"
 
-  // v[l,k,b,c] = S[b,j] u[l,k,j,c]
+// v[l,k,b,c] = S[b,j] u[l,k,j,c]
 "    result = 0; \n"
 "    for (PetscInt j=0; j<3; j++) result += S[j] * u[warp_in_block][(k3+j)*3+c]; \n"
 "    v[warp_in_block][id_in_warp] = result; \n"
 
-  // y[l,a,b,c] = T[a,k] v[l,k,b,c]
+// y[l,a,b,c] = T[a,k] v[l,k,b,c]
 " for (PetscInt k=0; k<3; k++) y[l] += T[k] * v[warp_in_block][k*9+ji]; \n"
 
 "  } // for l \n"
@@ -347,13 +347,13 @@ PetscErrorCode MFA11SetUp_OpenCL(MatA11MF mf)
   ierr = clGetPlatformIDs(42,platform_ids,&num_platforms);ERR_CHECK(ierr);
 
   for (i=0;i<num_platforms;++i) {
-  ierr = clGetPlatformInfo(platform_ids[i],CL_PLATFORM_VENDOR,1024 * sizeof(char),buffer,NULL);ERR_CHECK(ierr);
+    ierr = clGetPlatformInfo(platform_ids[i],CL_PLATFORM_VENDOR,1024 * sizeof(char),buffer,NULL);ERR_CHECK(ierr);
   }
 
   /* Query devices: */
   ierr = clGetDeviceIDs(platform_ids[platform_index],CL_DEVICE_TYPE_ALL,42,device_ids,&num_devices);ERR_CHECK(ierr);
   for (i=0; i<num_devices; ++i) {
-  ierr = clGetDeviceInfo(device_ids[i],CL_DEVICE_NAME,1024 * sizeof(char),buffer,NULL);ERR_CHECK(ierr);
+    ierr = clGetDeviceInfo(device_ids[i],CL_DEVICE_NAME,1024 * sizeof(char),buffer,NULL);ERR_CHECK(ierr);
   }
 
   /* now set up a context containing the selected device: */
@@ -366,12 +366,12 @@ PetscErrorCode MFA11SetUp_OpenCL(MatA11MF mf)
   ctx->program = clCreateProgramWithSource(ctx->context,1,&opencl_spmv_kernel_sources,NULL,&ierr);ERR_CHECK(ierr);
   ierr = clBuildProgram(ctx->program,1,&device_ids[device_index],NULL,NULL,NULL);
   if (ierr != CL_SUCCESS) {
-  PetscPrintf(PETSC_COMM_WORLD,"Build Scalar: Err = %d\n", ierr);
-  ierr = clGetProgramBuildInfo(ctx->program,device_ids[device_index],CL_PROGRAM_BUILD_STATUS,sizeof(cl_build_status),&status,NULL);ERR_CHECK(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Build Status: %d\n", status);
-  ierr = clGetProgramBuildInfo(ctx->program,device_ids[device_index],CL_PROGRAM_BUILD_LOG,   sizeof(char)*8192      ,buffer,NULL);ERR_CHECK(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Log: %s\n",buffer);
-  PetscPrintf(PETSC_COMM_WORLD,"Sources: %s\n",opencl_spmv_kernel_sources);
+    PetscPrintf(PETSC_COMM_WORLD,"Build Scalar: Err = %d\n", ierr);
+    ierr = clGetProgramBuildInfo(ctx->program,device_ids[device_index],CL_PROGRAM_BUILD_STATUS,sizeof(cl_build_status),&status,NULL);ERR_CHECK(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"Build Status: %d\n", status);
+    ierr = clGetProgramBuildInfo(ctx->program,device_ids[device_index],CL_PROGRAM_BUILD_LOG,   sizeof(char)*8192      ,buffer,NULL);ERR_CHECK(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"Log: %s\n",buffer);
+    PetscPrintf(PETSC_COMM_WORLD,"Sources: %s\n",opencl_spmv_kernel_sources);
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"OpenCL kernel compilation failed!");
   }
   ctx->kernel0 = clCreateKernel(ctx->program,"set_zero",&ierr);ERR_CHECK(ierr);
@@ -441,171 +441,170 @@ PetscErrorCode MFStokesWrapper_A11_OpenCL(MatA11MF mf,Quadrature volQ,DM dau,Pet
   Vec gcoords;
   const PetscReal *LA_gcoords;
   PetscInt nel,nen_u,e,i,j,k,localsize;
-    PetscReal x1[3],w1[3],w[NQP];
+  PetscReal x1[3],w1[3],w[NQP];
   const PetscInt *elnidx_u;
   QPntVolCoefStokes *all_gausspoints;
   const QPntVolCoefStokes *cell_gausspoints;
-    PetscReal *gaussdata_host;
-    size_t lwsize = 128;
-    size_t gwsize;
-    MFA11OpenCL openclctx = mf->ctx;
+  PetscReal *gaussdata_host;
+  size_t lwsize = 128;
+  size_t gwsize;
+  MFA11OpenCL openclctx = mf->ctx;
 
   PetscFunctionBegin;
   /* setup for coords */
   ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(gcoords,&localsize);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(gcoords,&localsize);CHKERRQ(ierr);
 
   ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 
-    /* Set up OpenCL buffers */
-    if (!openclctx->elnidx_u) {
-      openclctx->elnidx_u = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,nel * nen_u * sizeof(PetscInt),(void*)elnidx_u,&ierr);ERR_CHECK(ierr);
+  /* Set up OpenCL buffers */
+  if (!openclctx->elnidx_u) {
+    openclctx->elnidx_u = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,nel * nen_u * sizeof(PetscInt),(void*)elnidx_u,&ierr);ERR_CHECK(ierr);
 
-      /* Assign colors to elements such that there is no overlap in writes to Yu if elements are processed concurrently */
-      PetscInt elements_colored = 0;
-      PetscInt *element_color;
-      PetscInt *Yu_color; // scratchpad
+    /* Assign colors to elements such that there is no overlap in writes to Yu if elements are processed concurrently */
+    PetscInt elements_colored = 0;
+    PetscInt *element_color;
+    PetscInt *Yu_color; // scratchpad
 
-      ierr = PetscMalloc(nel * sizeof(PetscInt), &element_color);CHKERRQ(ierr);
-      for (i=0; i<nel; ++i) element_color[i] = -1;
-      ierr = PetscMalloc(nel * NQP * sizeof(PetscInt), &Yu_color);CHKERRQ(ierr);
-      for (i=0; i<nel * NQP; ++i) Yu_color[i] = -1;
+    ierr = PetscMalloc(nel * sizeof(PetscInt), &element_color);CHKERRQ(ierr);
+    for (i=0; i<nel; ++i) element_color[i] = -1;
+    ierr = PetscMalloc(nel * NQP * sizeof(PetscInt), &Yu_color);CHKERRQ(ierr);
+    for (i=0; i<nel * NQP; ++i) Yu_color[i] = -1;
 
-      openclctx->element_colors = 0;
-      while (elements_colored < nel) {
+    openclctx->element_colors = 0;
+    while (elements_colored < nel) {
 
-        for (i=0; i<nel; ++i) {
+      for (i=0; i<nel; ++i) {
 
-          if (element_color[i] >= 0) continue;  /* element already has a color */
+        if (element_color[i] >= 0) continue;  /* element already has a color */
 
-          /* Check if element can be colored: No element in Yu has current color */
-          PetscInt can_be_colored = 1;
-          for (j=0; j<nen_u; ++j) {
-            if (Yu_color[elnidx_u[i*nen_u + j]] == openclctx->element_colors) {
-              can_be_colored = 0;
-              break;
-            }
-          }
-
-          /* Color element if possible, update Yu indices to current color */
-          if (can_be_colored) {
-            element_color[i] = openclctx->element_colors;
-            for (j=0; j<nen_u; ++j)
-              Yu_color[elnidx_u[i*nen_u + j]] = openclctx->element_colors;
-
-            ++elements_colored;
+        /* Check if element can be colored: No element in Yu has current color */
+        PetscInt can_be_colored = 1;
+        for (j=0; j<nen_u; ++j) {
+          if (Yu_color[elnidx_u[i*nen_u + j]] == openclctx->element_colors) {
+            can_be_colored = 0;
+            break;
           }
         }
 
-        ++openclctx->element_colors;
-      }
+        /* Color element if possible, update Yu indices to current color */
+        if (can_be_colored) {
+          element_color[i] = openclctx->element_colors;
+          for (j=0; j<nen_u; ++j)
+            Yu_color[elnidx_u[i*nen_u + j]] = openclctx->element_colors;
 
-      /* Generate OpenCL arrays with coloring information */
-      ierr = PetscMalloc(openclctx->element_colors * sizeof(PetscInt),&openclctx->elements_per_color);CHKERRQ(ierr);
-      ierr = PetscMalloc(openclctx->element_colors * sizeof(cl_mem),&openclctx->el_ids_colored);CHKERRQ(ierr);
-
-      for (i=0; i<openclctx->element_colors; ++i) {
-        /* count elements, collect element indices for this color and copy over to GPU: */
-        openclctx->elements_per_color[i] = 0;
-        for (j=0; j<nel; ++j) {
-          if (element_color[j] == i) {
-            Yu_color[openclctx->elements_per_color[i]] = j; /* Reusing Yu_color array here */
-            openclctx->elements_per_color[i] += 1;
-          }
+          ++elements_colored;
         }
-
-        openclctx->el_ids_colored[i] = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,openclctx->elements_per_color[i] * sizeof(PetscInt),Yu_color,&ierr);ERR_CHECK(ierr);
       }
 
-      /* clean up */
-      ierr = PetscFree(element_color);CHKERRQ(ierr);
-      ierr = PetscFree(Yu_color);CHKERRQ(ierr);
-
+      ++openclctx->element_colors;
     }
 
-    if (!openclctx->ufield) {
-      openclctx->ufield = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY,localsize * sizeof(PetscScalar),NULL,&ierr);ERR_CHECK(ierr);
-    }
-    ierr = clEnqueueWriteBuffer(openclctx->queue,openclctx->ufield,CL_TRUE,0,localsize * sizeof(PetscScalar),(void*)ufield,0,NULL,NULL);ERR_CHECK(ierr);
+    /* Generate OpenCL arrays with coloring information */
+    ierr = PetscMalloc(openclctx->element_colors * sizeof(PetscInt),&openclctx->elements_per_color);CHKERRQ(ierr);
+    ierr = PetscMalloc(openclctx->element_colors * sizeof(cl_mem),&openclctx->el_ids_colored);CHKERRQ(ierr);
 
-    if (!openclctx->LA_gcoords) {
-      openclctx->LA_gcoords = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY,localsize * sizeof(PetscReal),NULL,&ierr);ERR_CHECK(ierr);
-    }
-
-    if (!openclctx->gaussdata_w) {
-      openclctx->gaussdata_w = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY,nel * NQP * sizeof(PetscReal),NULL,&ierr);ERR_CHECK(ierr);
-    }
-
-    if (mf->state != openclctx->state) {
-      ierr = clEnqueueWriteBuffer(openclctx->queue,openclctx->LA_gcoords,CL_TRUE,0,localsize * sizeof(PetscReal),(void*)LA_gcoords,0,NULL,NULL);ERR_CHECK(ierr);
-
-      ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
-      for (i=0; i<3; i++)
-        for (j=0; j<3; j++)
-          for (k=0; k<3; k++)
-            w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
-
-      ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
-      for (e=0; e<nel; e++) {
-        ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
-        for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
+    for (i=0; i<openclctx->element_colors; ++i) {
+      /* count elements, collect element indices for this color and copy over to GPU: */
+      openclctx->elements_per_color[i] = 0;
+      for (j=0; j<nel; ++j) {
+        if (element_color[j] == i) {
+          Yu_color[openclctx->elements_per_color[i]] = j; /* Reusing Yu_color array here */
+          openclctx->elements_per_color[i] += 1;
+        }
       }
-      ierr = clEnqueueWriteBuffer(openclctx->queue,openclctx->gaussdata_w,CL_TRUE,0,nel * NQP * sizeof(PetscReal),(void*)gaussdata_host,0,NULL,NULL);ERR_CHECK(ierr);
-      ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
 
-      /* Save new state to avoid unnecessary subsequent copies */
-      openclctx->state = mf->state;
+      openclctx->el_ids_colored[i] = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,openclctx->elements_per_color[i] * sizeof(PetscInt),Yu_color,&ierr);ERR_CHECK(ierr);
     }
 
-    if (!openclctx->Yu) {
-      openclctx->Yu = clCreateBuffer(openclctx->context,CL_MEM_READ_WRITE,localsize * sizeof(PetscScalar),NULL,&ierr);ERR_CHECK(ierr);
+    /* clean up */
+    ierr = PetscFree(element_color);CHKERRQ(ierr);
+    ierr = PetscFree(Yu_color);CHKERRQ(ierr);
+
+  }
+
+  if (!openclctx->ufield) {
+    openclctx->ufield = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY,localsize * sizeof(PetscScalar),NULL,&ierr);ERR_CHECK(ierr);
+  }
+  ierr = clEnqueueWriteBuffer(openclctx->queue,openclctx->ufield,CL_TRUE,0,localsize * sizeof(PetscScalar),(void*)ufield,0,NULL,NULL);ERR_CHECK(ierr);
+
+  if (!openclctx->LA_gcoords) {
+    openclctx->LA_gcoords = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY,localsize * sizeof(PetscReal),NULL,&ierr);ERR_CHECK(ierr);
+  }
+
+  if (!openclctx->gaussdata_w) {
+    openclctx->gaussdata_w = clCreateBuffer(openclctx->context,CL_MEM_READ_ONLY,nel * NQP * sizeof(PetscReal),NULL,&ierr);ERR_CHECK(ierr);
+  }
+
+  if (mf->state != openclctx->state) {
+    ierr = clEnqueueWriteBuffer(openclctx->queue,openclctx->LA_gcoords,CL_TRUE,0,localsize * sizeof(PetscReal),(void*)LA_gcoords,0,NULL,NULL);ERR_CHECK(ierr);
+
+    ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
+    for (i=0; i<3; i++)
+      for (j=0; j<3; j++)
+        for (k=0; k<3; k++)
+          w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
+
+    ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
+    for (e=0; e<nel; e++) {
+      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
+      for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
     }
+    ierr = clEnqueueWriteBuffer(openclctx->queue,openclctx->gaussdata_w,CL_TRUE,0,nel * NQP * sizeof(PetscReal),(void*)gaussdata_host,0,NULL,NULL);ERR_CHECK(ierr);
+    ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
+
+    /* Save new state to avoid unnecessary subsequent copies */
+    openclctx->state = mf->state;
+  }
+
+  if (!openclctx->Yu) {
+    openclctx->Yu = clCreateBuffer(openclctx->context,CL_MEM_READ_WRITE,localsize * sizeof(PetscScalar),NULL,&ierr);ERR_CHECK(ierr);
+  }
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
-    /* Launch OpenCL kernel for zeroing Yu */
+  /* Launch OpenCL kernel for zeroing Yu */
   ierr = clSetKernelArg(openclctx->kernel0,0,sizeof(cl_mem),  &openclctx->Yu);ERR_CHECK(ierr);
   ierr = clSetKernelArg(openclctx->kernel0,1,sizeof(PetscInt),&localsize);ERR_CHECK(ierr);
-    lwsize = 256;
-    gwsize = 256 * lwsize;
+  lwsize = 256;
+  gwsize = 256 * lwsize;
   ierr = clEnqueueNDRangeKernel(openclctx->queue,openclctx->kernel0,1,NULL,&gwsize,&lwsize,0,NULL,NULL);ERR_CHECK(ierr);
 
-    /* Launch OpenCL kernel for matrix-free SpMV
-     *  - inputs: elnidx_u, LA_gcoords, ufield, gaussdata
-     *  - output: Yu
-     */
-    for (i=0; i<openclctx->element_colors; ++i) {
+  /* Launch OpenCL kernel for matrix-free SpMV
+   *  - inputs: elnidx_u, LA_gcoords, ufield, gaussdata
+   *  - output: Yu
+   */
+  for (i=0; i<openclctx->element_colors; ++i) {
     ierr = clSetKernelArg(openclctx->kernel1,0,sizeof(PetscInt),&openclctx->elements_per_color[i]);ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,1,sizeof(PetscInt),&nen_u                           );ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,2,sizeof(cl_mem),  &openclctx->el_ids_colored[i]    );ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,3,sizeof(cl_mem),  &openclctx->elnidx_u             );ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,4,sizeof(cl_mem),  &openclctx->LA_gcoords           );ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,5,sizeof(cl_mem),  &openclctx->ufield               );ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,6,sizeof(cl_mem),  &openclctx->gaussdata_w          );ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,7,sizeof(cl_mem),  &openclctx->Yu                   );ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,8,sizeof(cl_mem),  &openclctx->D                    );ERR_CHECK(ierr);
-      ierr = clSetKernelArg(openclctx->kernel1,9,sizeof(cl_mem),  &openclctx->B                    );ERR_CHECK(ierr);
-      lwsize = WARPS_PER_BLOCK*32;
-      gwsize = ((openclctx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1) * lwsize;
+    ierr = clSetKernelArg(openclctx->kernel1,1,sizeof(PetscInt),&nen_u                           );ERR_CHECK(ierr);
+    ierr = clSetKernelArg(openclctx->kernel1,2,sizeof(cl_mem),  &openclctx->el_ids_colored[i]    );ERR_CHECK(ierr);
+    ierr = clSetKernelArg(openclctx->kernel1,3,sizeof(cl_mem),  &openclctx->elnidx_u             );ERR_CHECK(ierr);
+    ierr = clSetKernelArg(openclctx->kernel1,4,sizeof(cl_mem),  &openclctx->LA_gcoords           );ERR_CHECK(ierr);
+    ierr = clSetKernelArg(openclctx->kernel1,5,sizeof(cl_mem),  &openclctx->ufield               );ERR_CHECK(ierr);
+    ierr = clSetKernelArg(openclctx->kernel1,6,sizeof(cl_mem),  &openclctx->gaussdata_w          );ERR_CHECK(ierr);
+    ierr = clSetKernelArg(openclctx->kernel1,7,sizeof(cl_mem),  &openclctx->Yu                   );ERR_CHECK(ierr);
+    ierr = clSetKernelArg(openclctx->kernel1,8,sizeof(cl_mem),  &openclctx->D                    );ERR_CHECK(ierr);
+    ierr = clSetKernelArg(openclctx->kernel1,9,sizeof(cl_mem),  &openclctx->B                    );ERR_CHECK(ierr);
+    lwsize = WARPS_PER_BLOCK*32;
+    gwsize = ((openclctx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1) * lwsize;
     ierr = clEnqueueNDRangeKernel(openclctx->queue,openclctx->kernel1,1,NULL,&gwsize,&lwsize,0,NULL,NULL);ERR_CHECK(ierr);
-    }
-    ierr = clFinish(openclctx->queue);ERR_CHECK(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
+  }
+  ierr = clFinish(openclctx->queue);ERR_CHECK(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
-    PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-    PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-    PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+  PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+  PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 
-    /* Read back OpenCL data */
+  /* Read back OpenCL data */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-    ierr = clEnqueueReadBuffer(openclctx->queue,openclctx->Yu,CL_TRUE,0,localsize * sizeof(PetscScalar),&(Yu[0]),0,NULL,NULL);ERR_CHECK(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
+  ierr = clEnqueueReadBuffer(openclctx->queue,openclctx->Yu,CL_TRUE,0,localsize * sizeof(PetscScalar),&(Yu[0]),0,NULL,NULL);ERR_CHECK(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
-

@@ -296,11 +296,11 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
   if( si != s_si ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"si on da must match surface da (s1)" );  }
         if( sj != s_sj ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"sj on da must match surface da (s1)" );  }
 */
-        if( nx != s_nx ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"nx on da must match surface da (s1)" );  }
-        if( ny != s_ny ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"ny on da must match surface da (s1)" );  }
+  if( nx != s_nx ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"nx on da must match surface da (s1)" );  }
+  if( ny != s_ny ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"ny on da must match surface da (s1)" );  }
 
-        if( s_sk != 0  ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"s_sk on surface da should be 0 (s1)" );  }
-        if( s_nz != 1  ) {  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER,"s_nz on surface da should be 1 (s1)" );  }
+  if( s_sk != 0  ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"s_sk on surface da should be 0 (s1)" );  }
+  if( s_nz != 1  ) {  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER,"s_nz on surface da should be 1 (s1)" );  }
 
 
 
@@ -1011,10 +1011,10 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
         }
     }
 
-  ierr = VecRestoreArray(coord,&LA_coords);CHKERRQ(ierr);
+    ierr = VecRestoreArray(coord,&LA_coords);CHKERRQ(ierr);
 
-  ierr = DMDAVecRestoreArray(cda_max,coord_max,&LA_coords_da_max);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cda_min,coord_min,&LA_coords_da_min);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(cda_max,coord_max,&LA_coords_da_max);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(cda_min,coord_min,&LA_coords_da_min);CHKERRQ(ierr);
 
     ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
 
@@ -1061,7 +1061,7 @@ PetscErrorCode _DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,Pets
 
     ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
     ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
     ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
 
     switch (dir) {
@@ -1085,9 +1085,9 @@ PetscErrorCode _DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,Pets
     /* reset mesh to be mapped to the reference coordinate system [0,1] */
     ierr = DMDASetUniformCoordinates1D(da,dir,0.0,1.0);CHKERRQ(ierr);
 
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
-  ierr = VecGetArray(coord,&LA_coords);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
+    ierr = VecGetArray(coord,&LA_coords);CHKERRQ(ierr);
 
     for (k=0; k<nz; k++) {
         for (j=0; j<ny; j++) {
@@ -1136,7 +1136,7 @@ PetscErrorCode _DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,Pets
         }
     }
 
-  ierr = VecRestoreArray(coord,&LA_coords);CHKERRQ(ierr);
+    ierr = VecRestoreArray(coord,&LA_coords);CHKERRQ(ierr);
 
     ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
 

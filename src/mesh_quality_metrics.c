@@ -604,47 +604,47 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
   ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
   val_min = 2.0;
   for (e=0;e<nel;e++) {
-      ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
-        //Loops through vertexes
-        get_vertex_vectors(el_coords,Q2_VERTEX_0,vectors);
-        compute_cossin(vectors,cossin);
-        val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
-        val_min = (val_min<val)?val_min:val;
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+    //Loops through vertexes
+    get_vertex_vectors(el_coords,Q2_VERTEX_0,vectors);
+    compute_cossin(vectors,cossin);
+    val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
+    val_min = (val_min<val)?val_min:val;
 
-        get_vertex_vectors(el_coords,Q2_VERTEX_1,vectors);
-        compute_cossin(vectors,cossin);
-        val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
-        val_min = (val_min<val)?val_min:val;
+    get_vertex_vectors(el_coords,Q2_VERTEX_1,vectors);
+    compute_cossin(vectors,cossin);
+    val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
+    val_min = (val_min<val)?val_min:val;
 
-        get_vertex_vectors(el_coords,Q2_VERTEX_2,vectors);
-        compute_cossin(vectors,cossin);
-        val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
-        val_min = (val_min<val)?val_min:val;
+    get_vertex_vectors(el_coords,Q2_VERTEX_2,vectors);
+    compute_cossin(vectors,cossin);
+    val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
+    val_min = (val_min<val)?val_min:val;
 
-        get_vertex_vectors(el_coords,Q2_VERTEX_3,vectors);
-        compute_cossin(vectors,cossin);
-        val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
-        val_min = (val_min<val)?val_min:val;
+    get_vertex_vectors(el_coords,Q2_VERTEX_3,vectors);
+    compute_cossin(vectors,cossin);
+    val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
+    val_min = (val_min<val)?val_min:val;
 
-        get_vertex_vectors(el_coords,Q2_VERTEX_4,vectors);
-        compute_cossin(vectors,cossin);
-        val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
-        val_min = (val_min<val)?val_min:val;
+    get_vertex_vectors(el_coords,Q2_VERTEX_4,vectors);
+    compute_cossin(vectors,cossin);
+    val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
+    val_min = (val_min<val)?val_min:val;
 
-        get_vertex_vectors(el_coords,Q2_VERTEX_5,vectors);
-        compute_cossin(vectors,cossin);
-        val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
-        val_min = (val_min<val)?val_min:val;
+    get_vertex_vectors(el_coords,Q2_VERTEX_5,vectors);
+    compute_cossin(vectors,cossin);
+    val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
+    val_min = (val_min<val)?val_min:val;
 
-        get_vertex_vectors(el_coords,Q2_VERTEX_6,vectors);
-        compute_cossin(vectors,cossin);
-        val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
-        val_min = (val_min<val)?val_min:val;
+    get_vertex_vectors(el_coords,Q2_VERTEX_6,vectors);
+    compute_cossin(vectors,cossin);
+    val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
+    val_min = (val_min<val)?val_min:val;
 
-        get_vertex_vectors(el_coords,Q2_VERTEX_7,vectors);
-        compute_cossin(vectors,cossin);
-        val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
-        val_min = (val_min<val)?val_min:val;
+    get_vertex_vectors(el_coords,Q2_VERTEX_7,vectors);
+    compute_cossin(vectors,cossin);
+    val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
+    val_min = (val_min<val)?val_min:val;
   }
   ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
