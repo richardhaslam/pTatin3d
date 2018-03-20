@@ -28,9 +28,9 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "dmda_element_q2p1.h"
+#include "ptatin_utils.h"
 #include "output_paraview.h"
 
 const char *PTatinFieldNames[] =  {
@@ -57,11 +57,12 @@ PetscErrorCode pTatinGenerateParallelVTKName(const char prefix[],const char suff
 	PetscFunctionBegin;
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	if (prefix!=NULL) {
-		asprintf(&nn,"%s-subdomain%1.5d.%s",prefix,rank,suffix);
+		if (asprintf(&nn,"%s-subdomain%1.5d.%s",prefix,rank,suffix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+    *name = nn;
 	} else {
+    *name = NULL;
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify a prefix");
 	}
-	*name = nn;
 	PetscFunctionReturn(0);
 }
 
@@ -72,8 +73,9 @@ PetscErrorCode pTatinGenerateVTKName(const char prefix[],const char suffix[],cha
 	char *nn;
 
 	PetscFunctionBegin;
+  *name = NULL;
 	if (prefix!=NULL) {
-		asprintf(&nn,"%s.%s",prefix,suffix);
+		if (asprintf(&nn,"%s.%s",prefix,suffix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify a prefix");
 	}
@@ -96,6 +98,7 @@ PetscErrorCode ParaviewPVDOpen(const char pvdfilename[])
 	if(rank != 0) { PetscFunctionReturn(0); }
 	
 	fp = fopen(pvdfilename,"w");
+  if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new PVD file %s",pvdfilename);
 	fprintf(fp,"<?xml version=\"1.0\"?>\n");
 #ifdef WORDSIZE_BIGENDIAN
 	fprintf(fp,"<VTKFile type=\"Collection\" version=\"0.1\" byte_order=\"BigEndian\">\n");
@@ -128,6 +131,7 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	if (rank != 0) { PetscFunctionReturn(0); }
 	
 	fp = fopen(pvdfilename,"r+");
+  if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open existing PVD file %s",pvdfilename);
 	/* reset to start of file */
 	rewind(fp);
 	
@@ -135,7 +139,7 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	position = -1;
 	while (!feof(fp)) {
 		position = ftell(fp);
-		fgets(line,10000-1,fp);
+		if (!fgets(line,10000-1,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets() failed");
 		if (strncmp(key,line,key_L) == 0) {
 			break;
 		}
@@ -162,6 +166,40 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ParaviewPVDOpenAppend"
+PetscErrorCode ParaviewPVDOpenAppend(PetscBool not_first,PetscInt step,const char pvdfilename[],double time,const char datafile[], const char directory_name[])
+{
+  PetscBool      file_found;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  if (!not_first) {
+    if (step == 0) {
+      ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+      ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
+    } else {
+      ierr = pTatinTestFile(pvdfilename,'r',&file_found);CHKERRQ(ierr);
+      if (file_found) {
+        ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
+      } else {
+        ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+        ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
+      }
+    }
+  } else {
+    ierr = pTatinTestFile(pvdfilename,'r',&file_found);CHKERRQ(ierr);
+    if (!file_found) {
+//        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open PVD file %s",pvdfilename);
+      ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+      ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
+    } else {
+      ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 
 /* V-P mesh */
 #undef __FUNCT__  
@@ -171,28 +209,18 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char
 	char           *vtkfilename,*filename;
 	PetscMPIInt    rank;
 	PetscBool      binary = PETSC_TRUE;
-	PetscBool      zip = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	if (binary) {
-		if (zip) {
-			char zfilename[PETSC_MAX_PATH_LEN];
-			
-			sprintf(zfilename,"%s.gz",filename);
-			ierr = pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(pack,X,zfilename);CHKERRQ(ierr);
-			
-		} else {
-			ierr = pTatinOutputMeshVelocityPressureVTS_v0_binary(pack,X,filename);CHKERRQ(ierr);
-		}
-		
+    ierr = pTatinOutputMeshVelocityPressureVTS_v0_binary(pack,X,filename);CHKERRQ(ierr);
 	} else {
 		ierr = pTatinOutputMeshVelocityPressureVTS_v0(pack,X,filename);CHKERRQ(ierr);
 	}
@@ -202,9 +230,9 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = pTatinOutputMeshVelocityPressurePVTS(pack,prefix,filename);CHKERRQ(ierr);
@@ -227,9 +255,9 @@ PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char pat
 	PetscFunctionBegin;
 	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	if (binary) {
@@ -243,9 +271,9 @@ PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char pat
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = pTatinOutputLiteMeshVelocityPVTS(pack,prefix,filename);CHKERRQ(ierr);
@@ -278,10 +306,10 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char n
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new VTS file %s",name );
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
 
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
@@ -410,10 +438,10 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary(DM pack,Vec X,const
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new VTS file %s",name );
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
 	
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
@@ -569,7 +597,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const cha
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new VTS file %s",name );
 	}
 	
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
@@ -674,207 +702,6 @@ PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const cha
 	PetscFunctionReturn(0);
 }
 
-#include "zlib.h"
-
-#undef __FUNCT__
-#define __FUNCT__ "report_gzlib_error"
-PetscErrorCode report_gzlib_error(int ierr_gz,gzFile fp)
-{
-	int        errnum;
-	const char *info;
-
-	PetscFunctionBegin;
-	info = gzerror(fp,&errnum);
-	if (ierr_gz < 0) {
-        PetscPrintf(PETSC_COMM_WORLD,"gzerror: %s \n",info);
-		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ERROR(gzprintf): Failed to write data");
-	}
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshVelocityPressureVTS_v0_binary_gz"
-PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(DM pack,Vec X,const char name[])
-{	
-	PetscErrorCode ierr;
-	DM dau,dap;
-	Vec velocity,pressure;
-  Vec local_fieldsU;
-  PetscScalar *LA_fieldsU;
-  Vec local_fieldsP;
-  PetscScalar *LA_fieldsP;
-	DM cda;
-	Vec gcoords;
-	DMDACoor3d ***LA_gcoords;	
-	PetscInt mx,my,mz,cnt;
-	PetscInt ei,ej,ek,i,j,k,esi,esj,esk;
-	gzFile vtk_fp = NULL;
-	PetscInt gsi,gsj,gsk,gm,gn,gp;
-	PetscInt ndof_pressure;
-	int offset,bytes;
-	int ierr_gz;
-	
-	PetscFunctionBegin;
-	vtk_fp = gzopen ( name, "wb");
-	if (vtk_fp == NULL) {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"gzerror: Cannot open file %s",name );
-	}
-	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
-	
-	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
-	
-	ierr = DMDAGetInfo(dap,0,0,0,0,0,0,0,&ndof_pressure,0, 0,0,0, 0);CHKERRQ(ierr);
-	
-	ierr = DMDAGetGhostCorners(dau,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
-	ierr = DMDAGetCornersElementQ2(dau,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
-	
-	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
-	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = DMCompositeGetAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	
-  ierr = DMGetLocalVector(dau,&local_fieldsU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dau,velocity,INSERT_VALUES,local_fieldsU);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dau,velocity,INSERT_VALUES,local_fieldsU);CHKERRQ(ierr);
-  ierr = VecGetArray(local_fieldsU,&LA_fieldsU);CHKERRQ(ierr);
-	
-  ierr = DMGetLocalVector(dap,&local_fieldsP);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dap,pressure,INSERT_VALUES,local_fieldsP);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dap,pressure,INSERT_VALUES,local_fieldsP);CHKERRQ(ierr);
-  ierr = VecGetArray(local_fieldsP,&LA_fieldsP);CHKERRQ(ierr);
-	
-	
-	/* VTS HEADER - OPEN */	
-#ifdef WORDSIZE_BIGENDIAN
-	ierr_gz = gzprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
-#else
-	ierr_gz = gzprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
-#endif
-	report_gzlib_error(ierr_gz,vtk_fp);
-
-	ierr_gz = gzprintf(vtk_fp, "  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", esi,esi+2*mx+1-1, esj,esj+2*my+1-1, esk,esk+2*mz+1-1);
-	report_gzlib_error(ierr_gz,vtk_fp);
-	ierr_gz = gzprintf(vtk_fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n", esi,esi+2*mx+1-1, esj,esj+2*my+1-1, esk,esk+2*mz+1-1);
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-	offset = 0;
-	
-	/* VTS COORD DATA */	
-	ierr_gz = gzprintf(vtk_fp, "    <Points>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-	ierr_gz = gzprintf(vtk_fp, "      <DataArray Name=\"coords\" type=\"Float64\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\"  />\n",offset);
-	report_gzlib_error(ierr_gz,vtk_fp);
-	offset += sizeof(int) + sizeof(double)*3*(2*mx+1)*(2*my+1)*(2*mz+1);
-	
-	ierr_gz = gzprintf(vtk_fp, "    </Points>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-	/* VTS CELL DATA */	
-	ierr_gz = gzprintf(vtk_fp, "    <CellData>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-	ierr_gz = gzprintf(vtk_fp, "      <DataArray Name=\"pressure0\" type=\"Float64\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%d\" />\n",offset);
-	report_gzlib_error(ierr_gz,vtk_fp);
-	offset += sizeof(int) + sizeof(double)*1*(2*mx)*(2*my)*(2*mz);
-	
-	ierr_gz = gzprintf(vtk_fp, "    </CellData>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-	/* VTS NODAL DATA */
-	ierr_gz = gzprintf(vtk_fp, "    <PointData>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-	/* velocity */
-	ierr_gz = gzprintf(vtk_fp, "      <DataArray Name=\"velocity\" type=\"Float64\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",offset);
-	report_gzlib_error(ierr_gz,vtk_fp);
-	offset += sizeof(int) + sizeof(double)*3*(2*mx+1)*(2*my+1)*(2*mz+1);
-	
-	ierr_gz = gzprintf(vtk_fp, "    </PointData>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-	/* VTS HEADER - CLOSE */	
-	ierr_gz = gzprintf(vtk_fp, "    </Piece>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	ierr_gz = gzprintf(vtk_fp, "  </StructuredGrid>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	ierr_gz = gzprintf(vtk_fp, "  <AppendedData encoding=\"raw\">\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	/* write tag */
-	ierr_gz = gzprintf(vtk_fp, "_");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-	/* write node coords */
-	bytes = sizeof(double)*3*(2*mx+1)*(2*my+1)*(2*mz+1);
-	gzwrite(vtk_fp,&bytes,sizeof(int)*1);
-	for (k=esk; k<esk+2*mz+1; k++) {
-		for (j=esj; j<esj+2*my+1; j++) {
-			for (i=esi; i<esi+2*mx+1; i++) {
-				double pos[3];
-				
-				pos[0] = LA_gcoords[k][j][i].x;
-				pos[1] = LA_gcoords[k][j][i].y;
-				pos[2] = LA_gcoords[k][j][i].z;
-				ierr = gzwrite(vtk_fp,(void*)pos,sizeof(double)*3);
-			}
-		}
-	}
-	
-	/* write cell pressure */
-	bytes = sizeof(double)*1*(2*mx+1)*(2*my+1)*(2*mz+1);
-	gzwrite(vtk_fp,&bytes,sizeof(int)*1);
-	for (ek=0; ek<mz; ek++) { for (k=0; k<2; k++) {
-		for (ej=0; ej<my; ej++) { for (j=0; j<2; j++) {
-			for (ei=0; ei<mx; ei++) { for (i=0; i<2; i++) {
-				double P0;
-				
-				/* ONLY print the P0 component of pressure */
-				P0 = LA_fieldsP[ ndof_pressure * (ei + ej*mx + ek*mx*my) + 0 ];
-				
-				ierr = gzwrite(vtk_fp,(void*)&P0,sizeof(double)*1);
-			}}
-		}}
-	}}
-	
-	/* write node velocity */
-	bytes = sizeof(double)*3*(2*mx+1)*(2*my+1)*(2*mz+1);
-	gzwrite(vtk_fp,&bytes,sizeof(int)*1);
-	for (k=esk; k<esk+2*mz+1; k++) {
-		for (j=esj; j<esj+2*my+1; j++) {
-			for (i=esi; i<esi+2*mx+1; i++) {
-				double vel[3];
-				
-				cnt = (i-gsi) + (j-gsj)*gm + (k-gsk)*gm*gn;
-				vel[0] = LA_fieldsU[3*cnt+0];
-				vel[1] = LA_fieldsU[3*cnt+1];
-				vel[2] = LA_fieldsU[3*cnt+2];
-				ierr = gzwrite(vtk_fp,(void*)vel,sizeof(double)*3);
-			}
-		}
-	}
-	
-	ierr_gz = gzprintf(vtk_fp, "\n  </AppendedData>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	ierr_gz = gzprintf(vtk_fp, "</VTKFile>\n");
-	report_gzlib_error(ierr_gz,vtk_fp);
-	
-  ierr = VecRestoreArray(local_fieldsU,&LA_fieldsU);CHKERRQ(ierr);
-	ierr = DMRestoreLocalVector(dau,&local_fieldsU);CHKERRQ(ierr);
-	
-  ierr = VecRestoreArray(local_fieldsP,&LA_fieldsP);CHKERRQ(ierr);
-	ierr = DMRestoreLocalVector(dap,&local_fieldsP);CHKERRQ(ierr);
-	
-	ierr = DMCompositeRestoreAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr_gz = gzclose(vtk_fp);
-	report_gzlib_error(ierr_gz,vtk_fp);
-
-	PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "pTatinOutputMeshVelocityPressurePVTS"
 PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],const char name[])
@@ -890,7 +717,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],
 	vtk_fp = NULL;
 	if (rank==0) {
 		if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new PVTS file %s",name );
 		}
 	}
 	
@@ -954,7 +781,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocityPVTS(DM pack,const char prefix[],cons
 	vtk_fp = NULL;
 	if (rank==0) {
 		if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new PVTS file %s",name );
 		}
 	}
 	
@@ -1029,7 +856,7 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 					int procid32;
 					
 					PetscMPIIntCast(procid,&procid32);
-					asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
+					if (asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 					for( II=0; II<indent_level; II++ ) {
 						if(vtk_fp) fprintf(vtk_fp,"  ");
 					}
@@ -1050,7 +877,7 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 				int procid32;
 				
 				PetscMPIIntCast(procid,&procid32);
-				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
+				if (asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				for( II=0; II<indent_level; II++ ) {
 					if(vtk_fp) fprintf(vtk_fp,"  ");
 				}
@@ -1140,7 +967,7 @@ PetscErrorCode _pTatinOutputLiteMeshVelocitySlicedPVTS(FILE *vtk_fp,
 				procid = i + j*processor_span[0] + k*processor_span[0]*processor_span[1]; /* convert proc(i,j,k) to pid */
 				PetscMPIIntCast(procid,&procid32);
 
-				asprintf( &name, "%s-subdomain%1.5d.vts", prefix, procid32 );
+				if (asprintf( &name, "%s-subdomain%1.5d.vts", prefix, procid32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				if(vtk_fp) PetscFPrintf(PETSC_COMM_SELF, vtk_fp, "      <Piece Extent=\"%D %D %D %D %D %D\"      Source=\"%s\"/>\n",
 													 olx[i],olx[i]+lmx[i]*2,
 													 oly[j],oly[j]+lmy[j]*2,
@@ -1196,14 +1023,14 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 			PetscSNPrintf(pprefix,PETSC_MAX_PATH_LEN-1,"%s_v_PSliceI%D",prefix,i);
 			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 			if (path) {
-				asprintf(&filename,"%s/%s",path,vtkfilename);
+				if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			} else {
-				asprintf(&filename,"./%s",vtkfilename);
+				if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			}
 
 			vtk_fp = NULL;
 			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new sliced PVTS file %s",filename );
 			}
 			
 			processor_I[0] = i;
@@ -1234,14 +1061,14 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 			PetscSNPrintf(pprefix,PETSC_MAX_PATH_LEN-1,"%s_v_PSliceJ%D",prefix,j);
 			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 			if (path) {
-				asprintf(&filename,"%s/%s",path,vtkfilename);
+				if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			} else {
-				asprintf(&filename,"./%s",vtkfilename);
+				if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			}
 			
 			vtk_fp = NULL;
 			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new sliced PVTS file %s",filename );
 			}
 			
 			processor_I[0] = 0;
@@ -1272,14 +1099,14 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 			PetscSNPrintf(pprefix,PETSC_MAX_PATH_LEN-1,"%s_v_PSliceK%D",prefix,k);
 			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 			if (path) {
-				asprintf(&filename,"%s/%s",path,vtkfilename);
+				if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			} else {
-				asprintf(&filename,"./%s",vtkfilename);
+				if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			}
 			
 			vtk_fp = NULL;
 			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new sliced PVTS file %s",filename );
 			}
 			
 			processor_I[0] = 0;

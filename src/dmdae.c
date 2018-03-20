@@ -37,15 +37,16 @@
 #define __FUNCT__ "DMDAECreate"
 PetscErrorCode DMDAECreate(DMDAE *dae)
 {
-	DMDAE d;
-	PetscErrorCode ierr;
-	
-    PetscFunctionBegin;
-	ierr = PetscMalloc(sizeof(struct _p_DMDAE),&d);CHKERRQ(ierr);
-	ierr = PetscMemzero(d,sizeof(struct _p_DMDAE));CHKERRQ(ierr);
-	*dae = d;
-	
-	PetscFunctionReturn(0);
+  DMDAE d;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *dae = NULL;
+  ierr = PetscMalloc(sizeof(struct _p_DMDAE),&d);CHKERRQ(ierr);
+  ierr = PetscMemzero(d,sizeof(struct _p_DMDAE));CHKERRQ(ierr);
+  *dae = d;
+
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -161,37 +162,38 @@ PetscErrorCode DMDAECopy(DMDAE dae1,DMDAE dae2)
 #define __FUNCT__ "DMAttachDMDAE"
 PetscErrorCode DMAttachDMDAE(DM dm)
 {
-	PetscContainer container;
-	DMDAE dae;
-	PetscErrorCode ierr;
-    
-    PetscFunctionBegin;
-	ierr = DMDAECreate(&dae);CHKERRQ(ierr);
-	
-    ierr = PetscContainerCreate(PETSC_COMM_WORLD,&container);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(container,(void*)dae);CHKERRQ(ierr);
-	
-	ierr = PetscObjectCompose((PetscObject)dm,"DMDAEobject",(PetscObject)container);CHKERRQ(ierr);
+  PetscContainer container;
+  DMDAE dae;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMDAECreate(&dae);CHKERRQ(ierr);
+
+  ierr = PetscContainerCreate(PETSC_COMM_WORLD,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,(void*)dae);CHKERRQ(ierr);
+
+  ierr = PetscObjectCompose((PetscObject)dm,"DMDAEobject",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
+
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetDMDAE"
 PetscErrorCode DMGetDMDAE(DM dm,DMDAE *dae)
 {
-	DMDAE d;
-	PetscContainer container;
-	PetscErrorCode ierr;
-	
-    PetscFunctionBegin;
-	ierr = PetscObjectQuery((PetscObject)dm,"DMDAEobject",(PetscObject*)&container);CHKERRQ(ierr);
-	if (!container) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"DMDAEobject\" was composed with DM");
-	ierr = PetscContainerGetPointer(container,(void**)&d);CHKERRQ(ierr);
-	*dae = d;
-	
-	PetscFunctionReturn(0);
+  DMDAE          d;
+  PetscContainer container;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *dae = NULL;
+  ierr = PetscObjectQuery((PetscObject)dm,"DMDAEobject",(PetscObject*)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"DMDAEobject\" was composed with DM");
+  ierr = PetscContainerGetPointer(container,(void**)&d);CHKERRQ(ierr);
+  *dae = d;
+
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -224,7 +226,7 @@ PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
 	PetscInt pM,pN,pP;
 	PetscErrorCode ierr;
 	
-    PetscFunctionBegin;
+  PetscFunctionBegin;
 	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo(dm,0,0,0,0,&pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
@@ -250,7 +252,7 @@ PetscErrorCode DMDAEGetCornersElement(DM dm,PetscInt *esi,PetscInt *esj,PetscInt
 	DMDAE dae;
 	PetscErrorCode ierr;
 	
-    PetscFunctionBegin;
+  PetscFunctionBegin;
 	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
 	if (esi) { *esi = dae->si; }
 	if (esj) { *esj = dae->sj; }

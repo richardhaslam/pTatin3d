@@ -44,22 +44,17 @@
 
 #include "stokes_operators.h"
 
-#define ELEMENT_MF_STANDARD
-//#define ELEMENT_MF_OPTIMIZED
-
-#ifdef ELEMENT_MF_STANDARD
-  #include "stokes_q2p1_mf_operators_def.c"
-  #include "stokes_q2p1_mf_operators_diag_def.c"
-#endif
-#ifdef ELEMENT_MF_OPTIMIZED
-  #include "stokes_q2p1_mf_operators_def_rolled.c"
-  #include "stokes_q2p1_mf_operators_diag_def.c"
+#define PTAT3D_ELEMENT_MF_STANDARD
+//#define PTAT3D_ELEMENT_MF_OPTIMIZED
+#if defined(PTAT3D_ELEMENT_MF_STANDARD) && defined(PTAT3D_ELEMENT_MF_OPTIMIZED)
+#error Only one of PTAT3D_ELEMENT_MF_STANDARD and PTAT3D_ELEMENT_MF_OPTIMIZED may be defined
 #endif
 
-//
+#include "stokes_q2p1_mf_operators_def.c"
+#include "stokes_q2p1_mf_operators_def_rolled.c"
+#include "stokes_q2p1_mf_operators_diag_def.c"
+
 //#define PTAT3D_USE_FORTRAN_MF_KERNELS
-//
-//
 //#define PTAT3D_LOG_MF_OP
 
 //#define NO_LOWORDER_OPERATORS
@@ -67,9 +62,6 @@
 //#define ONEPOINTQ_DIAG_LOWORDER_OPERATORS
 //#define Q1GEOM_LOWORDER_OPERATORS
 //#define AFFINEGEOM_LOWORDER_OPERATORS
-//
-
-
 
 /* --- A11 --- */
 #undef __FUNCT__
@@ -244,7 +236,7 @@ extern void f_matmultmf_stokes_mixedfem3d_b11_(double*,double*, double*,double*,
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11"
-PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
+PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
 	PetscInt p,ngp;
@@ -305,7 +297,7 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
 		
 		
-#ifdef ELEMENT_MF_STANDARD
+#ifdef PTAT3D_ELEMENT_MF_STANDARD
 		for (p=0; p<ngp; p++) {
 			//printf("[e=%4d,p=%d] %1.4e \n", e,p,cell_gausspoints[p].eta);
 			el_eta[p] = cell_gausspoints[p].eta;
@@ -318,7 +310,7 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
       #endif
 		}
 #endif
-#ifdef ELEMENT_MF_OPTIMIZED
+#ifdef PTAT3D_ELEMENT_MF_OPTIMIZED
 		for (p=0; p<ngp; p++) {
 			fac = 1.0;
 			el_eta[p] = cell_gausspoints[p].eta * WEIGHT[p] * detJ[p];
@@ -567,7 +559,7 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 		P3D_evaluate_geometry_elementQ2_1gp(GNIC,ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 
 
-#if 0
+/*
 		// local average of 27 viscosities
 		for (ii=0; ii<2; ii++) {
 			for (jj=0; jj<2; jj++) {
@@ -592,9 +584,8 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 			}
 			
 		}
-#endif 
+*/
 		
-#if 1
 		// average all 27 viscosities
 		// converges at least //
 		{
@@ -606,8 +597,6 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 				el_eta[ii] = avg/27.0;
 			}
 		}
-		//
-#endif		
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
@@ -750,7 +739,6 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 	PetscReal fac;
-	PetscLogDouble t0,t1;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -767,7 +755,6 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -807,10 +794,6 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  &Ye[81]);CHKERRQ(ierr);
 	}
 	
-	PetscTime(&t1);
-#ifdef PTAT3D_LOG_MF_OP
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA(MF): %1.4e (sec)\n",t1-t0);
-#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -837,7 +820,6 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 	PetscReal fac;
-	PetscLogDouble t0,t1;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -854,7 +836,6 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -885,10 +866,6 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscTime(&t1);
-#ifdef PTAT3D_LOG_MF_OP
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA12(MF): %1.4e (sec)\n",t1-t0);
-#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -916,7 +893,6 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 	PetscReal fac;
-	PetscLogDouble t0,t1;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -933,7 +909,6 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -970,10 +945,6 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  Ye);CHKERRQ(ierr);
 	}
 	
-	PetscTime(&t1);
-#ifdef PTAT3D_LOG_MF_OP
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA21(MF): %1.4e (sec)\n",t1-t0);
-#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -1062,7 +1033,6 @@ PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 	PetscReal fac;
-	PetscLogDouble t0,t1;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -1076,7 +1046,6 @@ PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1108,8 +1077,6 @@ PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscTime(&t1);
-	
 	PetscFunctionReturn(0);
 }
 
@@ -1134,7 +1101,6 @@ PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[]
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 	PetscReal fac;
-	PetscLogDouble t0,t1;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -1149,7 +1115,6 @@ PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[]
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1189,11 +1154,6 @@ PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[]
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  &Ye[81]);CHKERRQ(ierr);
 	}
 	
-	PetscTime(&t1);
-#ifdef PTAT3D_LOG_MF_OP
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA(MF): %1.4e (sec)\n",t1-t0);
-#endif	
-	
 	PetscFunctionReturn(0);
 }
 
@@ -1216,7 +1176,6 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 	PetscReal fac;
-	PetscLogDouble t0,t1;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -1231,7 +1190,6 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1252,7 +1210,6 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3 ) );
 		
-		
 		for (p=0; p<ngp; p++) {
 			fac       = WEIGHT[p] * detJ[p];
 			
@@ -1261,11 +1218,6 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
-	
-	PetscTime(&t1);
-#ifdef PTAT3D_LOG_MF_OP
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA12(MF): %1.4e (sec)\n",t1-t0);
-#endif	
 	
 	PetscFunctionReturn(0);
 }
@@ -1290,7 +1242,6 @@ PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 	PetscReal fac;
-	PetscLogDouble t0,t1;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -1305,7 +1256,6 @@ PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1341,11 +1291,6 @@ PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  Ye);CHKERRQ(ierr);
 	}
-	
-	PetscTime(&t1);
-#ifdef PTAT3D_LOG_MF_OP
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA21(MF): %1.4e (sec)\n",t1-t0);
-#endif	
 	
 	PetscFunctionReturn(0);
 }

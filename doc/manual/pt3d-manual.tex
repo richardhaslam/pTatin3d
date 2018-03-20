@@ -1,0 +1,1597 @@
+
+\documentclass[paper=a4, fontsize=10pt,twoside]{scrartcl}
+
+% Hacks to make scrartcl work (otherwise these provoke errors)
+\makeatletter
+\DeclareOldFontCommand{\rm}{\normalfont\rmfamily}{\mathrm}
+\DeclareOldFontCommand{\sf}{\normalfont\sffamily}{\mathsf}
+\DeclareOldFontCommand{\tt}{\normalfont\ttfamily}{\mathtt}
+\DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
+\DeclareOldFontCommand{\it}{\normalfont\itshape}{\mathit}
+\DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl}
+\DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}
+\makeatother
+
+\usepackage[a4paper,pdftex]{geometry}										% A4paper margins
+\setlength{\oddsidemargin}{5mm}											% Remove 'twosided' indentation
+\setlength{\evensidemargin}{5mm}
+
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage[english]{babel}
+\usepackage[protrusion=true,expansion=true]{microtype}	
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage{graphicx}
+
+\usepackage{fancyhdr}
+\usepackage{hypernat}
+\usepackage[colorlinks,linkcolor=black,urlcolor=magenta]{hyperref} 
+\usepackage[small,nooneline,bf,hang]{caption} 
+\parindent0cm                                  
+\pagestyle{fancy}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+
+\usepackage{listings}
+\lstset{
+  language=C,
+  basicstyle=\ttfamily,
+  showstringspaces=false,
+  basewidth=0.5em,      % For consistent spacing with inline listings
+  breaklines=true,
+  frame=single,
+  framexleftmargin= 3px,
+  framexrightmargin= 3px,
+  breakatwhitespace=true,
+}
+
+% macros
+\newcommand{\ptat}{{{\textsc{pTatin3D}}}}
+\newcommand{\PETSc}{{{\textsc{PETSc}}}}
+\newcommand{\CUDA}{{{\textsc{CUDA}}}}
+\newcommand{\OpenCL}{{{\textsc{OpenCL}}}}
+\newcommand{\OpenMP}{{{\textsc{OpenMP}}}}
+\newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\hspace{5mm}\footnotesize #1}\\}
+\newcommand{\unix}[1]{\texttt{\footnotesize #1}}
+
+% Definitions for title page
+\newcommand{\HRule}[1]{\rule{\linewidth}{#1}} 	% Horizontal rule
+
+\makeatletter							% Title
+\def\printtitle{%						
+    {
+    	\centering \@title\par}
+		 	\vspace{10mm}
+	\begin{figure} [hbtp]
+	\includegraphics[height=0.4\textheight]{figs/ptat3d_front_page_small.pdf}
+	\end{figure}
+    }
+
+
+\makeatother									
+
+\makeatletter							% Author
+\def\printauthor{%					
+    {\centering \large \@author}}				
+\makeatother							
+
+%Titlepage
+	\title{	\normalsize \textsc{pTatin3D Manual} 	% Subtitle of the document
+	\\[2.0cm]									% 2cm spacing
+	\HRule{2pt} \\ [0.3cm]						% Upper rule
+	\LARGE \textbf{{pTatin3D User Guide}}			% Title
+	\HRule{2pt} \\ [0.5cm]						% Lower rule + 0.5cm spacing
+	\normalsize \today							% Todays date
+	}
+
+\author{
+{\normalsize \textsc{Developers}}
+\begin{itemize}
+\item[-] Dave A. May: Department of Earth Sciences, University of Oxford \texttt{(david.may@earth.ox.ac.uk)} 
+\item[-] Laetitia Le Pourhiet: UPMC, Univ. Paris 06  \texttt{(laetitia.le\_pourhiet@upmc.fr)}
+\item[-] Jed Brown: Department of Computer Science, University of Colorado Boulder \texttt{(jed.brown@colorado.edu)}
+\item[-] Patrick Sanan: Institute of Geophysics, ETH Zurich \texttt{(patrick.sanan@erdw.ethz.ch)}
+\end{itemize}
+}
+
+
+
+\begin{document}
+
+\thispagestyle{empty}% Remove page numbering on this page
+
+\printtitle% Print the title data as defined above
+  	\vfill
+\printauthor% Print the author data as defined above
+
+
+% Begin document
+
+
+\newpage
+\pagenumbering{roman}
+\tableofcontents{}
+
+\newpage
+
+\pagenumbering{arabic}
+
+\section{Introduction}
+
+\subsection{Overview}
+{\ptat} provides a suite of functionality to study long-term geodynamic processes related to the dynamics of the lithosphere and crust.
+At its core, it provides support for solving non-linear, incompressible Stokes flow problems in three dimensions, using a mixed finite element method together with a marker-and-cell method.
+
+\subsection{Referencing}
+
+\begin{lstlisting}
+@inproceedings{may2014ptatin3d,
+  title={pTatin3D: High-performance methods for long-term lithospheric dynamics},
+  author={May, Dave A and Brown, Jed and Le Pourhiet, Laetitia},
+  booktitle={High Performance Computing, Networking, Storage and Analysis, SC14: International Conference for},
+  pages={274--284},
+  year={2014},
+  organization={IEEE}
+}
+
+@article{may2015scalable,
+ title={A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
+  author={May, Dave A and Brown, Jed and Le Pourhiet, Laetitia},
+  journal={Computer Methods in Applied Mechanics and Engineering},
+  volume={290},
+  pages={496--523},
+  year={2015},
+  publisher={Elsevier}
+}
+\end{lstlisting}
+
+%\subsection{Acknowledgements}
+
+
+
+% ----------------------------------------------------------------------------------------------------
+\section{Installation}
+\subsection{Software requirements}
+\begin{itemize}
+  \item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.8} (essential numerical library)
+	\item git (used to obtain the source)
+	\item Python (non-essential: required to run the test suite)
+	\item \href{www.paraview.org}{ParaView} (non-essential: required for visualisation of simulation output)
+	\item libz (non essential: used for output file compression)
+\end{itemize}
+
+\subsection{Obtaining the source}
+The source code for {\ptat} is hosted at \href{https://bitbucket.org}{BitBucket} using the Git version control system.
+The latex stable version can be obtained with the \unix{git} command
+\shellcmd{git clone https://bitbucket.org/ptatin/ptatin3d}
+which will copy the code into the directory \unix{ptatin/}.
+
+\subsection{Compilation}
+Upon successful installation of {\PETSc}, switch into the root directory of {\ptat}.
+You should provide a file, named \unix{makefile.arch}, which contains specific compiler optimizations for your operating system and compiler.
+If you do not provide this, a default, tailored to Mac OS X, will be copied for you.
+If you are trying to install {\ptat} on another system,
+consult the directory
+\unix{config/}
+where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6/XC50 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for your particular system by copying the closest architecture file matching your system, e.g. \unix{cp config/machine.arch.XXX makefile.arch}, then make any necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
+\\[8pt]
+%
+Once \unix{makefile.arch} is adjusted for your operating systemtype, type \unix{make -j} from the root directory of \ptat{}.
+\begin{itemize}
+	\item Compiling with a particular {\PETSc} build
+	\shellcmd{make -j PETSC\_DIR=/path/to/your/petsc PETSC\_ARCH=your.petsc.build}
+	\item Compiling with a particular compilation flags (C and Fortran)
+	\shellcmd{make -j TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
+\end{itemize}
+%\\[8pt]
+%
+The following targets for make exist: \unix{all}, \unix{clean}, \unix{drivers}, \unix{test}, \unix{testcheck}, \unix{testall}, \unix{testallcheck}, \unix{releaseinfo}.
+
+As discussed further in Section \ref{sec:examples_and_tests}, you can run \unix{make test} to get a first check that {\ptat} has been compiled correctly.
+
+The target \unix{releaseinfo} will automatically update the contents of the file \unix{include/ptatin\_version\_info.h}.
+This file is updated to reflect the current revision information associated with the Git master branch. This information is
+propagated into log files and the output of {\ptat}.
+\\[8pt]
+%
+The make system will create all objects, libraries and binary files in the following paths:
+\begin{enumerate}
+\setlength\itemsep{0mm}
+	\item[-] \unix{ptatin3d/\$\{PETSC\_ARCH\}/obj}
+	\item[-] \unix{ptatin3d/\$\{PETSC\_ARCH\}/lib}
+	\item[-] \unix{ptatin3d/\$\{PETSC\_ARCH\}/bin}
+\end{enumerate}
+The current build system allows you to conveniently compile different {\ptat} using different {\PETSc} builds (e.g. a debug {\PETSc} build versus an optimised build).
+
+\subsubsection{Prefix \PETSc{} Builds}
+\ptat{} also support the use of ``prefix'' builds, which may be available as modules on clusters, where one supplies \unix{PETSC\_DIR} without \unix{PETSC\_ARCH}. In this case, the three directories mentioned will be created in the root \ptat{} directory.
+
+\subsubsection{GPU Support}
+\label{sec:gpusupport}
+\ptat{} can be configured to compile special operator kernels for use with GPUs. \CUDA{} and/or \OpenCL{} can be enabled by adding \lstinline{CONFIG_CUDA=y} and/or \lstinline{CONFIG_OPENCL=y}, respectively, to \texttt{makefile.arch}, along with suitable values for compilers, libraries, and include paths.
+See the examples in \texttt{config/} for more.
+
+% ----------------------------------------------------------------------------------------------------
+\section{Methods}
+
+\subsection{Governing equations}
+
+We solve the mechancis, energy and transport problem within a time-dependent domain 
+denoted via $\Omega(t)$, with boundary $\partial \Omega(t)$. 
+The outward pointing normal to $\partial \Omega$ is denoted via $\boldsymbol n$.
+
+\subsubsection*{Mechanics}
+$$
+	\nabla \cdot \eta \left( \nabla \boldsymbol v + (\nabla \boldsymbol v)^T \right) - \nabla p = \boldsymbol f_u
+$$
+$$
+	\nabla \cdot \boldsymbol u = f_p
+$$
+\textit{Boundary conditions:}
+$$
+	\hat{\boldsymbol u}_1 \medspace \text{ on } \medspace \partial \Omega^M_1
+$$
+$$
+	\hat{u}_2 = \boldsymbol v \cdot \boldsymbol n \medspace \text{ on } \medspace \partial \Omega^M_2
+$$
+$$
+	\hat{\boldsymbol \sigma}_3 = \boldsymbol \sigma \medspace \text{ on } \medspace \partial \Omega^M_3
+$$
+$$
+	\hat{\boldsymbol \sigma}_4 = \boldsymbol \sigma \cdot \boldsymbol n \medspace \text{ on } \medspace \partial \Omega^M_4
+$$
+
+\subsubsection*{Energy}
+$$
+	\rho C_p \frac{\partial T}{\partial t} + \boldsymbol v \cdot \nabla T + \nabla \cdot \left( k \nabla T\right) =  f_T
+$$
+\textit{Boundary conditions:}
+$$
+	\hat{T}_1 \medspace \text{ on } \medspace \partial \Omega^E_1
+$$
+$$
+	q_2 = - k \nabla T \cdot \boldsymbol n = 0 \medspace \text{ on } \medspace \partial \Omega^E_2
+$$
+
+\subsubsection*{Transport}
+$$
+	\frac{D \Psi}{D t}  =  g_{\Psi},
+$$
+where $\Psi$ is a scalar, vector or tensor.
+
+\textit{Boundary conditions:}
+$$
+	\hat{\Psi}_1 \medspace \text{ on } \medspace \partial \Omega^{\Psi}_1,
+$$
+where $\partial \Omega^{\Psi}_1$ denotes the segment of the boundary where inflow occurs, e.g. $\boldsymbol v \cdot \boldsymbol n < 0$.
+
+By default, we evolve the material region $\mathcal R$ according to
+$$
+	\frac{D \mathcal R}{Dt} = 0.
+$$
+
+\subsection{Coefficient forms}
+
+\subsubsection*{Mechanics}
+
+In discussing the flow laws, we denote the strain-rate tensor via
+$$
+	\dot{\boldsymbol \epsilon} = \tfrac{1}{2} \left( \nabla \boldsymbol v + (\nabla \boldsymbol v)^T \right)
+$$
+and its second invariant as 
+$$
+	\dot{\epsilon}_{II} = \sqrt{ \tfrac{1}{2} \dot{\epsilon}_{ij} \dot{\epsilon}_{ij} }.
+$$
+
+\textit{Shear viscosity $\eta$}
+\begin{itemize}
+\item Linear (constant)
+$$
+	\eta = \eta_v := f(\mathcal R)
+$$
+\item Linear (temperature dependent)
+$$
+	\eta = \eta_v := \eta_0(\mathcal R) \exp( -\theta(\mathcal R) T)
+$$
+\item Nonlinear (strain-rate and pressure dependent)
+$$
+	\eta = \eta_v := A_0(\mathcal R) \dot{\epsilon}_{II}^{1/n(\mathcal R) - 1}
+		 A(\mathcal R)^{-1/n(\mathcal R)} \exp\left( 
+		\frac{E(\mathcal R) + P V(\mathcal R)}{n(\mathcal R) R T}
+	\right)
+$$
+
+\item Nonlinear (stress limited)
+$$
+	\eta := \frac{\tau_\text{min}}{2 \dot{\epsilon}_{II}}
+$$
+$$
+	\tau_\text{min} = \min( 2 \dot{\epsilon}_{II} \eta_v, \tau_y )
+$$
+where
+$$ 
+	\tau_y = f(\mathcal R,\epsilon)
+	\medspace
+	\text{ or }
+	\medspace
+	\tau_y = f(\mathcal R,P,\epsilon).
+$$
+The variable $\epsilon$ defines the accumulated plastic strain which evolves according to
+$$
+	\frac{D\epsilon}{Dt}
+	=
+	\begin{cases}
+    \dot{\epsilon}_{II}, & \text{if } \medspace 2 \eta_v \dot{\epsilon}_{II} > \tau_y \\
+    0,                    & \text{otherwise}
+	\end{cases}
+$$
+\end{itemize}
+
+\textit{Momentum forcing $f_u$}
+\begin{itemize}
+\item Constant
+$$
+\boldsymbol f_u = \boldsymbol f(\mathcal R)
+$$
+\item Bouyancy
+$$
+\boldsymbol f_u = \rho \boldsymbol g
+$$
+where the density is defined by either
+$$
+\rho = f(\mathcal R),
+$$
+or
+$$
+\rho = \rho_0 ( 1 - \alpha T + \beta P ).
+$$
+\end{itemize}
+
+\textit{Continuity forcing $f_p$}
+\begin{itemize}
+\item Typically we use $f_p = 0$.
+\end{itemize}
+
+
+\subsubsection*{Energy}
+
+\textit{Density}
+\begin{itemize}
+\item Constant
+$$
+	\rho := f(\mathcal R)
+$$
+\end{itemize}
+
+\textit{Conductivity}
+\begin{itemize}
+\item Constant
+$$
+	k := f(\mathcal R)
+$$
+\item Temperature dependent
+$$
+	k := f(\mathcal R,T)
+$$
+\end{itemize}
+
+\textit{Source}
+\begin{itemize}
+\item Constant
+$$
+	f_T^c := f(\mathcal R)
+$$
+\item Radiogenic
+$$
+	f_T^r := H_0(\mathcal R) \exp( -t \lambda(\mathcal R) )
+$$
+\item Adiabatic
+$$
+	f_T^a := - T \alpha(\mathcal R) \rho(\mathcal R) (\boldsymbol g \cdot \boldsymbol v)
+$$
+\end{itemize}
+The final source term $f_T$ can be composed by summing the above terms
+$$
+	f_T = f_T^c + f_T^r + f_T^a,
+$$
+where any of the individual terms may be zero.\vspace{10mm}
+
+\textit{Simplified conservation law}\newline
+We also can solve the simpler equation
+$$
+\frac{\partial T}{\partial t} + \boldsymbol v \cdot \nabla T + \nabla \cdot \left( \kappa \nabla T\right) =  f_T.
+$$
+With this form, the following choices are valid:\newline
+\textit{Diffusivity}
+\begin{itemize}
+\item Constant
+$$
+	\kappa := f(\mathcal R)
+$$
+\end{itemize}
+\textit{Source}
+\begin{itemize}
+\item Constant
+$$
+	f_T := f(\mathcal R)
+$$
+\end{itemize}
+
+
+\subsection{Numerics}
+\begin{itemize}
+\item Mechanics: Q2-P1 mixed finite elements on hexahedral elements
+\item Energy: overlapping Q1 finite elements (hex) with SUPG stabilization
+\item Transport: Lagrangian particle (material point method)
+\end{itemize}
+
+% ----------------------------------------------------------------------------------------------------
+\section{Drivers}
+{\ptat} in itself is a library which aims to enable users to build specific executables to solve a particular class of problems in lithospheric dynamics.
+Executables which utilize \unix{libptatin3d} are referred to as drivers.
+For standard problems, e.g. time dependent linear (or non-linear) Stokes problems with optionally thermal coupling, we provide several default drivers.
+The most important (i.e. useful) of these are summarized below.
+
+\begin{enumerate}
+	\item \unix{ptatin\_driver\_ic.app}
+	Specifically designed to confirm that the model is defined in accordance with what the developer had in mind. This driver does not solve any equations or perform any time stepping. Rather it only loads the model, loads the initial conditions and boundary conditions and calls the model output function.
+
+	\item \unix{ptatin\_driver\_ts\_init.app}
+	A driver for initlalising and solving time dependent, \emph{linear} or \emph{non-linear} Stokes flow problems. 
+	The energy equation may be optionally activated within this model.
+
+	To commence a new run, one must: (i) first execute the driver with the additional argument \texttt{-init}.
+	With this argument, the solution associated with the initial condition is computed and checkpointed;
+	(ii) execute the driver. When \texttt{-init} is not provided, the driver will load a checkpoint file and commence
+	time-stepping. See Section \ref{sec:checkpoint} for further details.
+
+	Checkpointing is enabled and restart capabilities are functional.
+	
+	\item \unix{ptatin\_driver\_energy.app}
+	A basic driver used for testing the advection diffusion solver. It does not solve Stokes.
+	
+	\item \unix{ptatin\_driver\_linear\_ts.app}
+	A driver for solving time dependent, \emph{linear} Stokes flow problems. 
+	Checkpointing is enabled, however no capabilities for restart is provided.
+	This driver is deprecated and will soon be removed - users should use \unix{ptatin\_driver\_ts\_init.app}.
+
+	\item \unix{ptatin\_driver\_nonlinear\_ts.app}
+	A driver for solving time dependent, \emph{non-linear} Stokes flow problems. 
+	The energy equation may be optionally activated within this model.
+	Checkpointing is enabled, however no capabilities for restart is provided.
+	This driver is deprecated and will soon be removed - users should use \unix{ptatin\_driver\_ts\_init.app}.
+\end{enumerate}
+
+\subsection{Options for standard drivers}
+\begin{itemize}
+	\item \unix{-nsteps}: Number of time steps to perform.
+	\item \unix{-output\_frequency}: Interval to output data.
+	\item \unix{-output\_path}: Directory where output should be written to.
+	\item \unix{-dt\_max}: Upper bound on the time step permitted.
+	\item \unix{-dt\_min}: Lower bound on the time step permitted.
+	\item \unix{-constant\_dt}: Specifies a constant time step size which should be used.
+	\item \unix{-time\_max}: Maximum time (in model units) which simulation should perform.
+	%%
+	\item \unix{-checkpoint\_every}: Indicates interval which check point files with a non-unique name should be written.
+	\item \unix{-checkpoint\_every\_nsteps}: Indicates interval which check point files with a unique name (associated with the current time step) should be written.
+	\item \unix{-checkpoint\_every\_ncpumins}: Indicates interval in terms of CPU time with which a check point files with a unique name (associated with the current time step) should be written.
+\end{itemize}
+
+% ----------------------------------------------------------------------------------------------------
+\section{Example Models and Tests}
+\label{sec:examples_and_tests}
+A small test suite is provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The tests can be found in the directory \unix{test/}. To execute the tests, ensure that you have Python and Numpy\footnote{To check, run \unix{python} and then enter \unix{import numpy}, which shouldn't produce an error. (Enter \unix{exit()} to exit.)} and execute \unix{make test}(a quick subset of tests) or \unix{make testall}(all tests) from the \ptat{} root directory.
+These wiill provide instructions on downloading a required \href{https://www.bitbucket.org/dmay/pythontestharness}{test harness script}.
+If on a batch system, after the queueing system has run the tests, you can use \shellcmd{make testcheck} or \shellcmd{make testallcheck} to verify the results.
+
+Numerous example models are provided with the source distribution. These serve as a starting point to generate your own models. The most simple model is ``viscous\_sinker'', with source files living in \unix{src/models/viscous\_sinker}. Several example options files are provided in \unix{src/models/viscous\_sinker/testjobs}. We summarize the examples below
+\begin{enumerate}
+  \item \texttt{ex\_sinker.opts}: Defines a dense, viscous rectangular block in a unit cube domain. The rectangular block sinks due to the buoyancy difference between the block and background material. ``Free slip'' boundaries (zero normal velocity, zero tangential stress) are applied along all boundaries. The model is time dependent with a linear viscous rheology, thus the driver \unix{ptatin\_driver\_linear\_ts.app} should be used.
+
+  \item \texttt{sinker-ex2.opts}: Defines a buoyant spherical viscous inclusion in a domain $\Omega = [0,1] \times [0,\tfrac{1}{4}] \times [0,1]$. Boundary conditions on the upper surface $\sigma_{ij}n_j=0$ (``free surface'') and ``free slip'' on all other sides. The upper surface is initialized to have a small amount of positive topography. Only a single time step is performed. The driver \unix{ptatin\_driver\_linear\_ts.app} should be used. This option file illustrates how flexible multi-grid coarsening and coarse grid operators can be used. See Sec.~\ref{sec:configsolvers} for further details.
+
+  \item \texttt{sinker-mfscaling.opts}: Defines a dense, viscous spherical inclusion in a unit cube domain. A``free surface'' upper boundary is used and all other boundaries are ``free slip''. The upper surface is initially flat. Only a single time step is performed. The driver \unix{ptatin\_driver\_linear\_ts.app} should be used. This option file is used for strong scaling experiments.
+\end{enumerate}
+
+% ----------------------------------------------------------------------------------------------------
+\section{Generated Output}
+All output generated via {\ptat} will be written in the directory specified via the option \unix{-output\_path}. If this option isn't provided, a default directory called \texttt{output} will be generated.
+
+\subsection{Diagnostics}
+The time dependent drivers will generate a log file (\texttt{ptatin.log-XXX}) and a file containing all options (inputs) used for the current simulation (\texttt{ptatin.options-XXX}). Here, \texttt{XXX} will be replaced with a year/date/time stamp (e.g. \texttt{2013.10.31\_11:00:54}) corresponding to when the executable was launched. The time stamp ensures unique files will be give to each model run, thus enabling them to reproduced at a later date. Log files contain information regarding the mesh resolution, memory usage, CPU times associated with each solve and diagnostics about the solver (number of iterations, residuals, etc) and the time step, current time associated with the simulation. The options file generated can be used to re-run {\ptat} models simply via executing \unix{./ptatin\_DRIVER.app -options\_file ptatin.options-XXX}.
+
+\subsection{Simulation results}
+{\ptat} generates output in formats which can be visualized via the open source tool ParaView (\url{www.paraview.org}).
+%A complete description of ParaView formats can be found here (\url{TODO}).
+A comprehensive ParaView tutorial can be found here at \url{http://www.paraview.org/Wiki/The\_ParaView\_Tutorial}. 
+Additional tutorial information can be found here:
+\begin{small}
+\begin{itemize}
+  \item[-] \href{http://www.bu.edu/tech/about/research/training/online-tutorials/paraview/}{\url{www.bu.edu/tech/about/research/training/online-tutorials/paraview/}}
+  \item[-] \href{http://www.cac.cornell.edu/education/Training/data10/VisualizationWithParaView.pdf}{\url{www.cac.cornell.edu/education/Training/data10/VisualizationWithParaView.pdf}}
+\end{itemize}
+\end{small}
+
+A summary of file extensions commonly produced by {\ptat} is provided below: \newline
+\texttt{*.pvd}: Contains time dependent datasets.  \newline
+\texttt{*.pvts}: Contains mesh data (nodal fields and cell fields) for the complete mesh.  \newline
+\texttt{*.vts}: Contains mesh data (nodal fields and cell fields) for each sub-domain used in the parallel computation.  \newline
+\texttt{*.pvtu}: Contains particle data for the complete set of material points.  \newline
+\texttt{*.vtu}: Contains particle data for each sub-domain used in the parallel computation. \newline
+
+Depending on the particular output functions called in your model, numerous fields are generated during a {\ptat} simulation.
+The term ``sub-domain'' used above refers to the piece of the mesh assigned to each core. In the mode of parallelism used in {\ptat}, there is always one sub-domain per core.
+
+\subsubsection{Mesh data}
+{\bf Velocity and pressure:} Both the velocity and pressure fields are contained in the following set of files: \\
+\unix{timeseries\_vp.pvd}, \\
+\unix{step000000\_vp.pvts}, \\
+\unix{step000000\_vp-subdomain00000.vts}.\\
+Floating point numbers are stored as double precision. All data is stored in a binary format. The function \\
+\unix{pTatin3d\_ModelOutput\_VelocityPressure\_Stokes()} \\
+generates these data files.
+\\[8pt]
+%%	
+{\bf Velocity:} The velocity field is contained in the following set of files: \\
+\unix{timeseries\_v.pvd}, \\
+\unix{step000000\_v.pvts}, \\
+\unix{step000000\_v-subdomain00000.vts}. \\
+Floating point numbers are stored as single precision. All data is stored in a binary format.
+The function \\
+\unix{pTatin3d\_ModelOutputLite\_Velocity\_Stokes()} \\
+generates these data files.
+\\[8pt]
+%%	
+{\bf Temperature:} The temperature field is contained in the following set of files: \\
+\unix{timeseries\_T.pvd}, \\
+\unix{step000000\_T.pvts}, \\
+\unix{step000000\_T-subdomain00000.vts}.\\
+Floating point numbers are stored as single precision. All data is stored in a binary format.
+The function \\
+\unix{pTatin3d\_ModelOutput\_Temperature\_Stokes()} \\
+generates these data files.
+
+
+\subsubsection{Material point data}
+Material point data can be represented in two distinct manners: 
+\begin{enumerate}
+	\item As a point cloud, e.g. a set of unconnected points $x_p$ with a set of material point properties (e.g $\eta_p$, $\rho_p$, ...) defined at each point coordinate $x_p$. 
+	We refer to this as a ``point-wise'' representation.
+	\item As cell constant values defined on the hex mesh (or sub-mesh hex) used to approximate the velocity field. 
+	We refer to this as a ``cell-wise'' representation.
+\end{enumerate}
+Each form of representing material point data has several advantages and disadvantages.
+The point-wise representation of material point data has the following limitations: (i) the point-wise representation requires a large amount of storage, and (ii) investigation of the 3D data set is limited as operations such as iso-surfaces, clipping, etc cannot be defined on point clouds. Furthermore, points do not represent a finite volume, thus they do not define a surface. Hence no lighting/shading can be applied, thereby limiting the depth perception of the material point data set. However, the point-wise representation is useful for debugging model setups. The cell-wise representation of material point data overcomes both of the two limitations of the point-wise representation. However, to define the material properties on each cell we have to introduce an interpolation (or projection) between the data defined on the material points and the mesh. This means that the result stored in the cell-wise data representation is only an \emph{approximation} of the true material point data. Cell-wise representation is useful for high-resolution simulations and production runs in which the correctness of model setups has been verified.
+\\[8pt]
+%%	
+{\bf Point-wise representation:} Material point data fields associated with the basic marker type (\unix{MPField\_Std}) are contained in the following set of files: \\
+\unix{timeseries\_mpoints\_std.pvd}, \\
+\unix{step000000\_mpoints\_std.pvtu}, \\
+\unix{step000000\_mpoints\_std-subdomain00000.vtu}. \\
+Floating point numbers are stored in the precision associated with each material point data field. All data is stored in a binary format. The function \\
+\unix{pTatin3d\_ModelOutput\_MPntStd()} \\
+generates these data files.
+\\[8pt]
+%%	
+A more flexible mechanism to output material point data associated with multiple marker types is provided by the function \unix{SwarmViewGeneric\_ParaView()}. Note that this function will not generate a \texttt{*.pvd} file for you.  All data is stored in a binary format. Marker types which can be output in these files are identified via the the following names: \\
+\unix{MPField\_Std, MPField\_Stokes, MPField\_StokesPl, MPField\_Energy}.
+%%
+\\[8pt]
+%%	
+Marker data can alternatively be represented on the mesh used for computing the velocity/pressure solution. 
+In this case, the material point data field is averaged over each element and represented as a constant value within each element.
+\\[8pt]
+%%	
+{\bf Cell-wise representation:} Material point data fields which are represented on the mesh are contained in the following set of files:\\
+\unix{timeseries\_mpoints\_cell.pvd}, \\
+\unix{step000000\_mpoints\_cell.pvts}, \\
+\unix{step000000\_mpoints\_cell-subdomain00000.vts}. \\
+Floating point numbers are stored in the precision associated with each material point data field. All data is stored in a binary format.
+The function \\
+	\unix{pTatin3d\_ModelOutput\_MarkerCellFields()} \\
+generates these data files. This function is flexible and permits specific marker fields to be output into the file. Marker fields which can be output in these files are identified via the the following names:
+\unix{MPV\_region, MPV\_viscosity, MPV\_density, MPV\_plastic\_strain, MPV\_yield\_indicator, MPV\_diffusivity, MPV\_heat\_source}.
+
+% ----------------------------------------------------------------------------------------------------
+\section{Checkpointing and Restarting} \label{sec:checkpoint}
+
+\subsection{General}
+\begin{itemize}
+\item All drivers are capable of \textit{generating} checkpoint files - however only {\tt ptatin\_driver\_ts\_init.app} is
+capable to restarting a job from a checkpoint file.
+
+\item All checkpoint files created will reside underneath the following directory:
+\begin{lstlisting}
+<OUTPUTDIR>/checkpoints
+\end{lstlisting}
+where {\tt <OUTPUTDIR>} was specified via {\tt -output\_path}.
+Each checkpoint is associated with a unique textual name related to the specific stage of the computation, for example
+the initial condition, or the solution at a given time step.
+A checkpoint file associated with the initial condition data will be written here
+\begin{lstlisting}
+<OUTPUTDIR>/checkpoints/initial_condition
+\end{lstlisting}
+whilst a checkpoint associated with step 100 will be written here
+\begin{lstlisting}
+<OUTPUTDIR>/checkpoints/step100
+\end{lstlisting}
+Within each each of these directories a number of different files are created.
+The parent checkpoint file for the {\ptat} is always called
+\begin{lstlisting}
+ptatin3dctx.json
+\end{lstlisting}
+\end{itemize}
+
+\subsection{Controlling checkpoint file creation}
+Specifying when a checkpoint should occur can be controlled in several different ways.
+These are summarised below.
+
+\begin{enumerate}
+\item By enforcing that the code writes a checkpoint file every $N$ steps, but the checkpoint files will will have a common name.
+These files are over written each time checkpointing occurs. 
+Such functionality is useful when you simply need to restart the code on machine which allows a fixed wall time and you want to job chain.
+Since the checkpoint files have a common name, job chaining is straight forward.
+This type of checkpointing is activated via the command line flag \newline
+{\tt -checkpoint\_every N}
+
+\item By enforcing that the code writes a checkpoint file every $M$ time steps. 
+These files will have a file name with a unique extension, thus they do not get over-ridden.
+This type of checkpointing is activated via the command line flag \newline
+{\tt -checkpoint\_every\_nsteps M}
+
+\item By enforcing that the code writes a checkpoint file every $X$ CPU minutes. 
+This can be useful if you have some time steps which require significantly more time to solve than others.
+In this case, requesting to check point every $M$ time steps might not be appropriate and you might exceed the wall time before $M$ time steps have completed.
+This type of checkpointing is activated via the command line flag\newline
+{\tt -checkpoint\_every\_ncpumins X}
+\end{enumerate}
+
+All of the above checkpoint creation options can be used together to preserve the results obtained from a simulation.
+When they are used together, care is taken to ensure that time step based checkpoint files are not written twice.
+For example, if I asked to checkpoint every 30 mins, and this criterion is activated at step 10, and the {\tt -checkpoint\_every\_nsteps} options was used with a value of 10, {\ptat} will not checkpoint step10 twice.
+
+\subsection{Restarting via a checkpoint file}
+
+When ever a checkpoint file is written, the file {\tt restart.default} is created into the directory specified via {\tt -output\_path}.
+This file contains a {\PETSc} options specifying the path to the most recent checkpoint file created:
+\begin{lstlisting}
+# restart.default
+-restart_directory path/to/last_checkpoint_file_written
+\end{lstlisting}
+
+To restart from the last checkpoint file written, you just need to either execute
+\begin{lstlisting}
+./ptatin_driver_ts_init.app
+\end{lstlisting}
+By default this driver will look in the directory {\tt <OUTPUTDIR>} for {\tt restart.default} and if found, it will use the path to the checkpoint file specified via the option {\tt -restart\_directory} to restart the run.
+
+To restart from any checkpoint file written, you need to either execute
+\begin{lstlisting}
+./ptatin_driver_ts_init.app \
+  -restart_directory path/to/your/checkpoint_file
+\end{lstlisting}
+If no other options are provided, the restarted job will write output into the same directory specified by the value of {\tt -output\_path} given to the run which generated the checkpoint file.
+
+By default it is assumed that the output of a restarted job will be written into the same location as the original job.
+If you wish to direct the output of you restarted run to a directory different from that set by {\tt -output\_path} in the original job, you are required to specify the following two options: \newline
+\begin{lstlisting}
+./ptatin_driver_ts_init.app \
+  -restart_directory path/to/your/checkpoint_file \
+  -output_path path/to/new/outputdirectory
+\end{lstlisting}
+
+% ----------------------------------------------------------------------------------------------------
+\section{Nonlinear and Linear Solvers}
+
+The discrete linear Stokes problem can be expressed as
+\begin{equation}
+	\begin{bmatrix}
+	A 	&B	\\
+	B^T	&0
+	\end{bmatrix}
+	\begin{bmatrix}
+	u \\
+	p
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	f	\\
+	h
+	\end{bmatrix}
+	\label{eq:discretelinearstokes}
+\end{equation}
+We solve Eq.~\eqref{eq:discretelinearstokes} via a right preconditioned Krylov method using an Elman-Wathan style upper block triangular preconditioner. The preconditioned system is thus
+\begin{equation}
+	\begin{bmatrix}
+	A 	&B	\\
+	B^T	&0
+	\end{bmatrix}
+	\begin{bmatrix}
+	A 	&B	\\
+	0	&-S
+	\end{bmatrix}^{-1}
+	\begin{bmatrix}
+	\tilde{u} \\
+	\tilde{p}
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	f	\\
+	h
+	\end{bmatrix}
+	\label{eq:discretelinearstokes_pc}
+\end{equation}
+where
+\begin{equation}
+	\begin{bmatrix}
+	\tilde{u} \\
+	\tilde{p}
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	A 	&B	\\
+	0	&-S
+	\end{bmatrix}
+	\begin{bmatrix}
+	u \\
+	p
+	\end{bmatrix}
+\end{equation}
+The upper block triangular preconditioner is only required to be applied to vectors. Rather than assembling the inverse and multiplying with an arbitrary vector $(x_1,x_2)$, we re-state the problem in the following manner
+\begin{equation}
+	\begin{bmatrix}
+	A 	&B	\\
+	0	&-S
+	\end{bmatrix}^{-1}
+	\begin{bmatrix}
+	{x_1} \\
+	{x_2}
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	y_1	\\
+	y_2
+	\end{bmatrix}
+%
+\quad
+	\longrightarrow
+\quad
+	\text{Solve }
+	\begin{bmatrix}
+	A 	&B	\\
+	0	&-S
+	\end{bmatrix}
+	\begin{bmatrix}
+	y_1	\\
+	y_2
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	{x_1} \\
+	{x_2}
+	\end{bmatrix}
+	\medspace \text{for } y_1, y_2	
+\end{equation}
+The solve involving the upper triangular system is defined in two steps:
+\begin{enumerate}
+	\item Solve $-S \, y_2 = x_2$ for $y_2$
+	\item Solve $A \, y_1 = x_1 - B \, y_2$ for $y_1$
+\end{enumerate}
+
+The iterative solution strategy for the Stokes flow problem is a nested procedure, containing many sub-solves. 
+The nested form of the method used is depicted in Fig.~\ref{fig:solver_hierarchy}.
+We will refer to the outer most solver (i.e. that for Eq.~\eqref{eq:discretelinearstokes_pc}) as the ``Stokes solve''. Any solver associated with the $A$ matrix will be verified to as a ``Viscous block'' solve. Any solver related to $S$ will be referred to as a ``Pressure Schur complement'' solve.
+\begin{figure} [hbtp]
+\center
+\includegraphics[height=0.6\textheight]{figs/pt3d_solve_hierarchy.pdf} %note : typo 'comaring'
+\caption[\itshape ]
+{\itshape Solver hierarchy}
+\label{fig:solver_hierarchy}
+\end{figure}
+In the following section we detail how to configure the solver applied to Eq.~\eqref{eq:discretelinearstokes_pc} to obtain $(u,p)$, and how to configure the solvers in steps 1 ({\tt -fieldsplit\_u\_ksp}) and 2 ({\tt -fieldsplit\_p\_ksp}) of applying the upper triangular preconditioner.
+
+
+\subsection{Configuring solvers} \label{sec:configsolvers}
+
+\subsubsection{Non-linear Stokes solver}
+Non-linear methods adopt the following sequence
+\begin{enumerate}
+	\item Given $x_0$, set $k = 0$. Compute $\| F (x_0) \|$
+	\item Solve $J(x_k) \delta x = -F(x_k)$
+	\item $x_{k+1} = x_k + \delta x$
+	\item Compute $\| F (x_{k+1}) \|$
+	\item $k = k + 1$, goto step 2 until converged.
+\end{enumerate}
+The non-linear iteration sequence may be terminated for several different  reasons. The reasons and the controlling parameters (modifiable from the command line are provided below):\newline
+\unix{-snes\_rtol 1.0e-3} : stops if $\| F (x_{k+1}) \| \le 10^{-3} \| F (x_0) \|$ \newline
+\unix{-snes\_atol 1.0e-3} : stops if $\| F (x_{k+1}) \| \le 10^{-3}$  \newline 
+\unix{-snes\_stol 1.0e-3} : stops if $\| \delta x \| \le 10^{-3} \| x_{k+1} \|$ \newline
+\unix{-snes\_max\_it 30} : stops if 30 non-linear iterations occur \newline
+\unix{-snes\_max\_funcs 30} : stops if 30 non-linear residual evaluations occur \newline
+
+\subsubsection{Linearized Stokes solve}
+\unix{-ksp\_rtol 1.0e-3} : stops if $\| J_k \delta x + F_k \| \le 10^{-3} \| J_0 \delta x + F_0 \|$ \newline
+\unix{-ksp\_atol 1.0e-3} : stops if $\| J_k \delta x + F_k  \| \le 10^{-3}$  \newline 
+\unix{-ksp\_max\_it 30} : stops if 30 Stokes iterations occur \newline
+
+\subsubsection{Viscous block solve}
+\unix{-fieldsplit\_u\_ksp\_rtol 1.0e-3} : stops if $\| A u_k - b \| \le 10^{-3} \| A u_k - b \|$ \newline
+\unix{-fieldsplit\_u\_ksp\_atol 1.0e-3} : stops if $\| A u_k - b  \| \le 10^{-3}$  \newline 
+\unix{-fieldsplit\_u\_ksp\_max\_it 30} : stops if 30 viscous block iterations occur \newline
+
+
+
+\subsection{Multi-grid sequencing}
+The number of multi-grid levels is set via the option:
+\shellcmd{-dau\_nlevels X}
+If $X = 3$, this will imply that the mesh specified via \unix{-mx 16 -my 16 -mz 16} will be coarsened twice, resulting (by default) in a mesh sequence with the number of elements $M_x = 16$ (fine), $M_x = 8$ and $M_x = 4$ (coarse). For clarity, level 0 is designated as the ``coarsest'' level, and level $X-1$ is designated as the ``finest'' level.
+\\[8pt]
+%%	
+Meshes can be coarsened by a constant factor on each level, or one can control the coarsening factor level-by level.
+In both cases, the coarsening applied is dependent on the coordinate direction $(i,j,k)$. 
+To define constant coarsening on every level, but varying in each direction, use the options 
+\unix{-da\_refine\_x}, \unix{-da\_refine\_y}, and \unix{-da\_refine\_z}, for example
+\shellcmd{-da\_refine\_x 4\\
+\indent\indent\texttt{\hspace{5mm}}-da\_refine\_y 2 \\
+\indent\indent\texttt{\hspace{5mm}}-da\_refine\_z 1}
+Note that different coarsening can be specified in each direction - here denoted via \unix{x},\unix{y},\unix{z} in the refinement command line option.
+Also note that a refinement factor of 1 implies that mesh will not be coarsened in that direction. 
+\\[8pt]
+%%	
+To define level specific coarsening, use the options 
+\unix{-stk\_velocity\_da\_refine\_hierarchy\_x}, 
+\unix{-stk\_velocity\_da\_refine\_hierarchy\_y}, and
+\unix{-stk\_velocity\_da\_refine\_hierarchy\_z}, for example
+\shellcmd{-stk\_velocity\_da\_refine\_hierarchy\_x 4,1}
+The integer parameters are listed from coarse to fine levels (left to right). 
+The above options will result result in the following hierarchy in the $x$ direction (from coarse to fine), $M_x = \{ 4, 16, 16 \}$.
+Note that if you have $X$ levels, you are only required to specify $X-1$ values to define the coarsening hierarchy. 
+\\[8pt]
+%%	
+Note that when using geometric multi-grid, all levels are spatial decomposed across all cores. Furthermore, it is required that every core contains at least one element. Thus, the total number of cores used to run a {\ptat} job must not exceed the number of elements within the coarse grid. If you require additional levels in your multi-grid hierarchy, you may
+\begin{itemize}
+  \item an algebraic multi-grid preconditioner as your coarse grid preconditioner, or
+  \item use \PETSc{}'s \href{https://www.mcs.anl.gov/petsc-current/docs/manualpages/PC/PCTELESCOPE.html}{\texttt{PCTELESCOPE}} to reduce the number of processors in the coarse grid communicator.
+\end{itemize}
+% TODO check PCTELESCOPE link above
+
+\subsection{Coarse grid operators}
+Within {\ptat}, the style of coarse grid operator can be configured at run time. 
+We provide support to enable four types of coarse grid operator; $\{$ assembled re-discretised = 0, matrix-free re-discretised = 1, Galerkin = 2, matrix-free Galerkin = 3 $\}$. 
+Re-discretised operators imply that the viscosity is projected through the mesh hierarchy and the finite element operators are re-evaluated using the standard FE weak form defined on the fine level. 
+Galerkin coarsening implies that the coarse grid operator at level $k$ $A_k$ is defined via $A_k = R^T A_{k+1} R$, where $R$ is the restriction operator for level $k+1$ to $k$. 
+To define the triple matrix product required by the a Galerkin operator definition on level $k$, it is require that the operator on level $k+1$ be assembled, i.e. be of either type $\{$ assembled re-discretised = 0, Galerkin = 2 $\}$. Configuration of the coarse grid operator type is define via the option \shellcmd{-A11\_operator\_type}, for example
+\shellcmd{-A11\_operator\_type 2,2,0,1}
+where valid indices are $\{ 0, 1, 2, 3 \}$ and operators on each level are specified from coarse to fine (left to right).
+
+\subsection{Multi-grid performance profiling}
+To activate monitors which report CPU times on each multi-grid level, one must specify the following options
+\shellcmd{-dau\_nlevels X -fieldsplit\_u\_pc\_type mg -fieldsplit\_u\_pc\_mg\_levels X -fieldsplit\_u\_pc\_mg\_log -log\_summary}
+Note that if the values for \unix{-dau\_nlevels X} and \unix{-fieldsplit\_u\_pc\_mg\_levels X} do not match, logging will not be performed.
+
+
+\subsection{Understanding residuals}
+
+When solving linear problems, two types of residuals are important to monitor for both accuracy of the Stokes problem and efficiency of the solver.
+By default, all drivers report the Stokes residuals for the individual components of the residual associated with the $u,v,w$-momentum equations and the continuity equation. The complete residual associated with the residual of the full vector $(u,v,w,p)$ can be monitored using the flag
+\shellcmd{-ksp\_monitor}
+\\[8pt]
+%%	
+The residuals output to the screen will typically look like the following:
+\begingroup
+    \fontsize{6.5pt}{6.5pt}\selectfont
+	\begin{verbatim}
+  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 2.307691625955e-03, 0.000000000000e+00, 0.000000000000e+00 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.000000000000e+00 
+        1 KSP Residual norm 9.566218971472e-01 
+        2 KSP Residual norm 6.120179419948e-01 
+        3 KSP Residual norm 2.693954462485e-01 
+        4 KSP Residual norm 7.305148723409e-02 
+        5 KSP Residual norm 2.484961341074e-02 
+        6 KSP Residual norm 7.872576358279e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.931850895378e-07, 2.249650371310e-03, 1.931669353791e-07, 3.613480131486e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 9.383540923375e-01 
+        1 KSP Residual norm 2.353199854638e-01 
+        2 KSP Residual norm 6.233285019473e-02 
+        3 KSP Residual norm 2.466199083002e-02 
+        4 KSP Residual norm 6.082964600394e-03 
+  2 KSP Component U,V,W,P residual norm [ 2.862389390637e-05, 9.461315464033e-04, 2.873233657833e-05, 1.128984116051e-03 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.461862868221e+01 
+        1 KSP Residual norm 6.787824394358e-01 
+        2 KSP Residual norm 1.306125161069e-01 
+  3 KSP Component U,V,W,P residual norm [ 1.614279704240e-04, 4.795734857592e-04, 1.613914106944e-04, 8.488885268501e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 3.614067424860e+01 
+        1 KSP Residual norm 1.727513541857e+00 
+        2 KSP Residual norm 1.701193913599e-01 
+  4 KSP Component U,V,W,P residual norm [ 1.182053444264e-04, 2.177408865879e-04, 1.181950335293e-04, 3.963394470286e-04 ]
+	\end{verbatim}
+\endgroup
+The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the residuals of the Stokes problem, whilst the shorter lines under each instance of ``{\tt Residual norms for fieldsplit\_u\_ solve.}'' relate to the viscous block solver which is performed as the Stokes preconditioner is applied.
+
+\subsection{Trouble shooting convergence problems}
+
+\subsubsection*{Convergence failure of Stokes solver}
+\begin{enumerate}
+	%%%%%%%%%%%%
+	\item \emph{Elements possess a high aspect ratio (AR)}. When using $Q_2$-$P_1$ elements, the inf-sup constant increases with increasing AR. Possible fixes: (1) Strengthen the Schur complement preconditioner. This could be achieved by \unix{-fieldsplit\_p\_pc\_type lu}, or switching to use an approximate form  of $S = B^T A^{-1} B$ via say one application of a Krylov method preconditioned with the scaled lumped mass matrix. Increasing the strength of the Schur complement preconditioner can be achieved by making the solve on $A^{-1}$ more accurate and making the solve on $S$ more accurate; (2) modify the element resolution to make AR $< 10$.
+	%%%%%%%%%%%%
+	\item \emph{Convergence failure of the viscous block}. This can be diagnosed by running with these options; \unix{-fieldsplit\_u\_ksp\_monitor\_true\_residual -fieldsplit\_u\_ksp\_converged\_reason}. See below for more information.
+	%%%%%%%%%%%%
+\end{enumerate}
+
+
+\subsubsection*{Convergence failure of viscous block}
+\begin{enumerate}
+	%%%%%%%%%%%%
+	\item \emph{MG smoother is not strong enough}. Possible fixes: 
+	(1) Increase the number of smoothing applications via \unix{-fieldsplit\_u\_mg\_levels\_ksp\_max\_it}; 
+	(2) completely re-configure the smoother for example try \unix{-fieldsplit\_u\_mg\_levels\_ksp\_type fgmres -fieldsplit\_u\_mg\_levels\_ksp\_max\_it 4 -fieldsplit\_u\_mg\_levels\_pc\_type bjacobi}. Not that this will require assembling the coarse grid operators; 
+	(3) Use more robust coarse grid operators, e.g. assemble some levels and use Galerkin coarsening on the coarser levels;
+	(4) Use less levels, or try aggressive coarsening.
+	%%%%%%%%%%%%
+	\item \emph{MG coarse grid solver fails to converge}. 
+	This can be diagnosed by running with these options; \
+	\unix{-fieldsplit\_u\_mg\_coarse\_ksp\_monitor\_true\_residual -fieldsplit\_u\_mg\_coarse\_ksp\_converged\_reason}.
+	Possible fixes: (1) Improve the coarse grid solver. See below for more details.
+	%%%%%%%%%%%%
+\end{enumerate}
+
+
+\subsubsection*{Convergence failure of viscous block, GMG coarse grid solver}
+\begin{enumerate}
+	%%%%%%%%%%%%
+	\item \emph{MG coarse grid preconditioner isn't strong enough}. Possible fixes: 
+	(1) Use algebraic multigrid (ML, Hypre) as a preconditioner; 
+	(2) Use heavy sub-domain preconditioners, e.g. \unix{-fieldsplit\_u\_mg\_coarse\_pc\_type asm -fieldsplit\_u\_mg\_coarse\_pc\_asm\_overlap 2 
+	-fieldsplit\_u\_mg\_coarse\_sub\_pc\_type ilu -fieldsplit\_u\_mg\_coarse\_sub\_pc\_factor\_levels 2};
+	(3) Try using a semi-redundant approach where you accumulate the coarse grid problem on a sub-set of cores and use stronger sub-domain preconditioners.
+	%%%%%%%%%%%%
+\end{enumerate}
+
+\subsubsection*{Convergence failure of non-linear Stokes solver}
+\begin{enumerate}
+	%%%%%%%%%%%%
+	\item \emph{Coming soon\dots}.
+	%%%%%%%%%%%%
+\end{enumerate}
+
+\subsection{Using optimized operators}
+\ptat{} should automatically use optimized kernels for matrix-free application of the operators $A$ and $B$ in Equations \ref{eq:discretelinearstokes} and \ref{eq:discretelinearstokes_pc}. Additional control over the $A$ operator (also known as the viscous block or the $A_{11}$ operator)is achieved with a command line flag
+\begin{lstlisting}
+-a11_op <ref,tensor,avx,opencl,cuda,subrepart>
+\end{lstlisting}
+The default is \texttt{avx} if your compiler detects that AVX is available, and otherwise \texttt{tensor}. See the initial \ptat{} output for a note about whether or not AVX was detected. Note that you may need to provide a special compiler flag in \texttt{makefile.arch}, such as \texttt{-march=native}, to enable AVX.
+
+\texttt{opencl} and \texttt{cuda} kernels require that you have configured \ptat{} to use \OpenCL{} and \CUDA{}, respectively; see Section \ref{sec:gpusupport}. Note that these kernels assume one GPU per rank.
+
+If you have AVX, \CUDA{}, and MPI-3 shared memory constructs \footnote{In particular, a working \lstinline{MPI_Comm_split_type()}} available, you can use \texttt{-a11\_op subrepart}, which uses the \CUDA{} and AVX kernels simultaneously, assuming $1$ GPU per shared-memory domain. It requires specification of a parameter describing what fraction of the work (local elements) to allocate to the GPU,  
+\begin{lstlisting}
+-subrepart_frac <value 0-1>
+\end{lstlisting}
+This value should be tuned until good load balance is achieved between the single rank per node which uses the GPU, and the others which use only the CPU. Good balanced is achieved when a time ``ratio'' value of $1.0$ is observed in the \PETSc{} logs in the \texttt{MatMultMFA11\_sub} row.
+
+You may also experiment with using more than one \OpenMP{} (hyper)thread per rank.
+
+\section{Geometry}
+
+\subsection{Modelling domain}
+The underlying coordinate system used in {\ptat} is Cartesian. In Fig.~\ref{fig:domain_coord} we identify the face labels used.
+\begin{figure} [hbtp]
+\center
+\includegraphics[height=0.4\textheight]{figs/pt3d_coordinate_system.pdf}
+\caption[\itshape ]
+{\itshape Natural coordinate system used by the physical domain $\Omega$ in {\ptat}. Labels indicate various names given by different structures functionality.}
+\label{fig:domain_coord}
+\end{figure}
+
+\begin{figure} [hbtp]
+\center
+\includegraphics[height=0.4\textheight]{figs/pt3d_basis_functions.pdf}
+\caption[\itshape ]
+{\itshape Nomenclature and basis function ordering for the volume and surface basis functions. $\xi, \eta, \zeta$ are the spatial coordinates in local element coordinate system. The notation $\xi^{+}, \xi^{-}$ indicates faces along which $\xi = 1, \xi = -1$ respectively. The convention associated with defining outward pointing surface normals $(\boldsymbol n)$ and the two tangent vectors to the surface $(\boldsymbol t_1,\boldsymbol t_2)$ are indicated.}
+\label{fig:basis_functions}
+\end{figure}
+
+%\subsection{Defining mesh geometry}
+
+%\subsection{Defining geometric regions on material points}
+
+% ----------------------------------------------------------------------------------------------------
+\section{Building Models}
+
+\subsection{Code structure}
+The idea we have for building models is that models should be separated as much as possible
+from the core functionality of {\ptat}. That is, we want to separate boundary conditions,
+mesh geometry, etc. as much as possible from the solver used to solve the underlying PDE (Stokes).
+\\[8pt]
+%%
+For this reason, we have adopted a code structure in which models are compiled and combined into
+a separate, stand alone library. When using a {\ptat{ driver (a program which solves something),
+we link the model library against the solver library.
+\\[8pt]
+%%
+Models live under the directory
+	\shellcmd{ptatin3d/src/models/}
+and the models are compiled into the static library \unix{libptatin3dmodels.a}
+An example model called ``template'' is provided in \unix{src/models}.
+\\[8pt]
+%%	
+% TODO: update if/once new model generator is added, and/or for dynamic model registration
+To add a model, you need to add the path to and the filename of \textit{all files within your model directory} into the file
+\begin{lstlisting}
+	ptatin3d/src/models/local.mk
+\end{lstlisting}
+A typical snippet of this file is shown below.
+Your files should replace the string \texttt{<new\_model\_files>}.
+\begin{lstlisting}
+# ptatin3d/src/models/local.mk
+libptatin3dmodels-y.c += $(call thisdir, \
+  ptatin_models_reg.c \
+  template/model_ops_template.c \
+  <new_model_files> \
+ )
+\end{lstlisting}
+%%
+\textbf{Importantly, all lines must end with forward slash character} ($\slash$).
+
+Within the directory
+	\shellcmd{ptatin3d/src/models/template}
+are the files which define any specific data structures needed for the model,
+	(\unix{model\_template\_ctx.h})
+and a file (\unix{model\_ops\_template.c}) containing a complete (yet empty) model description.
+A ``model'' description in {\ptat} consists of defining the following operations.
+% TODO: update with any new operations (added to allow for full checkpointing)
+\begin{enumerate}
+	\item \unix{FP\_pTatinModel\_Initialize} (non essential)
+	Initialize any model specific options, and or model specific parameters in your user defined model context.
+
+	\item \unix{FP\_pTatinModel\_ApplyBoundaryCondition}
+	Define boundary conditions for the PDE (Stokes, energy).
+
+	\item \unix{FP\_pTatinModel\_ApplyBoundaryConditionMG}
+	Define boundary conditions for velocity on each multi-grid level.
+
+	\item \unix{FP\_pTatinModel\_ApplyMaterialBoundaryCondition} (non essential)
+	Define the influx of material points if you have prescribed boundary conditions for velocity which are such that $\boldsymbol u \cdot \boldsymbol n < 0$ (e.g. inflow boundary conditions).
+
+	\item \unix{FP\_pTatinModel\_ApplyInitialSolution} (non essential for Stokes)
+	Define initial values in the velocity, pressure (non essential) and temperature (essential) vectors. For the Stokes variables ($\boldsymbol u,p$), specifying an initial value may improve convergence of the Stokes solve on the first time step (e.g. by introducing a hydrostatic pressure gradient in the pressure vector).
+	
+	\item \unix{FP\_pTatinModel\_ApplyInitialMeshGeometry}
+	Define the geometry of the mesh. Typically this is done simply by described a hexahedral domain via the {\PETSc} function \unix{DMDASetUniformCoordinates()}.
+
+	\item \unix{FP\_pTatinModel\_ApplyInitialMaterialGeometry}
+	Define the initial geometry of the lithology on the markers. (e.g. specify rheology)
+
+	\item \unix{FP\_pTatinModel\_UpdateMeshGeometry} (non essential)
+	Define how the mesh should evolve with time. In some models the mesh remains fixed in space through out time, thus this function need not be defined. Other models may wish to deform the mesh with the velocity vector, or may wish to advect the free surface and then apply remeshing within the interior of the domain. Such prescription of ALE mesh movement should be specified here.
+
+	\item \unix{FP\_pTatinModel\_Output} (non essential)
+	Specify what mesh fields (e.g. velocity, pressure, temperature) and marker fields will be outputted. Numerous
+	methods to output objects from {\ptat} are provided. Any model specific output functions should be called here.
+
+	\item \unix{FP\_pTatinModel\_Destroy} 
+	Upon completion of a {\ptat} job, this function will be called to release the memory allocated which is associated 
+	with this particular model. If no data structures were defined, then this function does not need to be defined.
+\end{enumerate}
+
+Following the definition of the above functions, to complete the model definition we have to perform the following steps :
+\begin{enumerate}
+	\item \unix{pTatinModelCreate()}
+Calling this creates a little structure to hold your function pointers and other model related information.
+
+	\item \unix{pTatinModelSetName(...,MODELNAME);}
+The variable in \unix{MODELNAME}, will used as the command line argument used to select the model
+	\unix{-ptatin\_model MODELNAME}
+
+	\item \unix{pTatinModelSetUserData()}
+Set any data structures required by the model.
+
+	\item Assign the function pointers. This is done via \unix{pTatinModelSetFunctionPointer()}.
+The second argument indicates which function pointer is used. These are defined via
+\unix{typedef enum \{ \} pTatinModelOperation;}
+and are declared in 
+\unix{ptatin\_models.h}
+To assign the operations which your model will perform, a helper function (\unix{pTatinModelSetFunctionPointer()}) is provided.
+Example usage:
+\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_BC,my\_apply\_bc\_function);}
+\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_INIT\_MAT\_GEOM,my\_apply\_init\_material\_geom\_function);} %line overrun
+
+	\item Register the model via the call
+\unix{pTatinModelRegister()}
+This will add your model definition into a list which {\ptat} will have access to.
+Steps 1-5 are provided within the function \unix{pTatinModelRegister\_Template()}.
+
+	\item Finally, you need to edit
+	\unix{ptatin\_models\_reg.c}
+and add the function call to register your model.
+This should be done within
+		\unix{pTatinModelRegisterAll()}
+as you'll note, you will see the ``template'' model registration function 	
+		\unix{pTatinModelRegister\_Template();}
+
+So you don't have the compiler warning about ``implicitly defined function'', simply add the prototype as an \unix{extern}, e.g.
+	\shellcmd{extern PetscErrorCode pTatinModelRegister\_Template(void);}
+\end{enumerate}
+
+\subsection{Compiling your model}
+Models must be compiled at the root level of the {\ptat}.
+That is, to make a model, you must run ``make all'' from 
+	\unix{ptatin3d}
+You \textit{should not} run make from within the model directory
+	\unix{ptatin3d/src/models}
+or
+	\unix{ptatin3d/src}
+or
+	\unix{ptatin3d/src/models/template}.
+%If you only want to compile the models within
+%	\unix{ptatin3d/src/models},
+%then execute the following command
+%	\unix{make models}
+%from the directory
+%	\unix{ptatin3d/src}.
+
+\subsection{Implementing Dirichlet boundary conditions}
+{\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to set boundary and initial conditions into the data structures and solution vectors used by {\ptat} without requiring the user to see the underlying data structures used, or understand parallelism.
+\\[8pt]
+%%
+% TODO: switch to using proper listings?
+To apply boundary conditions, the main function used is:
+\shellcmd{PetscErrorCode DMDABCListTraverse3d( \newline
+  BCList list, \\
+  DM da, \\
+  DMDABCListConstraintLoc doflocation, \\
+  PetscInt dof\_idx, \\
+  PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*), \\
+  void *ctx)} 
+which is declared in \unix{dmda\_bcs.c}, where the input arguments are identified as;
+\begin{itemize}
+%%
+\item[] \unix{BCList list} - data structure used to store boundary conditions.
+%%
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
+%%
+\item[] \unix{DMDABCListConstraintLoc doflocation} - index identifying which region of the mesh you wish to attach a boundary condition to. The value used here should be one of 
+	\{ \unix{DMDABCList\_INTERIOR\_LOC, 
+	DMDABCList\_IMIN\_LOC,
+	DMDABCList\_IMAX\_LOC,
+	DMDABCList\_JMIN\_LOC,
+	DMDABCList\_JMAX\_LOC,
+	DMDABCList\_KMIN\_LOC,
+	DMDABCList\_KMAX\_LOC} \}.
+Refer to Fig.~\ref{fig:domain_coord} for the geometric interpretation of these names.
+%%
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
+%%
+\item[] \unix{PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition.
+%%
+\item[] \unix{void *ctx} - any data structure, or parameters which are required by the user provided function to evaluate the boundary condition.
+%%
+\end{itemize}
+
+The calling sequence for \unix{evaluate\_boundary\_condition} is,
+\shellcmd{PetscBool evaluate\_boundary\_condition( PetscScalar position[], PetscScalar *value, void *ctx )}
+where the arguments are;
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the boundary condition is evaluated.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the actual value of the boundary condition [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the boundary condition should be applied at this location [OUTPUT].
+\end{itemize}
+For a simple example of a user defined boundary condition function, refer to 
+\shellcmd{PetscBool BCListEvaluator\_constant(PetscScalar position[],PetscScalar *value,void *ctx)}
+in file \unix{dmda\_bcs.c}.
+\\[8pt]
+%%	
+A standard set of velocity Dirichlet boundary conditions for Stokes are defined in \unix{ptatin\_std\_dirichlet\_boundary\_conditions.c}. Please refer to  \unix{ptatin\_std\_dirichlet\_boundary\_conditions.h} for a summary of the functions available.
+
+
+
+
+Notes: 
+\begin{enumerate}
+\item Boundary conditions can be applied within the interior of the domain using the value \unix{DMDABCList\_INTERIOR\_LOC}.
+\item Boundary conditions do not have to be applied along an entire face. Prescribing boundary conditions internal to a face is controlled by whether your user provided function returns  \unix{PETSC\_TRUE} or \unix{PETSC\_FALSE}. For example, if the bc evaluator was called with the argument \unix{DMDABCList\_IMIN\_LOC} we will traverse along the bottom boundary. The user defined function could return  \unix{PETSC\_TRUE} if $x < 0.5$ and \unix{PETSC\_FALSE} otherwise. When \unix{PETSC\_FALSE} is returned the parameter \unix{PetscScalar *value} is ignored.
+\item When defining time dependent boundary conditions, the variable time should be included within the user defined structured (\unix{void *ctx}) which is passed into \unix{DMDABCListTraverse3d()}.
+\end{enumerate}
+
+\subsection{Implementing initial conditions}
+Iterators are provided to allow to define the contents of {\PETSc} vectors via user defined functions. This is particularly useful to define initial conditions, e.g. for the temperature field. The procedure is similar to that used to define boundary conditions described above. The two iterators used to fill in values within a vector are \unix{DMDAVecTraverse3d} and \unix{DMDAVecTraverseIJK} which are declared in \unix{dmda\_iterator.c}. Below we describe the calling pattern of these two functions.
+\\[8pt]
+%%	
+The standard vector iterator is given by
+% TODO: switch to using proper listings?
+\shellcmd{PetscErrorCode DMDAVecTraverse3d( \newline
+  DM da, \\
+  Vec X, \\
+  PetscInt dof\_idx, \\
+  PetscBool (*evaluate\_function)(PetscScalar*,PetscScalar*,void*), \\
+  void *ctx),} 
+ where the input arguments are identified as;
+\begin{itemize}
+%%
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
+%%
+\item[] \unix{Vec X} - {\PETSc} vector into which you want to insert values (e.g. velocity).
+%%
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
+%%
+\item[] \unix{PetscBool (*evaluate\_function)(PetscScalar*,PetscScalar*,void*)} - the user provided function.
+%%
+\item[] \unix{void *ctx} - any data structure or parameters which are required to evaluate the the user provided function.
+%%
+\end{itemize}
+The calling sequence for \unix{evaluate\_function} is,
+\shellcmd{PetscBool evaluate\_function( PetscScalar position[], PetscScalar *value, void *ctx )}
+where the arguments are
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the user defined function will be evaluated.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the result of the user provided function [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the value should be inserted into the vector [OUTPUT].
+\end{itemize}
+%
+%
+%\shellcmd{PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof\_idx,PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*),void *ctx)}
+%
+%
+
+The standard $ijk$ vector iterator is given by
+\shellcmd{PetscErrorCode DMDAVecTraverseIJK( \newline
+  DM da, \\
+  Vec X, \\
+  PetscInt dof\_idx, \\
+  PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*), \\
+  void *ctx),} 
+ where the input arguments are identified as;
+\begin{itemize}
+%%
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
+%%
+\item[] \unix{Vec X} - {\PETSc} vector into which you want to insert values (e.g. velocity).
+%%
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
+%%
+\item[] \unix{PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*)} - the user provided function.
+%%
+\item[] \unix{void *ctx} - any data structure or parameters which are required to evaluate the the user provided function.
+%%
+\end{itemize}
+The calling sequence for \unix{evaluate\_functionIJK} is,
+\shellcmd{PetscBool evaluate\_functionIJK( PetscScalar position[], PetscInt global\_index[], PetscInt local\_index[], PetscScalar *value, void *ctx )}
+where the arguments are
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the user defined function will be evaluated.
+\item[] \unix{PetscInt global\_index[]} - $i,j,k$ values of the node in the global numbering system.
+\item[] \unix{PetscInt local\_index[]} - $i,j,k$ values of the node in the local numbering system.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the result of the user provided function [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the value should be inserted into the vector [OUTPUT].
+\end{itemize}
+
+% ----------------------------------------------------------------------------------------------------
+
+\section{Passive Swarms}
+\subsection{Introduction}
+
+The PSwarm object provides a convenient way to track deformation and other quantities of interest (e.g. temperature)
+at discrete locations in the model domain. 
+The PSwarm object defines a ``passive swarm'', a set of discrete particles with no assumed connectivity to
+any other particle in the swarm. The particles are contained within the model domain and do not influence the flow field, 
+or interact with each other (hence the usage of the word passive).
+
+\subsection{Defining passive swarms} \label{sec:def_pswarm}
+A single passive swarm can be created with the following code
+\begin{lstlisting}
+PSwarm pswarm;
+
+PSwarmCreate(PETSC_COMM_WORLD,&pswarm);
+\end{lstlisting}
+
+Any arbitrary number of passive swarms can be created at run-time with the following code: 
+\begin{lstlisting}
+PSwarm *pswarm_array;
+
+PSwarmCreateMultipleInstances(PETSC_COMM_WORLD,&pswarm_array);
+\end{lstlisting}
+together with the the command line option
+\begin{lstlisting}
+	-pswarm_list xx,yy
+\end{lstlisting}	
+where \texttt{xx} and \texttt{yy} define the unique names you wish to assign to each passive swarm.
+In this example, since two names are provided, two passive swarms are created.
+If the option \texttt{-pswarm\_list} was not found, \texttt{pswarm\_array} will be returned as an array of NULL pointers.
+
+\subsection{Options}
+The definition and behaviour of the PSwarm object is configurable at run-time via command line options.
+When only a single PSwarm object is created, a unique name is not required to identify the PSwarm.
+In this case, all options take take the form
+\begin{lstlisting}
+-pswarm_<OPTION_NAME> <VALUE>
+\end{lstlisting}
+When multiple PSwarm objects have been defined, the options will be denoted via
+\begin{lstlisting}
+-###_pswarm_<OPTION_NAME> <VALUE>
+\end{lstlisting}
+where \texttt{\#\#\#} is be the name used to identify each passive swarm (see Section \ref{sec:def_pswarm})
+
+For the options to take effect, one is required to call
+\begin{lstlisting}
+    PSwarmSetFromOptions(pswarm);
+\end{lstlisting}
+An example of how to create and traverse through multiple PSwarm objects is shown below.
+\begin{lstlisting}
+PSwarm *pswarm_array, *pswarm;
+
+PSwarmCreateMultipleInstances(PETSC_COMM_WORLD,&pswarm_array);
+pswarm = &pswarm_array[0];
+while (*pswarm && pswarm_array) {
+  PSwarmSetFromOptions(*pswarm);
+  pswarm++;
+}
+\end{lstlisting}
+
+
+
+\subsection{Defining initial coordinates}
+
+Several choices are possible to define the initial coordinates of the points in each passive swarm.
+The method used to define the coordinate is controlled via the command line argument
+\begin{lstlisting}
+-###_pswarm_coord_layout
+\end{lstlisting}
+
+Valid choices for \texttt{-\#\#\#\_pswarm\_coord\_layout} are \texttt{1}, \texttt{2}, \texttt{3}
+The default value is \texttt{1}.
+The methods of defining the coordinates are described below
+
+%\subsubsection{Filling the velocity mesh ( \texttt{-\#\#\#\_pswarm\_coord\_layout 0})}
+%Needs to be re-factored
+
+\subsubsection{Filling a sub-set of the velocity mesh ( \texttt{-\#\#\#\_pswarm\_coord\_layout 1})}
+
+Within each Q2 element, the user can define a number of points in each $i,j,k$ direction via
+\begin{lstlisting}
+-###_pswarm_lattice_nx 3,4,5
+\end{lstlisting}
+
+By default, all elements are filled with points.
+If desired, a box shaped clipping mask can be applied. Points located within the box are kept
+whilst all other points are ignored. The dimensions of the box are defined via
+\begin{lstlisting}
+-###_pswarm_lattice_min 0.0,0.0,0.0
+-###_pswarm_lattice_max 1.0,2.0,3.0
+\end{lstlisting}
+
+Options example:
+\begin{lstlisting}
+-###_pswarm_coord_layout 1
+-###_pswarm_lattice_nx 3,4,5
+-###_pswarm_lattice_min 0.0,0.0,0.0
+-###_pswarm_lattice_max 1.0,2.0,3.0
+\end{lstlisting}
+
+Note that in general, this point creation method does not allow you to precisely control the total number of points which
+will exists within the passive swarm as it depends on the resolution of the finite element mesh.
+
+\subsubsection{Filling a box ( \texttt{-\#\#\#\_pswarm\_coord\_layout 2)}}
+
+This method allows you to define a box geometry with a fixed number of points in each $i,j,k$ direction.
+
+Options example:
+\begin{lstlisting}
+-###_pswarm_coord_layout 2
+-###_pswarm_box_nx 3,4,5
+-###_pswarm_box_min 0.3,0.4,0.5
+-###_pswarm_box_max 0.6,0.8,1.0
+\end{lstlisting}
+
+The above defines a domain $[0.3,0.6] \times [0.4,0.8] \times [0.5,1.0]$ and fills this domain with $3$ points in the $x$- direction, and $4,5$ points in the $y$-, $z$- directions respectively. The number of points specified in each direction must be greater than $1$. 
+\textbf{Note: this design limitation could be easily fixed.} 
+Point coordinates generated which reside outside the background finite element mesh are ignored and not included within the passive swarm.
+
+\subsubsection{Using a user defined coordinate list ( \texttt{-\#\#\#\_pswarm\_coord\_layout 3})}
+
+This method allows you to exactly specify the initial location of the passive swarm points by providing
+a list of $x$, $y$ and $z$ coordinates.
+
+Options example:
+\begin{lstlisting}
+-###_pswarm_coord_layout 3
+-###_pswarm_coor_n 4
+-###_pswarm_coor_x 0.4,0.6,0.4,0.6
+-###_pswarm_coor_y 0.1,0.1,0.3,0.3
+-###_pswarm_coor_z 0.5,0.5,0.5,0.5
+\end{lstlisting}
+will define 4 particles with the coordinates $(0.4,0.1,0.5)$ , $(0.6,0.1,0.5)$ , $(0.4,0.3,0.5)$ and $(0.6,0.3,0.5)$.
+Point coordinates specified which reside outside the background finite element mesh are ignored and not included within the passive swarm.
+
+\subsection{Visualisation}
+
+Assuming we have a PSwarm declared as follows
+\begin{lstlisting}
+PSwarm pswarm;
+\end{lstlisting}
+and where \texttt{slab} defines the unique names assigned to each passive swarm.
+
+Calling the viewer function
+\begin{lstlisting}
+PSwarmViewInfo(pswarm); 
+\end{lstlisting}
+will report meta-data about your swarm to stdout.
+Calling 
+\begin{lstlisting}
+PSwarmView(pswarm,PSW_VT_SINGLETON);
+\end{lstlisting}
+will create a single VTU file across all MPI-rank in the given communicator. 
+Given that passive swarms may be sparsely distributed throughout the finite element mesh,
+this output generation style is preferred (even though it may not be the fastest approach).
+This method will generate the following output:
+\begin{itemize}
+\item \texttt{timeseries\_slab\_pswarm.pvd}
+\item \texttt{step****/step****\_slab\_pswarm.vtu}
+\end{itemize}
+Lastly, setting the last arg to the value \texttt{PSW\_VT\_PERRANK}, e.g.
+\begin{lstlisting}
+PSwarmView(pswarm,PSW_VT_PERRANK);
+\end{lstlisting}
+will create a VTU file per MPI-rank. 
+This method will generate the following output:
+\begin{itemize}
+\item \texttt{timeseries\_slab\_pswarm.pvd}
+\item \texttt{step****/step****\_slab\_pswarm-subdomain00000.vtu}
+\item \texttt{step****/step****\_slab\_pswarm.pvtu}
+\end{itemize}
+
+
+
+
+\subsection{Defining the transport mode}
+
+Passive swarms can be defined to remain stationary over time, or to be advected with the fluid velocity.
+We refer to this choice as a ``transport mode''. By default, all passive swarms are assumed to utilize a
+Lagrangian transport mode (e.g. they move with the fluid velocity). If you require swarms to be stationary,
+use the command line option
+\begin{lstlisting}
+-###_pswarm_transport_mode_eulerian
+\end{lstlisting}
+
+\subsection{Defining the field update methods}
+
+A number of quantities can optionally be computed, or updated on each passive swarm. 
+For example we can compute the pressure, temperature or track the finite strain. 
+Such tasks are referred to as ``field update'' methods. By default, swarms do not have
+any field update methods specified.
+
+On any given swarm, the user may request any number of field update methods be applied. 
+For instance, swarm ``xx'' may have no field updates specified, whilst swarm ``yy'' may be
+asked to track pressure and finite strain. This would be invoked via the following command
+line arguments:
+\begin{lstlisting}
+-yy_pswarm_field_update_pressure
+-yy_pswarm_field_update_finite_strain
+\end{lstlisting}
+
+\textbf{NOTE: Only a field update method for pressure is implemented}
+
+\subsection{Defining the region index of a passive swarm}
+
+For convenience, we optionally allow users to set a region index on all points within a passive swarm.
+This is achieved via the command line option
+\begin{lstlisting} 
+-###_pswarm_region_index 3
+\end{lstlisting}
+which would assign a region index of 3 to each point in this passive swarm. 
+The default region index is set to 0.
+
+\subsection{Post-processing finite strain}
+A simple recipe to post-process finite strain is described below.
+Here will define an initial set of points within a box, and track the deformation of the box over time.
+
+The script requires ParaView, and furthermore the build of ParaView must have Python support enabled.
+We will be using the python wrapper provided by ParaView called {\tt pvpython}.
+For binary builds on OSX, this can be located here:
+\begin{lstlisting}
+/Applications/paraview.app/Contents/bin/pvpython
+\end{lstlisting}
+
+\subsubsection*{Procedure}
+\begin{enumerate}
+
+\item Use the coordinate layout option
+\begin{lstlisting}
+-pswarm_coord_layout 2
+\end{lstlisting}
+Upon executing of the PSwarm coordinate generation code, the following file will be created in your output directory
+\begin{lstlisting}
+deformation_grid_ref.vts
+\end{lstlisting}
+
+\item Within your model output function, call either
+\texttt{PSwarmView(pswarm,PSW\_VT\_SINGLETON)}
+or
+\texttt{PSwarmView(pswarm,PSW\_VT\_PERRANK)}
+to generate snapshots of the passive swarm.
+
+\item To generate a deformation grid for a given time step, you need to execute the following script
+\begin{lstlisting}
+pvpython utils/python-post-proc/extract-dgrid.py \
+  -i path/to/inputfile.vtu \
+  -b path/to/deformation_grid_ref.vts \
+  -o outfilename.vts
+\end{lstlisting}
+The file created {\tt outfilename.vts}, contains a hex-mesh representation of your deformed box which can be loaded and rendered by ParaView.
+\end{enumerate}
+
+In step 3., the file specified by the \texttt{-i} must be a vtu file and not a pvtu file.
+Either format can be generated by PSwarm object (e.g. \texttt{PSW\_VT\_SINGLETON} vs. \texttt{PSW\_VT\_PERRANK}).
+A script is provided to convert a pvtu file associated with your passive swarm into a vtu file.
+To do this, use
+\begin{lstlisting}
+pvpython utils/filters/convert_pvtu2vtu.py \
+  -i path/to/inputfile.pvtu
+\end{lstlisting}
+
+This will create the following file
+\begin{lstlisting}
+path/to/inputfile.vtu
+\end{lstlisting}
+
+\textbf{NOTE: deformation grid reference file is not PREFIXED}
+
+% ----------------------------------------------------------------------------------------------------
+\section{Non-dimensional scaling}
+The preferred choice of scaling is the following; the users chooses a characteristic velocity, length and viscosity $v^*$, $x^*$, $\eta^*$.
+These choices define the following non-dimensional variables, $v' = v/v^*$, $x' = x/x^*$, $\eta' = \eta/\eta^*$. Given the Stokes problem
+$$
+	\nabla \cdot \eta \left( \nabla v + (\nabla v)^T \right) - \nabla p = \rho g,
+	\qquad
+	\nabla \cdot u = 0,
+$$
+the non-dimensional form thus becomes
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \frac{x^*}{\eta^* v^*} \nabla' p = \frac{\phantom(x^*\phantom)^2}{\eta^* v^*} \rho g,
+	\qquad
+	\nabla' \cdot u' = 0,
+$$
+where $\nabla' = \frac{1}{x^*} \nabla$.
+From this the non-dimensional pressure is chosen as 
+$$
+	p = p^* p', \qquad p^* = \frac{\eta^* v^*}{x^*} .
+$$
+Thus the final non-dimensional form of the Stokes problem is given by:
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \nabla' p' 
+	= \frac{\phantom(x^*\phantom)^2}{\eta^* v^*} \rho g
+	\qquad
+	\nabla' \cdot u' = 0.
+$$
+
+The right hand side should be interpreted as a non-dimensional force per volume. If desired, we can express the right hand side in terms of a non-dimensional density $\rho = \rho^* \rho'$ and gravity $g = g^* g'$.
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \nabla' p' 
+	= 	\left( \frac{\phantom(x^*\phantom)^2}{\eta^* v^*}  \right) 
+		\left( \rho^* \rho' \right)  \left( g^* g' \right),
+	\qquad
+	\nabla' \cdot u' = 0.
+$$
+
+%% a = x.t^-2 = x (x/v)^-2 = x .v.v/(x.x)
+\subsection{Additional notes}
+\begin{enumerate}
+% -------
+	\item The ideal choice of $x^*, v^*, \eta^*$ scaling should result in values of velocity and pressure which follow $\bar{v} = \max_k(\vert v'_k \vert) \sim 1$ and $\bar{p} = \max_k(\vert p'_k \vert) \sim 1$. If your scaling doesn't produce this type of behaviour, then one should be careful in choosing the stopping condition applied to both the non-linear and linear solvers. For example, if $\bar{v} \sim 10^6$, it doesn't make much sense to solve the non-linear equations to a tolerance of $F_u, F_p \sim 10^{-9}$.
+% -------
+	\item Convergence of both linear and non-linear solver will appear slow if the scaling if the characteristic size of the velocity and pressure coming out of your model are orders of magnitude different. For instance, if your choice of scaling produces $F_u \sim 10^6$ and $F_p \sim 10^{-1}$ and you stop on $\delta_\text{abs} = 10^{-6}$, then a large number of iterations will be required to reduce the 2-norm of $(F_u, F_p)$ to be less than $10^{-6}$.
+% -------
+	\item Adjusting the scaling parameters to force $\bar{v}, \bar{p} \rightarrow 1$: Assuming a model with a linear rheology and a free surface boundary condition, the following observations can be made: (i) increasing $v^*$ by a factor of $X$ will cause $v'$ to \emph{decrease} by a factor of $X$ and $p'$ will be unaffected; (ii) increasing $x^*$ by a factor of $X$ will cause $v'$ to \emph{increase} by a factor of $X^2$ and $p'$ to \emph{increase} by a factor of $X^2$; (iii) increasing $\eta^*$ by a factor of $X$ will not affect $v'$, however $p'$ will \emph{decrease} by a factor of $X$.
+\end{enumerate}
+
+
+
+\end{document}

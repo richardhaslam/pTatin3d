@@ -41,6 +41,7 @@
 #include "phys_comp_energy.h"
 #include "ptatin3d_energy.h"
 #include "energy_assembly.h"
+#include "energy_coefficients.h"
 
 /*
  
@@ -472,7 +473,8 @@ PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,Petsc
 #define __FUNCT__ "TS_FormJacobianEnergy"
 PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat B,void *ctx)
 {
-    PhysCompEnergy data = (PhysCompEnergy)ctx;
+  pTatinCtx      ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy data;
 	PetscInt          nqp;
 	PetscScalar       *qp_xi,*qp_weight;
 	Quadrature        volQ;
@@ -492,38 +494,59 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 	PetscInt       NUM_GINDICES,T_el_lidx[Q1_NODES_PER_EL_3D],ge_eqnums[Q1_NODES_PER_EL_3D];
 	const PetscInt *GINDICES;
 	Vec            V;
-    Vec            local_V;
-    PetscScalar    *LA_V;
+    Vec            local_V,local_X;
+    PetscScalar    *LA_V,*LA_X;
 	PetscBool      mat_mffd;
 	PetscErrorCode ierr;
 	
 	
     PetscFunctionBegin;
+	ierr = pTatinGetContext_Energy(ptatin,&data);CHKERRQ(ierr);
 	da     = data->daT;
 	V      = data->u_minus_V;
 	bclist = data->T_bclist;
 	volQ   = data->volQ;
 	
     
-	/* trash old entries */
+	/* setup for coords */
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+	/* get solution */
+  ierr = DMGetLocalVector(da,&local_X);CHKERRQ(ierr);
+	ierr = VecZeroEntries(local_X);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,local_X);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,local_X);CHKERRQ(ierr);
+  ierr = VecGetArray(local_X,&LA_X);CHKERRQ(ierr);
+  
+  /* get acces to the vector V */
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(cda,&local_V);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(  cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
+  ierr = VecGetArray(local_V,&LA_V);CHKERRQ(ierr);
+
+  /* ===================== */
+  /* Evaluate coefficients */
+  ierr = EnergyEvaluateCoefficients(ptatin,time,da,LA_X,LA_V);CHKERRQ(ierr);
+  
+  /* trash old entries */
 	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD,&mat_mffd);CHKERRQ(ierr);
-    
+  
 	if (!mat_mffd) {
 		ierr = MatZeroEntries(A);CHKERRQ(ierr);
 	} else {
-        ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-        ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	}
-    
-	if (B) {
-		ierr = MatZeroEntries(B);CHKERRQ(ierr);
-	}
-    
-	if (B==NULL) {
-		PetscFunctionReturn(0);
-	}
+  
+	if (B) { ierr = MatZeroEntries(B);CHKERRQ(ierr); }
+  
+	if (B == NULL) { PetscFunctionReturn(0); }
 	
 	
+
 	/* quadrature */
 	volQ      = data->volQ;
 	nqp       = volQ->npoints;
@@ -532,19 +555,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 	
 	ierr = VolumeQuadratureGetAllCellData_Energy(volQ,&all_quadpoints);CHKERRQ(ierr);
 	
-    
-	/* setup for coords */
-    ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
-    ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-    /* get acces to the vector V */
-    ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(cda,&local_V);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(  cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
-    ierr = VecGetArray(local_V,&LA_V);CHKERRQ(ierr);
-	
+  
 	/* stuff for eqnums */
     ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
@@ -610,10 +621,11 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 		ierr = MatSetValues(B,NODES_PER_EL_Q1_3D,ge_eqnums, NODES_PER_EL_Q1_3D,ge_eqnums, ADe, ADD_VALUES );CHKERRQ(ierr);
     }
 	/* tidy up */
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = VecRestoreArray(local_V,&LA_V);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(cda,&local_V);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(local_X,&LA_X);CHKERRQ(ierr);
+  ierr = VecRestoreArray(local_V,&LA_V);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(cda,&local_V);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&local_X);CHKERRQ(ierr);
 	
 	/* partial assembly */
 	ierr = MatAssemblyBegin(B, MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
@@ -640,11 +652,13 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 #define __FUNCT__ "SNES_FormJacobianEnergy"
 PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
-    PhysCompEnergy data  = (PhysCompEnergy)ctx;
-    PetscErrorCode ierr;
+  pTatinCtx      ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy energy  = (PhysCompEnergy)ctx;
+  PetscErrorCode ierr;
+
 	PetscFunctionBegin;
-	
-	ierr = TS_FormJacobianEnergy(data->time,X,data->dt,A,B,ctx);CHKERRQ(ierr);
+	ierr = pTatinGetContext_Energy(ptatin,&energy);CHKERRQ(ierr);
+	ierr = TS_FormJacobianEnergy(energy->time,X,energy->dt,A,B,ctx);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -910,7 +924,8 @@ PetscErrorCode FormFunctionLocal_T(
 #define __FUNCT__ "TS_FormFunctionEnergy"
 PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *ctx)
 {
-    PhysCompEnergy data  = (PhysCompEnergy)ctx;
+  pTatinCtx      ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy data;
     DM             da,cda;
 	Vec            philoc, philastloc, Fphiloc;
 	Vec            Vloc;
@@ -919,6 +934,8 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
     PetscErrorCode ierr;
 	
     PetscFunctionBegin;
+
+	ierr = pTatinGetContext_Energy(ptatin,&data);CHKERRQ(ierr);
 	da = data->daT;
 	
 	
@@ -949,9 +966,6 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
 	ierr = VecGetArray(philastloc,&LA_philastloc);CHKERRQ(ierr);
 	ierr = VecGetArray(Fphiloc,   &LA_Fphiloc);CHKERRQ(ierr);
 	
-	/* ============= */
-	/* FORM_FUNCTION */
-	
     /* get acces to the vector V */
     ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
     ierr = DMGetLocalVector(cda,&Vloc);CHKERRQ(ierr);
@@ -959,6 +973,12 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
     ierr = DMGlobalToLocalEnd(  cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
     ierr = VecGetArray(Vloc,&LA_V);CHKERRQ(ierr);
 	
+	/* ===================== */
+	/* Evaluate coefficients */
+  ierr = EnergyEvaluateCoefficients(ptatin,time,da,LA_philoc,LA_V);CHKERRQ(ierr);
+  
+	/* ============= */
+	/* FORM_FUNCTION */
 	ierr = FormFunctionLocal_T(data,dt,da,LA_V, LA_philoc,LA_philastloc,LA_Fphiloc);CHKERRQ(ierr);
 	
     ierr = VecRestoreArray(Vloc,&LA_V);CHKERRQ(ierr);
@@ -991,11 +1011,13 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
 #define __FUNCT__ "SNES_FormFunctionEnergy"
 PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx)
 {
-    PhysCompEnergy data  = (PhysCompEnergy)ctx;
-    PetscErrorCode ierr;
+  pTatinCtx      ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy energy;
+  PetscErrorCode ierr;
+
 	PetscFunctionBegin;
-    
-	ierr = TS_FormFunctionEnergy(data->time,X,data->dt,F,ctx);CHKERRQ(ierr);
+	ierr = pTatinGetContext_Energy(ptatin,&energy);CHKERRQ(ierr);
+	ierr = TS_FormFunctionEnergy(energy->time,X,energy->dt,F,ctx);CHKERRQ(ierr);
     
 	PetscFunctionReturn(0);
 }
@@ -1106,7 +1128,7 @@ PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscSc
     
 	if (been_here==0) {
 		flg = PETSC_FALSE;
-		ierr = PetscOptionsGetReal(NULL,"-adv_diff_stab_tau",&user_tau,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-adv_diff_stab_tau",&user_tau,&flg);CHKERRQ(ierr);
 		been_here = 1;
 	}
 	

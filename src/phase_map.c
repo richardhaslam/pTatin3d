@@ -73,10 +73,10 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 {
 	FILE *fp = NULL;
 	PhaseMap phasemap;
-    char dummy[1000];
+  char dummy[1000];
     
 	int i,j,phasemap_max;
-    int index;
+  int index;
 	
 	/* open file to parse */
 	fp = fopen(filename,"r");
@@ -89,11 +89,11 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 	PhaseMapCreate(&phasemap);
 	
 	/* read header information, mx,my,x0,y0,x1,y1 */
-    //  fscanf(fp,"%s\n",dummy);
-	fgets(dummy,sizeof(dummy),fp);
-    fscanf(fp,"%d\n",&phasemap->mx);
-    fscanf(fp,"%d\n",&phasemap->my);
-    fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1);
+  //  fscanf(fp,"%s\n",dummy);
+  if (!fgets(dummy,sizeof(dummy),fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+    if (fscanf(fp,"%d\n",&phasemap->mx) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+    if (fscanf(fp,"%d\n",&phasemap->my) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+    if (fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1) < 4) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
 	//
 	phasemap->dx = (phasemap->x1 - phasemap->x0)/(double)(phasemap->mx);
 	phasemap->dy = (phasemap->y1 - phasemap->y0)/(double)(phasemap->my);
@@ -103,16 +103,14 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 	phasemap->data = malloc( sizeof(int)* phasemap->mx * phasemap->my );
 	
 	/* parse phase map from file */
-	//
-    index = 0;
-    for (j=0; j<phasemap->my; j++) {
-		for (i=0; i<phasemap->mx; i++) {
-            fscanf(fp,"%d",&phasemap->data[index]);
-			//printf("%d \n", phasemap->data[index]);
-            index++;
-        }
+  index = 0;
+  for (j=0; j<phasemap->my; j++) {
+    for (i=0; i<phasemap->mx; i++) {
+      if (fscanf(fp,"%d",&phasemap->data[index]) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+      //printf("%d \n", phasemap->data[index]);
+      index++;
     }
-	//
+  }
     
 	/* compute max number of phases */
 	phasemap_max = -1;
@@ -170,9 +168,7 @@ void PhaseMapLoadFromFile(const char filename[],PhaseMap *map)
 	}
     
 	if (is_zipped == 1) {
-		int ierr;
-        
-        ierr = PhaseMapLoadFromFile_ASCII_ZIPPED(filename,map);
+    PhaseMapLoadFromFile_ASCII_ZIPPED(filename,map);
 	} else {
 		PhaseMapLoadFromFile_ASCII(filename,map);
 	}
@@ -283,15 +279,14 @@ PetscErrorCode pTatinCtxGetPhaseMap(pTatinCtx ctx,PhaseMap *map)
 	PetscFunctionReturn(0);
 }
 
-
-#if 0
+/*
 void test_PhaseMap(void)
 {
 	PhaseMap phasemap;
 	double xp[2];
 	int phase;
 	
-    //	PhaseMapLoadFromFile("test.bmp",&phasemap);
+  //	PhaseMapLoadFromFile("test.bmp",&phasemap);
 	PhaseMapLoadFromFile("model_geometry",&phasemap);
 	
 	xp[0] = 0.0;	xp[1] = 1.0;
@@ -311,14 +306,4 @@ void test_PhaseMap(void)
 	PhaseMapDestroy(&phasemap);
 	
 }
-
-
-int main(int nargs,char *args[])
-{
-    
-	test_PhaseMap();
-	
-	return EXIT_SUCCESS;
-}
-#endif
-
+*/

@@ -1,0 +1,119 @@
+# ------------------------
+#   Model specification
+# ------------------------
+-ptatin_model rift3D_T
+-model_rift3D_T_vis_bar 1.e22
+-mx 128
+-my 32
+-mz 128
+-output_path rift-t6
+-model_rift3D_T_ageAnom 300
+-model_rift3D_T_age0    300
+-model_rift3D_T_wz 0.5 
+-model_rift3D_T_wx 2. 
+-model_rift3D_T_age2. 
+-model_rift3D_T_vis_bar 1e22 
+
+# ------------------------------------
+#   Nonlinear solver specification
+# ------------------------------------
+-snes_rtol  1e-3
+-newton_its 0
+-picard_its 3 
+
+# ---------------------------------
+#   Stokes solver specification
+# ---------------------------------
+-ksp_type  fgmres
+-ksp_rtol  5e-2
+-pc_type   fieldsplit
+
+-pc_fieldsplit_type            schur
+-pc_fieldsplit_schur_fact_type upper
+
+-fieldsplit_u_ksp_type    fgmres
+-fieldsplit_u_ksp_max_it  7 
+-fieldsplit_u_ksp_rtol    1.0e-1
+-fieldsplit_u_pc_type     mg
+
+-fieldsplit_p_ksp_type    preonly
+-fieldsplit_p_pc_type     jacobi
+
+-stk_velocity_dm_mat_type baij
+
+# ---------------------------------
+#   GMG solver specification
+# ---------------------------------
+# *** IMPORTANT - IF YOU WANT TO PROFILE GMG dau_nlevels and fieldsplit_u_pc_mg_levels MUST MATCH ***
+-dau_nlevels               2
+-fieldsplit_u_pc_mg_levels 2
+
+-A11_operator_type 0,1,1,1,1
+
+-stk_velocity_da_refine_hierarchy_x 4,2
+-stk_velocity_da_refine_hierarchy_y 2,1
+-stk_velocity_da_refine_hierarchy_z 4,2
+
+#-use_low_order_geometry
+-lattice_layout_perturb 0.0
+
+-fieldsplit_u_mg_levels_ksp_type      chebyshev
+-fieldsplit_u_mg_levels_ksp_max_it    10
+-fieldsplit_u_mg_levels_pc_type       jacobi
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+
+-fieldsplit_u_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE
+
+-fieldsplit_u_mg_coarse_ksp_type       cg
+-fieldsplit_u_mg_coarse_ksp_max_it     25
+-fieldsplit_u_mg_coarse_ksp_rtol       1.0e-4
+-fieldsplit_u_mg_coarse_pc_type        asm
+#-fieldsplit_u_mg_coarse_pc_asm_blocks 4
+-fieldsplit_u_mg_coarse_pc_asm_overlap 4
+-fieldsplit_u_mg_coarse_sub_pc_type    ilu
+
+# --------------
+#   Monitoring
+# --------------
+-fieldsplit_u_pc_mg_log
+#-fieldsplit_u_mg_coarse_ksp_converged_reason
+-fieldsplit_u_ksp_monitor
+-snes_monitor
+-snes_view
+-log_summary
+-options_left 1
+-dau_nlevels 3 
+-fieldsplit_u_pc_mg_levels 3  
+-stk_velocity_da_refine_hierarchy_x 4,2 
+-stk-velocity_da_refine_hierarchy_y 4,1 
+-stk_velocity_da_refine_hierarchy_z 4,2 
+-model_rift3D_T_vis_bar 1e22 
+-fieldsplit_u_ksp_max_it 7  
+-fieldsplit_u_mg_coarse_ksp_max_it 30
+
+-T_snes_type ksponly
+-T_ksp_type fgmres
+-T_ksp_atol 1.0e-4
+-T_ksp_rtol 1.0e-10
+-T_pc_type bjacobi
+-T_ksp_monitor
+
+
+-mx 32 
+-my 8 
+-mz 32  
+-nsteps 10 
+-ksp_rtol  1e-2 
+-dt_max 1e-3 
+-fieldsplit_u_ksp_max_it 10  
+-fieldsplit_u_ksp_rtol 1e-3 
+-snes_rtol 1e-2 
+-snes_max_linear_solve_fail 10 
+-ksp_max_it 10 
+-snes_max_it 5  
+-fieldsplit_u_mg_coarse_ksp_type fgmres 
+-fieldsplit_u_mg_coarse_ksp_max_it 200 
+-fieldsplit_u_mg_coarse_ksp_rtol 1e-7 
+-fieldsplit_u_ksp_max_it 7 
+-snes_converge_reason

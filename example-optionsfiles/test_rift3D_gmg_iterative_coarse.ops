@@ -1,0 +1,86 @@
+# ------------------------
+#   Model specification
+# ------------------------
+-ptatin_model rift3D_T
+-model_rift3D_vis_bar 1.e22
+-mx 64
+-my 16
+-mz 64
+-output_path rift-t5
+
+# ------------------------------------
+#   Nonlinear solver specification
+# ------------------------------------
+-snes_rtol  1e-3
+-newton_its 0
+-picard_its 5 
+
+# ---------------------------------
+#   Stokes solver specification
+# ---------------------------------
+-ksp_type  fgmres
+-ksp_rtol  5e-2
+-pc_type   fieldsplit
+
+-pc_fieldsplit_type            schur
+-pc_fieldsplit_schur_fact_type upper
+
+-fieldsplit_u_ksp_type    fgmres
+-fieldsplit_u_ksp_max_it  7 
+-fieldsplit_u_ksp_rtol    1.0e-1
+-fieldsplit_u_pc_type     mg
+
+-fieldsplit_p_ksp_type    preonly
+-fieldsplit_p_pc_type     jacobi
+
+-stk_velocity_dm_mat_type baij
+
+# ---------------------------------
+#   GMG solver specification
+# ---------------------------------
+# *** IMPORTANT - IF YOU WANT TO PROFILE GMG dau_nlevels and fieldsplit_u_pc_mg_levels MUST MATCH ***
+-dau_nlevels               2
+-fieldsplit_u_pc_mg_levels 2
+
+-A11_operator_type 0,1,1,1,1
+
+-stk_velocity_da_refine_hierarchy_x 4
+-stk_velocity_da_refine_hierarchy_y 1
+-stk_velocity_da_refine_hierarchy_z 4
+
+#-use_low_order_geometry
+
+-fieldsplit_u_mg_levels_ksp_type      chebyshev
+-fieldsplit_u_mg_levels_ksp_max_it    10
+-fieldsplit_u_mg_levels_pc_type       jacobi
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+
+-fieldsplit_u_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE
+
+-fieldsplit_u_mg_coarse_ksp_type       cg
+-fieldsplit_u_mg_coarse_ksp_max_it     25
+-fieldsplit_u_mg_coarse_ksp_rtol       1.0e-4
+-fieldsplit_u_mg_coarse_pc_type        asm
+#-fieldsplit_u_mg_coarse_pc_asm_blocks 4
+-fieldsplit_u_mg_coarse_pc_asm_overlap 4
+-fieldsplit_u_mg_coarse_sub_pc_type    ilu
+
+# -------------------------------
+#   Energy solver specification
+# -------------------------------
+-T_snes_type ksponly
+-T_ksp_type fgmres
+-T_pc_type jacobi
+-T_ksp_monitor
+
+# --------------
+#   Monitoring
+# --------------
+-fieldsplit_u_pc_mg_log
+#-fieldsplit_u_mg_coarse_ksp_converged_reason
+-fieldsplit_u_ksp_monitor
+-snes_monitor
+#-snes_view
+-log_summary
+-options_left 1

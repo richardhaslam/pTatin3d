@@ -10,4 +10,10 @@ libptatin3d-y.c += $(call thisdir, \
 			MaterialConst_SoftExpo_def.c \
 			MaterialConst_PlasticMises_def.c \
 			MaterialConst_PlasticDP_def.c \
+			EnergyMaterialConstants_def.c \
+            EnergySourceConst_def.c \
+			EnergySourceDecay_def.c \
+			EnergySourceAdiabaticAdvection_def.c \
+            EnergyConductivityConst_def.c \
+            EnergyConductivityThreshold_def.c \
 	)

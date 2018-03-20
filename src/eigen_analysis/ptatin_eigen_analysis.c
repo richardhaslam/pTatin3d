@@ -33,7 +33,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "slepceps.h"
 
-#include "petsc-private/dmdaimpl.h" 
+#include "petsc/private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -241,7 +241,7 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   if (is_nest) {
     Mat Auu;
     
-    ierr = MatGetSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
     
     is_shell = PETSC_FALSE;
     ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -262,8 +262,8 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   {
     Mat Buu,Bpp;
     
-    ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
     
     is_shell = PETSC_FALSE;
     ierr = PetscObjectTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -455,7 +455,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
   }
   
   max = nlevels;
-  ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
   for (k=nlevels-1; k>=0; k--) {
     
     switch (level_type[k]) {
@@ -506,11 +506,11 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
         {
           PetscBool use_low_order_geometry = PETSC_FALSE;
           
-          ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
           if (use_low_order_geometry==PETSC_TRUE) {
             Mat Buu;
             
-            if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Activiting low order A11 operator \n");
+            if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Activating low order A11 operator \n");
             ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
             ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
             ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
@@ -580,7 +580,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
   ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
   ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-  ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
   
   for( k=1; k<nlevels; k++ ){
     ierr = PCMGSetInterpolation(pc_i,k,interpolation_v[k]);CHKERRQ(ierr);
@@ -596,7 +596,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
     ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
     
     // use A for smoother, B for residual
-    ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
     if (use_low_order_geometry==PETSC_TRUE) {
       ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
       //ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
@@ -624,50 +624,50 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
   
   PetscFunctionBegin;
 
-  ierr = PetscOptionsGetBool(NULL,"-slepc_compute_errors",&compute_errors,NULL);CHKERRQ(ierr);
-  
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysis: \"%s\" ===== \n",description);
-  ierr = MatGetVecs(A,NULL,&xr);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,NULL,&xi);CHKERRQ(ierr);
-  
-  ierr = EPSCreate(PETSC_COMM_WORLD,&eps);CHKERRQ(ierr);
-  ierr = EPSSetOperators(eps,A,NULL);CHKERRQ(ierr);
-  ierr = EPSSetProblemType(eps,prob_type);CHKERRQ(ierr);
-  ierr = EPSSetFromOptions(eps);CHKERRQ(ierr);
-  ierr = EPSSolve(eps);CHKERRQ(ierr);
-  
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysisReport: \"%s\" ===== \n",description);
-  ierr = EPSGetIterationNumber(eps,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of iterations of the method: %D\n",its);CHKERRQ(ierr);
-  ierr = EPSGetType(eps,&type);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Solution method: %s\n\n",type);CHKERRQ(ierr);
-  ierr = EPSGetDimensions(eps,&nev,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of requested eigenvalues: %D\n",nev);CHKERRQ(ierr);
-  ierr = EPSGetTolerances(eps,&tol,&maxit);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4g, maxit=%D\n",tol,maxit);CHKERRQ(ierr);
-  
-  ierr = EPSGetConverged(eps,&nconv);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of converged eigenpairs: %D\n\n",nconv);CHKERRQ(ierr);
-  
-  if (nconv>0) {
-    /* Display eigenvalues and relative errors */
-    if (compute_errors) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,
-                         "               k                   ||Ax-kx||/||kx||\n"
-                         "   --------------------------    --------------------\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,
-                         "               k              \n"
-                         "   -------------------------- \n");CHKERRQ(ierr);
-    }
-    
-    for (i=0;i<nconv;i++) {
-      /* 
-       Get converged eigenpairs: i-th eigenvalue is stored in kr (real part) and ki (imaginary part)
-       */
-      ierr = EPSGetEigenpair(eps,i,&kr,&ki,xr,xi);CHKERRQ(ierr);
-      re = kr;
-      im = ki;
+	ierr = PetscOptionsGetBool(NULL,NULL,"-slepc_compute_errors",&compute_errors,NULL);CHKERRQ(ierr);
+	
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysis: \"%s\" ===== \n",description);
+  ierr = MatCreateVecs(A,NULL,&xr);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,NULL,&xi);CHKERRQ(ierr);
+	
+	ierr = EPSCreate(PETSC_COMM_WORLD,&eps);CHKERRQ(ierr);
+	ierr = EPSSetOperators(eps,A,NULL);CHKERRQ(ierr);
+	ierr = EPSSetProblemType(eps,prob_type);CHKERRQ(ierr);
+	ierr = EPSSetFromOptions(eps);CHKERRQ(ierr);
+	ierr = EPSSolve(eps);CHKERRQ(ierr);
+	
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysisReport: \"%s\" ===== \n",description);
+	ierr = EPSGetIterationNumber(eps,&its);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of iterations of the method: %D\n",its);CHKERRQ(ierr);
+	ierr = EPSGetType(eps,&type);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Solution method: %s\n\n",type);CHKERRQ(ierr);
+	ierr = EPSGetDimensions(eps,&nev,NULL,NULL);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of requested eigenvalues: %D\n",nev);CHKERRQ(ierr);
+	ierr = EPSGetTolerances(eps,&tol,&maxit);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4g, maxit=%D\n",(double)tol,maxit);CHKERRQ(ierr);
+	
+	ierr = EPSGetConverged(eps,&nconv);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of converged eigenpairs: %D\n\n",nconv);CHKERRQ(ierr);
+	
+	if (nconv>0) {
+		/* Display eigenvalues and relative errors */
+		if (compute_errors) {
+			ierr = PetscPrintf(PETSC_COMM_WORLD,
+												 "               k                   ||Ax-kx||/||kx||\n"
+												 "   --------------------------    --------------------\n");CHKERRQ(ierr);
+		} else {
+			ierr = PetscPrintf(PETSC_COMM_WORLD,
+												 "               k              \n"
+												 "   -------------------------- \n");CHKERRQ(ierr);
+		}
+		
+		for (i=0;i<nconv;i++) {
+			/* 
+			 Get converged eigenpairs: i-th eigenvalue is stored in kr (real part) and ki (imaginary part)
+			 */
+			ierr = EPSGetEigenpair(eps,i,&kr,&ki,xr,xi);CHKERRQ(ierr);
+			re = kr;
+			im = ki;
 
       /*
        Compute the relative error associated to each eigenpair
@@ -808,9 +808,9 @@ PetscErrorCode ptatinEigenAnalyser_A11PCToMatlab(SNES snes,PetscBool view)
   PetscTime(&t1);
   PetscPrintf(PETSC_COMM_WORLD,"PCComputeExplicitOperator(time) %1.4e (sec)\n",t1-t0);
   
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   ierr = MatView(Ae,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   {
     PC mm;
     Mat A11,Aii;
@@ -825,9 +825,10 @@ PetscErrorCode ptatinEigenAnalyser_A11PCToMatlab(SNES snes,PetscBool view)
     PetscTime(&t1);
     
     PetscPrintf(PETSC_COMM_WORLD,"A11PCComputeExplicitOperator(time) %1.4e (sec)\n",t1-t0);
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
     ierr = MatView(Aii,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    
     ierr = MatDestroy(&Aii);CHKERRQ(ierr);
 }
   
@@ -928,12 +929,13 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
 
   if (ascii_view) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),"A_coarse.mat",&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),"A_coarse.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
   ierr = MatView(Ae,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   
   for( k=1; k<nlevels; k++ ){
@@ -947,12 +949,13 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
  
     if (ascii_view) {
       ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),name,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     }
     ierr = MatView(Ae,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+    if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   
@@ -988,13 +991,14 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
 
   if (ascii_view) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),"A_ksp_coarse.mat",&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),"A_ksp_coarse.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
   
   ierr = MatView(Ae,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   
   for( k=1; k<nlevels; k++ ){
@@ -1006,12 +1010,13 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
     ierr = KSPComputeExplicitOperator(ksp_level,&Ae);CHKERRQ(ierr);
     if (ascii_view) {
       ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),name,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     }
     ierr = MatView(Ae,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+    if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
@@ -1019,7 +1024,7 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
   ierr = KSPComputeExplicitOperator(ksp_A11,&Ae);CHKERRQ(ierr);
   if (ascii_view) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),"A_ksp_mg.mat",&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),"A_ksp_mg.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
@@ -1033,17 +1038,19 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
   */
    
   ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PCComputeExplicitOperator(pc_A11,&Ae);CHKERRQ(ierr);
   if (ascii_view) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),"A_pc_mg.mat",&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),"A_pc_mg.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
   ierr = MatView(Ae,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   
   
@@ -1130,8 +1137,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   PetscFunctionBegin;
   
   /* PS: collect new flags for custom dumps */
-  ierr = PetscOptionsGetBool(NULL,"-asm_dump",&asm_dump,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-block_dump",&block_dump,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-asm_dump",&asm_dump,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-block_dump",&block_dump,NULL);CHKERRQ(ierr);
   
   ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
@@ -1193,7 +1200,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   
   /* setup mg */
   nlevels = 1;
-  PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+  PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
   PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
   ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
   ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -1323,8 +1330,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
     PetscInt eigen_anal = 0;
     PetscBool view = PETSC_FALSE;
     
-    ierr = PetscOptionsGetInt(NULL,"-eigen_anal",&eigen_anal,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(NULL,"-eigen_anal_view_operators",&view,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-eigen_anal",&eigen_anal,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-eigen_anal_view_operators",&view,NULL);CHKERRQ(ierr);
 
     switch (eigen_anal) {
       case 0:
@@ -1411,6 +1418,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   
   ierr = SlepcInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
 
   ierr = pTatin3d_linear_viscous_forward_model_driver(argc,argv);CHKERRQ(ierr);
   

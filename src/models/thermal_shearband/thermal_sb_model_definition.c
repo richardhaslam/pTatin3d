@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d.h"
@@ -105,11 +104,11 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
     
     
     modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,"-model_thermal_sb_output_si",&modeldata->output_si,0);
+    PetscOptionsGetBool(NULL,NULL,"-model_thermal_sb_output_si",&modeldata->output_si,0);
     
     
     /* force energy equation to be introduced */
-	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 
     /*
         Current Value -preexpA_0   :  3.2000e-20
@@ -214,6 +213,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ThermalSB(pTatinCtx ptatinctx,void 
     Ly = 30.0 * 1.0e3; /* km */
     Lz = 35.0 * 1.0e3; /* km */
 	ierr = DMDASetUniformCoordinates(dav,0.0,Lx/modeldata->L_bar, 0.0,Ly/modeldata->L_bar, 0.0,Lz/modeldata->L_bar);CHKERRQ(ierr);
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(stokes,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -320,7 +323,7 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
 {
 	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
 	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap;
+	DM               stokes_pack=NULL,dav,dap;
     Vec              coords,velocity,pressure;
     PetscBool        active_energy;
 	PetscErrorCode   ierr;
@@ -462,11 +465,11 @@ PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,voi
 	if (active_energy) {
 		PhysCompEnergy energy;
 		Vec            temperature;
-		DM             daT;
+		/* DM             daT; */
 		
 		ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
-		daT  = energy->daT;
+		/* daT  = energy->daT; */
         
         ierr = VecSet(temperature,400.0+273.0);CHKERRQ(ierr);
 	}
@@ -488,9 +491,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
     PetscReal        Ox[3],gmin[3],gmax[3],inc_rad2;
 	PetscErrorCode   ierr;
 	MaterialConst_DensityConst      *DensityConst_data;
-	MaterialConst_ViscosityArrh     *ViscArrh_data;
+	/* MaterialConst_ViscosityArrh     *ViscArrh_data; */
 	DataField                       PField_DensityConst,PField_ViscArrh;
-    PetscReal                       kappa,H;
+  PetscReal                       kappa;
+  /* PetscReal                       H; */
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -501,7 +505,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 	DensityConst_data      = (MaterialConst_DensityConst*)PField_DensityConst->data;
 
 	DataBucketGetDataFieldByName(materialconstants,MaterialConst_ViscosityArrh_classname,&PField_ViscArrh);
-	ViscArrh_data          = (MaterialConst_ViscosityArrh*)PField_ViscArrh->data;
+	/* ViscArrh_data          = (MaterialConst_ViscosityArrh*)PField_ViscArrh->data; */
 	
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -515,7 +519,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 	
     /* background */
     kappa = 1.0/(2700.0 * 1050.0) * 2.5 * data->t_bar / ( data->L_bar * data->L_bar );
-    H = 1.0/(2700.0 * 1050.0) * data->eta_bar * data->E_bar * data->E_bar;
+    /* H = 1.0/(2700.0 * 1050.0) * data->eta_bar * data->E_bar * data->E_bar; */
     
     PetscPrintf(PETSC_COMM_WORLD,"thermal_sb: BACKGROUND kappa = %1.4e \n",kappa );
     for (p=0; p<n_mpoints; p++) {

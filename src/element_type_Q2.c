@@ -35,7 +35,6 @@
  *
  */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -660,8 +659,8 @@ void compute_surface_geometry_Q2_3D(	ConformingElementFamily e,
 										const QPoint2d *xi0,      // should contain 1 point with dimension 2 (xi,eta)   //
 										double n0[], double t0[],double *J ) // n0[],t0[] contains 1 point with dimension 3 (x,y,z) //
 {
-	const int SURFACE_DIM = 2;
-	const int Q2_NPS = 9;
+	enum {SURFACE_DIM=2};
+	enum {Q2_NPS=9};
 	double x_s,y_s,z_s;
 	double x_t,y_t,z_t;
 	double n[3],t[3],mag,magt;
@@ -879,8 +878,8 @@ void compute_element_normal_Q2_2D(	ConformingElementFamily e,
 																	const QPoint1d *xi0,      // should contain 1 point with dimension 1 (xi,)   //
 																	double n0[]) // n0[] contains 1 point with dimension 2 (x,y) //
 {
-	const int SURFACE_DIM = 1;
-	const int Q2_NPS = 3;
+	enum {SURFACE_DIM=1};
+	enum {Q2_NPS = 3};
 	double x_s,y_s;
 	double n[2],mag;
 	int i;
@@ -914,8 +913,8 @@ void compute_element_normal_Q2_3D(	ConformingElementFamily e,
 									const QPoint2d *xi0,      // should contain 1 point with dimension 2 (xi,eta)   //
 									double n0[]) // n0[] contains 1 point with dimension 3 (x,y,z) //
 {
-	const int SURFACE_DIM = 2;
-	const int Q2_NPS = 9;
+	enum {SURFACE_DIM=2};
+	enum {Q2_NPS=9};
 	double x_s,y_s,z_s;
 	double x_t,y_t,z_t;
 	double n[3],mag;
@@ -1010,8 +1009,8 @@ void compute_element_tangent_Q2_3D(	ConformingElementFamily e,
 																	const QPoint2d *xi0,      // should contain 1 point with dimension 2 (xi,eta)   //
 																	double t1[],double t2[] ) // t1[],t2[] contains 1 point with dimension 3 (x,y,z) //
 {
-	const int SURFACE_DIM = 2;
-	const int Q2_NPS = 9;
+	enum {SURFACE_DIM=2};
+	enum {Q2_NPS=9};
 	double x_s,y_s,z_s;
 	double x_t,y_t,z_t;
 	double mag;
@@ -1072,7 +1071,7 @@ void ElementTypeCreate_Q2(ConformingElementFamily *_e,const int dim)
 	
 	e = calloc( 1, sizeof(struct _p_ConformingElementFamily) );
 	
-	asprintf( &e->name, "Q2(%d)", dim );
+	if (asprintf( &e->name, "Q2(%d)", dim ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
 	e->nsd = dim;
 	
 	e->n_nodes_0D = 1;
@@ -1664,7 +1663,6 @@ void testEQ2_SurfQuad3d_2( void )
 	}
 
 	// optional
-#if 1
 	/* rotate the coordinates about z axis */
 	for( i=0; i<27; i++ ) {
 		double R[3][3];
@@ -1688,7 +1686,6 @@ void testEQ2_SurfQuad3d_2( void )
 		coords[3*i+1] = xnew[1];
 		coords[3*i+2] = xnew[2];
 	}
-#endif	
 
 	/* perform the volume integration of div(F) */
 	e->generate_volume_quadrature_3D(&ngp3,gp3);	

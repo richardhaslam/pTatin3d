@@ -28,46 +28,68 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "data_bucket.h"
 #include "rheology.h"
 #include "material_constants.h"
+#include "material_constants_energy.h"
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsInitialize"
-PetscErrorCode MaterialConstantsInitialize(DataBucket *_db)
+#define __FUNCT__ "MaterialConstantsCreate"
+PetscErrorCode MaterialConstantsCreate(DataBucket *_db)
 {
-	DataBucket     db;
-	PetscErrorCode ierr;
+	DataBucket db;
+
+	DataBucketCreate(&db);
+	*_db = db;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsStokesInitialize"
+PetscErrorCode MaterialConstantsStokesInitialize(DataBucket db)
+{
 	
 	PetscFunctionBegin;
-	DataBucketCreate(&db);
 	
-	DataBucketRegisterField(db,MaterialConst_MaterialType_classname,      sizeof(MaterialConst_MaterialType),NULL);
-    
-	DataBucketRegisterField(db,MaterialConst_ViscosityConst_classname,    sizeof(MaterialConst_ViscosityConst),NULL);
-	DataBucketRegisterField(db,MaterialConst_ViscosityZ_classname,    sizeof(MaterialConst_ViscosityZ),NULL);
-	DataBucketRegisterField(db,MaterialConst_ViscosityArrh_classname,      sizeof(MaterialConst_ViscosityArrh),NULL);
-    DataBucketRegisterField(db,MaterialConst_ViscosityFK_classname,      sizeof(MaterialConst_ViscosityFK),NULL);
-    
-	DataBucketRegisterField(db,MaterialConst_PlasticMises_classname,      sizeof(MaterialConst_PlasticMises),NULL);
-	DataBucketRegisterField(db,MaterialConst_PlasticDP_classname,      sizeof(MaterialConst_PlasticDP),NULL);
-	
-    DataBucketRegisterField(db,MaterialConst_DensityConst_classname,      sizeof(MaterialConst_DensityConst),NULL);
-    DataBucketRegisterField(db,MaterialConst_DensityBoussinesq_classname,      sizeof(MaterialConst_DensityBoussinesq),NULL);
-    
-    DataBucketRegisterField(db,MaterialConst_SoftLin_classname,      sizeof(MaterialConst_SoftLin),NULL);
-    DataBucketRegisterField(db,MaterialConst_SoftExpo_classname,      sizeof(MaterialConst_SoftExpo),NULL);
-    
-    
-    DataBucketFinalize(db);
+  DataBucketRegisterField(db,MaterialConst_MaterialType_classname,      sizeof(MaterialConst_MaterialType),NULL);
+
+  DataBucketRegisterField(db,MaterialConst_ViscosityConst_classname,    sizeof(MaterialConst_ViscosityConst),NULL);
+  DataBucketRegisterField(db,MaterialConst_ViscosityZ_classname,    sizeof(MaterialConst_ViscosityZ),NULL);
+  DataBucketRegisterField(db,MaterialConst_ViscosityArrh_classname,      sizeof(MaterialConst_ViscosityArrh),NULL);
+  DataBucketRegisterField(db,MaterialConst_ViscosityFK_classname,      sizeof(MaterialConst_ViscosityFK),NULL);
+
+  DataBucketRegisterField(db,MaterialConst_PlasticMises_classname,      sizeof(MaterialConst_PlasticMises),NULL);
+  DataBucketRegisterField(db,MaterialConst_PlasticDP_classname,      sizeof(MaterialConst_PlasticDP),NULL);
+
+  DataBucketRegisterField(db,MaterialConst_DensityConst_classname,      sizeof(MaterialConst_DensityConst),NULL);
+  DataBucketRegisterField(db,MaterialConst_DensityBoussinesq_classname,      sizeof(MaterialConst_DensityBoussinesq),NULL);
+
+  DataBucketRegisterField(db,MaterialConst_SoftLin_classname,      sizeof(MaterialConst_SoftLin),NULL);
+  DataBucketRegisterField(db,MaterialConst_SoftExpo_classname,      sizeof(MaterialConst_SoftExpo),NULL);
+
+  DataBucketFinalize(db);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsInitialize"
+PetscErrorCode MaterialConstantsInitialize(DataBucket db)
+{
+	PetscErrorCode ierr;
+	ierr = MaterialConstantsStokesInitialize(db);CHKERRQ(ierr);
+	ierr = MaterialConstantsEnergyInitialize(db);CHKERRQ(ierr);
+
+	DataBucketFinalize(db);
 	
 	DataBucketSetInitialSizes(db,200,0);
-	ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
 	
-	*_db = db;
+	DataBucketView(PETSC_COMM_WORLD,db,"Material Constants",DATABUCKET_VIEW_STDOUT);
+	
+	ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
+	ierr = MaterialConstantsEnergySetDefaults(db);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -119,7 +141,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	/* visc_type */
 	value = 1; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[0],region_id);
-	ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_MaterialTypeSetField_visc_type(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -129,7 +151,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	/* plastic_type */
 	value = 1; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[1],region_id);
-	ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_MaterialTypeSetField_plastic_type(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -139,7 +161,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	/* softening_type */
 	value = 1; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[2],region_id);
-	ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_MaterialTypeSetField_softening_type(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -149,7 +171,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	/* density_type */
 	value = 1; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[3],region_id);
-	ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_MaterialTypeSetField_density_type(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -282,7 +304,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityConst(DataBucket db,const 
 	/* eta0 */
 	value = 1.0; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityConst_member_names[0],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_DensityConstSetField_density(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -409,7 +431,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,c
 	/* insert options */
 	/* eta0 */
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[0],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_DensityBoussinesqSetField_density(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -418,7 +440,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,c
 
 	/* alpha */
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[1],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_DensityBoussinesqSetField_thermalexpension(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -427,7 +449,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,c
 
 	/* beta */
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[2],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_DensityBoussinesqSetField_compressibility(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -579,7 +601,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityConst(DataBucket db,cons
 	/* eta0 */
 	value = 1.0; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityConst_member_names[0],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_ViscosityConstSetField_eta0(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -709,7 +731,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityZ(DataBucket db,const ch
 	value = 1.0; /* default - not required is nothing happens if option not found */
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityZ_member_names[0],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_ViscosityZSetField_eta0(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -717,7 +739,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityZ(DataBucket db,const ch
 	}
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityZ_member_names[1],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_ViscosityZSetField_zeta(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -725,7 +747,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityZ(DataBucket db,const ch
 	}
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityZ_member_names[2],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_ViscosityZSetField_zref(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -885,7 +907,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const
 	value = 1.0; /* default - not required is nothing happens if option not found */
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[0],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_ViscosityArrhSetField_preexpA(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -893,7 +915,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const
 	}
     
     sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[1],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_ViscosityArrhSetField_Ascale(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -901,7 +923,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const
 	}
 	
     sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[2],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
 		MaterialConst_ViscosityArrhSetField_entalpy(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -909,7 +931,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const
 	}
     
     sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
 		MaterialConst_ViscosityArrhSetField_Vmol(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -917,7 +939,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const
 	}
     
     sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[4],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
 		MaterialConst_ViscosityArrhSetField_nexp(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -925,7 +947,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const
 	}
     
     sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[5],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
 		MaterialConst_ViscosityArrhSetField_Tref(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -1102,7 +1124,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityFK(DataBucket db,const c
 	value = 1.0; /* default - not required is nothing happens if option not found */
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityFK_member_names[0],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_ViscosityFKSetField_eta0(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -1110,7 +1132,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityFK(DataBucket db,const c
 	}
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityFK_member_names[1],region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_ViscosityFKSetField_theta(data,value);
 	} else if ( (!found)  && (essential) ) {
@@ -1254,7 +1276,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticMises(DataBucket db,const 
 	value      = 1.0; /* default - not required is nothing happens if option not found */
 	field_name = (char*)MaterialConst_PlasticMises_member_names[0];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticMisesSetField_yield_stress(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1265,7 +1287,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticMises(DataBucket db,const 
 	value      = 1.0; /* default - not required is nothing happens if option not found */
 	field_name = (char*)MaterialConst_PlasticMises_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticMisesSetField_yield_stress_inf(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1416,7 +1438,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[0];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticDPSetField_friction(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1427,7 +1449,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[2];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticDPSetField_friction_inf(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1437,7 +1459,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticDPSetField_cohesion(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1448,7 +1470,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[3];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticDPSetField_cohesion_inf(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1459,7 +1481,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[4];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticDPSetField_tens_cutoff(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1470,7 +1492,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[5];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticDPSetField_hst_cutoff(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1674,7 +1696,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_SoftLin(DataBucket db,const char 
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_SoftLin_member_names[0];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_SoftLinSetField_eps_min(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1685,7 +1707,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_SoftLin(DataBucket db,const char 
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_SoftLin_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_SoftLinSetField_eps_max(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1806,7 +1828,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_SoftExpo(DataBucket db,const char
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_SoftExpo_member_names[0];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_SoftExpoSetField_eps_min(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
@@ -1817,7 +1839,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_SoftExpo(DataBucket db,const char
 	value      = 1.0; /* default - not required as nothing happens if option not found */
 	field_name = (char*)MaterialConst_SoftExpo_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
-	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_SoftExpoSetField_eps_fold(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {

@@ -86,10 +86,11 @@ gcc -O3 -g -c data_bucket.c
 
 
 #include <data_bucket.h>
-
+#include <mpiio_blocking.h>
+#include <cjson_utils.h>
 
 /* string helpers */
-void StringInList( const char name[], const int N, const DataField gfield[], BTruth *val )
+static void DataBucketStringInList( const char name[], const int N, const DataField gfield[], BTruth *val )
 {
 	int i;
 	
@@ -102,7 +103,7 @@ void StringInList( const char name[], const int N, const DataField gfield[], BTr
 	}
 }
 
-void StringFindInList( const char name[], const int N, const DataField gfield[], int *index )
+static void DataBucketStringFindInList( const char name[], const int N, const DataField gfield[], int *index )
 {
 	int i;
 	
@@ -115,16 +116,15 @@ void StringFindInList( const char name[], const int N, const DataField gfield[],
 	}
 }
 
-void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const int L, DataField *DF )
+void DataFieldCreate( const char registration_function[], const char name[], const size_t size, const int L, DataField *DF )
 {
 	DataField df;
 	
 	df = malloc( sizeof(struct _p_DataField) );
 	memset( df, 0, sizeof(struct _p_DataField) ); 
 	
-	
-	asprintf( &df->registeration_function, "%s", registeration_function );
-	asprintf( &df->name, "%s", name );
+	if (asprintf( &df->registration_function, "%s", registration_function ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
+	if (asprintf( &df->name, "%s", name ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
 	df->atomic_size = size;
 	df->L = L;
 	
@@ -138,7 +138,7 @@ void DataFieldDestroy( DataField *DF )
 {
 	DataField df = *DF;
 	
-	free( df->registeration_function );
+	free( df->registration_function );
 	free( df->name );
 	free( df->data );
 	free(df);
@@ -190,7 +190,7 @@ void DataBucketDestroy( DataBucket *DB )
 
 void _DataBucketRegisterField(
 						DataBucket db,
-						const char registeration_function[],
+						const char registration_function[],
 						const char field_name[],
 						size_t atomic_size, DataField *_gfield )
 {
@@ -206,7 +206,7 @@ void _DataBucketRegisterField(
 	*/
 	 
 	/* check for repeated name */
-	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
+	DataBucketStringInList( field_name, db->nfields, (const DataField*)db->field, &val );
 	if(val == BTRUE ) {
 		printf("ERROR: Cannot add same field twice\n");
 		ERROR();
@@ -217,7 +217,7 @@ void _DataBucketRegisterField(
 	db->field     = field;
 	
 	/* add field */
-	DataFieldCreate( registeration_function, field_name, atomic_size, db->allocated, &fp );
+	DataFieldCreate( registration_function, field_name, atomic_size, db->allocated, &fp );
 	db->field[ db->nfields ] = fp;
 	
 	db->nfields++;
@@ -227,26 +227,17 @@ void _DataBucketRegisterField(
 	}
 }
 
-/*
-#define DataBucketRegisterField(db,name,size,k) {\
-  char *location;\
-  asprintf(&location,"Registered by %s() at line %d within file %s", __FUNCTION__, __LINE__, __FILE__);\
-  _DataBucketRegisterField( (db), location, (name), (size), (k) );\
-  free(location);\
-}
-*/
-
 void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield)
 {
 	int idx;
 	BTruth found;
 	
-	StringInList(name,db->nfields,(const DataField*)db->field,&found);
+	DataBucketStringInList(name,db->nfields,(const DataField*)db->field,&found);
 	if(found==BFALSE) {
 		printf("ERROR: Cannot find DataField with name %s \n", name );
 		ERROR();
 	}
-	StringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
+	DataBucketStringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
 		
 	*gfield = db->field[idx];
 }
@@ -254,7 +245,7 @@ void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfi
 void DataBucketQueryDataFieldByName(DataBucket db,const char name[],BTruth *found)
 {
 	*found = BFALSE;
-	StringInList(name,db->nfields,(const DataField*)db->field,found);
+	DataBucketStringInList(name,db->nfields,(const DataField*)db->field,found);
 }
 
 void DataBucketFinalize(DataBucket db)
@@ -392,16 +383,22 @@ void DataBucketGetSizes( DataBucket db, int *L, int *buffer, int *allocated )
 
 void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long int *buffer, long int *allocated )
 {
+	int      ierr;
 	long int _L,_buffer,_allocated;
-	int ierr;
 	
 	_L = (long int)db->L;
 	_buffer = (long int)db->buffer;
 	_allocated = (long int)db->allocated;
 	
-	if (L) {         ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm); }
-	if (buffer) {    ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm); }
-	if (allocated) { ierr = MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm); }
+	if (L) {         
+    ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
+  }
+	if (buffer) {    
+    ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
+  }
+	if (allocated) { 
+    ierr =  MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
+  }
 }
 
 void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] )
@@ -421,7 +418,7 @@ void DataFieldGetAccess( const DataField gfield )
 
 void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
 {
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* debug mode */
 	/* check point is valid */
 	if( pid < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
@@ -439,7 +436,7 @@ void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
 
 void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const int pid, void **ctx_p )
 {
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* debug mode */
 	
 	/* check point is valid */
@@ -470,7 +467,7 @@ void DataFieldRestoreAccess( DataField gfield )
 
 void DataFieldVerifyAccess( const DataField gfield, const size_t size)
 {
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	if(gfield->atomic_size != size ) {
         printf("ERROR: Field \"%s\" must be mapped to %zu bytes, your intended structure is %zu bytes in length.\n",
                gfield->name, gfield->atomic_size, size );
@@ -550,7 +547,7 @@ void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[],
 void DataFieldInsertPoint( const DataField field, const int index, const void *ctx ) 
 {
 
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* check point is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
 	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
@@ -565,7 +562,7 @@ void DataBucketRemovePointAtIndex( const DataBucket db, const int index )
 {
 	int f;
 	
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* check point is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
 	if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->L+db->buffer); ERROR(); }
@@ -576,26 +573,6 @@ void DataBucketRemovePointAtIndex( const DataBucket db, const int index )
 		ERROR();
 	}
 	
-#if 0	
-	if (index == db->L-1) { /* last point in list */
-		for( f=0; f<db->nfields; f++ ) {
-			DataField field = db->field[f];
-
-			DataFieldZeroPoint(field,index);
-		}
-	}
-	else {
-		for( f=0; f<db->nfields; f++ ) {
-			DataField field = db->field[f];
-
-			/* copy then remove */
-			DataFieldCopyPoint( db->L-1,field, index,field ); 
-			
-			DataFieldZeroPoint(field,index);
-		}
-	}
-#endif
-
 	if (index != db->L-1) { /* not last point in list */
 		for( f=0; f<db->nfields; f++ ) {
 			DataField field = db->field[f];
@@ -618,7 +595,7 @@ void DataFieldCopyPoint( const int pid_x, const DataField field_x,
 												 const int pid_y, const DataField field_y ) 
 {
 
-#ifdef DATAFIELD_POINT_ACCESS_GUARD	
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* check point is valid */
 	if( pid_x < 0 ){ printf("ERROR: (IN) index must be >= 0\n"); ERROR(); }
 	if( pid_x >= field_x->L ){ printf("ERROR: (IN) index must be < %d\n",field_x->L); ERROR(); }
@@ -645,7 +622,7 @@ void DataFieldCopyPoint( const int pid_x, const DataField field_x,
 // zero only the datafield at this point
 void DataFieldZeroPoint( const DataField field, const int index ) 
 {
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* check point is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
 	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
@@ -682,380 +659,584 @@ void DataBucketRemovePoint( DataBucket db )
 	DataBucketSetSizes( db, db->L-1, -1 );
 }
 
-void _DataFieldViewBinary(DataField field, FILE *fp )
-{
-	fprintf(fp,"<DataField>\n");
-	fprintf(fp,"%d\n", field->L);
-	fprintf(fp,"%zu\n",field->atomic_size);
-	fprintf(fp,"%s\n", field->registeration_function);
-	fprintf(fp,"%s\n", field->name);
-	
-	fwrite(field->data, field->atomic_size, field->L, fp);
-/*
-	printf("  ** wrote %zu bytes for DataField \"%s\" \n", field->atomic_size * field->L, field->name );
-*/
-	fprintf(fp,"\n</DataField>\n");
-}
-
-void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
-{
-	BTruth val;
-	DataField *field;
-
-	DataField gfield;
-	char dummy[100];
-	char registeration_function[5000];
-	char field_name[5000];
-	int L;
-	size_t atomic_size,strL;
-	
-	
-	/* check we haven't finalised the registration of fields */
-	/*
-	if(db->finalised==BTRUE) {
-		printf("ERROR: DataBucketFinalize() has been called. Cannot register more fields\n");
-		ERROR();
-	}
-	*/
-	
-	
-	/* read file contents */
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-	
-	fscanf( fp, "%d\n",&L); //printf("read(L): %d\n", L);
-	
-	fscanf( fp, "%zu\n",&atomic_size); //printf("read(size): %zu\n",atomic_size);
-	
-	fgets(registeration_function,4999,fp); //printf("read(reg func): %s", registeration_function );
-	strL = strlen(registeration_function);
-	if(strL>1){ 
-		registeration_function[strL-1] = 0;
-	}
-	
-	fgets(field_name,4999,fp); //printf("read(name): %s", field_name );
-	strL = strlen(field_name);
-	if(strL>1){ 
-		field_name[strL-1] = 0;
-	}
-
-#ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);
-#endif
-	
-	
-	/* check for repeated name */
-	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
-	if(val == BTRUE ) {
-		printf("ERROR: Cannot add same field twice\n");
-		ERROR();
-	}
-	
-	/* create new space for data */
-	field = realloc( db->field,     sizeof(DataField)*(db->nfields+1));
-	db->field     = field;
-	
-	/* add field */
-	DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );
-
-	/* copy contents of file */
-	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
-#ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
-#endif	
-	/* finish reading meta data */
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-	
-	db->field[ db->nfields ] = gfield;
-	
-	db->nfields++;
-	
-}
-
-void _DataBucketViewAscii_HeaderWrite_v00(FILE *fp)
-{
-	fprintf(fp,"<DataBucketHeader>\n");
-	fprintf(fp,"type=DataBucket\n");
-	fprintf(fp,"format=ascii\n");
-	fprintf(fp,"version=0.0\n");
-	fprintf(fp,"options=\n");
-	fprintf(fp,"</DataBucketHeader>\n");
-}
-void _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
-{	
-	char dummy[100];
-	size_t strL;
-
-	// header open
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-
-	// type
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-	strL = strlen(dummy);
-	if(strL>1) { dummy[strL-1] = 0; }
-	if(strcmp(dummy,"type=DataBucket")!=0) {
-		printf("ERROR: Data file doesn't contain a DataBucket type\n");
-		ERROR();
-	}
-
-	// format
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-
-	// version
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-	strL = strlen(dummy);
-	if(strL>1) { dummy[strL-1] = 0; }
-	if(strcmp(dummy,"version=0.0")!=0) {
-		printf("ERROR: DataBucket file must be parsed with version=0.0 : You tried %s \n", dummy);
-		ERROR();
-	}
-	
-	// options
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-	// header close
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-}
-
-
-void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
-{
-	DataBucket db;
-	FILE *fp;
-	int L,buffer,f,nfields;
-	
-	
-#ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("** DataBucketLoadFromFile **\n");
-#endif
-	
-	/* open file */
-	fp = fopen(filename,"rb");
-	if(fp==NULL){
-		printf("ERROR: Cannot open file with name %s \n", filename);
-		ERROR();
-	}
-
-	/* read header */
-	_DataBucketViewAscii_HeaderRead_v00(fp);
-	
-	fscanf(fp,"%d\n%d\n%d\n",&L,&buffer,&nfields);
-	
-	DataBucketCreate(&db);
-	
-	for( f=0; f<nfields; f++ ) {
-		_DataBucketRegisterFieldFromFile(fp,db);
-	}
-	fclose(fp);
-	
-	DataBucketFinalize(db);
-
-	
-/*	
-  DataBucketSetSizes(db,L,buffer);
-*/
-	db->L = L;
-	db->buffer = buffer;
-	db->allocated = L + buffer;
-	
-	*_db = db;
-}
-
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db)
 {
-	int nproc,rank;
-	
-	MPI_Comm_size(comm,&nproc);
-	MPI_Comm_rank(comm,&rank);
-		
-#ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("** DataBucketLoadFromFile **\n");
-#endif
-	if(type==DATABUCKET_VIEW_STDOUT) {
-		
-	} else if(type==DATABUCKET_VIEW_ASCII) {
-		printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-		ERROR();
-	} else if(type==DATABUCKET_VIEW_BINARY) {
-		if (nproc==1) {
-			_DataBucketLoadFromFileBinary_SEQ(filename,db);
-		} else {
-			char *name;
-			
-			asprintf(&name,"%s_p%1.5d",filename, rank );
-			_DataBucketLoadFromFileBinary_SEQ(name,db);
-			free(name);
-		}
-	} else {
-		printf("ERROR: Not implemented\n");
-		ERROR();
-	}
+  switch (type) {
+    case DATABUCKET_VIEW_STDOUT:
+      printf("ERROR: Cannot load using viewer type = stdout\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_BINARY:
+      printf("ERROR: Cannot load using viewer type = binary\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_NATIVE:
+      DataBucketLoad_NATIVE(comm,filename,db);
+      break;
+      
+    default:
+      printf("ERROR: Unknown viewer type\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+  }
 }
 
-
-void _DataBucketViewBinary(DataBucket db,const char filename[])
+void DataBucketView_STDOUT(MPI_Comm comm,DataBucket db,const char prefix[])
 {
-	FILE *fp = NULL;
-	int f;
+  int f;
+  long int L,buffer,allocated;
+  double memory_usage_total,memory_usage_total_local = 0.0;
+  int rank,commsize;
+  int ierr;
 
-	fp = fopen(filename,"wb");
-	if(fp==NULL){
-		printf("ERROR: Cannot open file with name %s \n", filename);
-		ERROR();
-	}
-	
-	/* db header */
-	_DataBucketViewAscii_HeaderWrite_v00(fp);
-	
-	/* meta-data */
-	fprintf(fp,"%d\n%d\n%d\n", db->L,db->buffer,db->nfields);
-
-	for( f=0; f<db->nfields; f++ ) {
-			/* load datafields */
-		_DataFieldViewBinary(db->field[f],fp);
-	}
-	
-	fclose(fp);
+  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
+  
+  DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);
+  
+  for( f=0; f<db->nfields; f++ ) {
+    double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
+    
+    memory_usage_total_local += memory_usage_f;
+  }
+  ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
+  
+  if (rank == 0) {
+    if (prefix) printf("DataBucketView <%s>:\n",prefix);
+    else printf("DataBucketView:\n");
+    printf("  L                  = %ld \n", L );
+    printf("  buffer (max)       = %ld \n", buffer );
+    printf("  allocated          = %ld \n", allocated );
+    
+    printf("  nfields registered = %d \n", db->nfields );
+    for( f=0; f<db->nfields; f++ ) {
+      double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
+      
+      printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) : rank0\n", f, db->field[f]->name, memory_usage_f  );
+    }
+    
+    printf("  Total mem. usage                                                      = %1.2e (MB) : <collective over %d ranks>\n", memory_usage_total, commsize );
+  }
 }
 
-void DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType type)
+/*
+ cJSON does not support long ints
+*/
+void DataBucketView_NATIVE(MPI_Comm comm,DataBucket db,const char prefix[])
 {
-	switch (type) {
-		case DATABUCKET_VIEW_STDOUT:
-		{
-			int f;
-			double memory_usage_total = 0.0;
-			
-			printf("DataBucketView(SEQ): (\"%s\")\n",filename);
-			printf("  L                  = %d \n", db->L );
-			printf("  buffer             = %d \n", db->buffer );
-			printf("  allocated          = %d \n", db->allocated );
-			
-			printf("  nfields registered = %d \n", db->nfields );
-			for( f=0; f<db->nfields; f++ ) {
-				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-				
-				printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
-				memory_usage_total += memory_usage_f;
-			}
-			printf("  Total mem. usage                                                      = %1.2e (MB) \n", memory_usage_total );
-		}
-			break;
+  int commsize,rank;
+  int ierr;
+  int *pcount = NULL,*bcount = NULL,*acount = NULL,L,buffer,allocated;
+  int f;
+  char jfilename[2048];
+  char fieldfilename[2048];
+  FILE *fpbin = NULL;
+  
+  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
 
-		case DATABUCKET_VIEW_ASCII:
-		{
-			printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-			ERROR();
-		}
-			break;
-			
-		case DATABUCKET_VIEW_BINARY:
-		{
-			_DataBucketViewBinary(db,filename);
-		}
-			break;
-			
-		case DATABUCKET_VIEW_HDF5:
-		{
-			printf("ERROR: Has not been implemented \n");
-			ERROR();
-		}
-			break;
+  if (rank == 0) {
+    pcount = (int*)malloc(sizeof(int)*commsize);
+    bcount = (int*)malloc(sizeof(int)*commsize);
+    acount = (int*)malloc(sizeof(int)*commsize);
+  }
+  
+  /* create size array */
+  DataBucketGetSizes(db,&L,&buffer,&allocated);
+  
+  ierr = MPI_Gather(&L,1,MPI_INT,pcount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Gather(&buffer,1,MPI_INT,bcount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Gather(&allocated,1,MPI_INT,acount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  
+  sprintf(jfilename,"%s_db.json",prefix);
+  sprintf(fieldfilename,"%s_db_data.bin",prefix);
+  if (rank == 0) {
+    cJSON *jso_file,*jso_db,*jso_part,*fields,*field,*content;
+    cJSON *jso;
+    
+    /* create json meta data file */
+    
+    jso_file = cJSON_CreateObject();
+    
+    jso_db = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_file,"DataBucket",jso_db);
+    
+    jso = cJSON_CreateInt(db->nfields);    cJSON_AddItemToObject(jso_db,"nfields",jso);
+    
+    fields = cJSON_CreateArray();
+    for (f=0; f<db->nfields; f++) {
+      
+      field = cJSON_CreateObject();
+      content = cJSON_CreateString(db->field[f]->name);         cJSON_AddItemToObject(field,"fieldName",content);
+      content = cJSON_CreateInt(db->field[f]->atomic_size);     cJSON_AddItemToObject(field,"atomicSize",content);
+      content = cJSON_CreateString(db->field[f]->registration_function);     cJSON_AddItemToObject(field,"registrationFunction",content);
+      content = cJSON_CreateString("nativeBinary");            cJSON_AddItemToObject(field,"dataFormat",content);
+      
+      content = cJSON_CreateString(fieldfilename);              cJSON_AddItemToObject(field,"fileName",content);
+      
+      cJSON_AddItemToArray(fields,field);
+    }
+    
+    // add all fields to data bucket
+    cJSON_AddItemToObject(jso_db,"fields",fields);
 
-		default:
-			printf("ERROR: Unknown method requested \n");
-			ERROR();
-			break;
-	}
+    jso_part = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_db,"partition",jso_part);
+
+    content = cJSON_CreateInt(commsize);                 cJSON_AddItemToObject(jso_part,"commSize",content);
+    content = cJSON_CreateIntArray(pcount,commsize);     cJSON_AddItemToObject(jso_part,"length",content);
+    content = cJSON_CreateIntArray(bcount,commsize);     cJSON_AddItemToObject(jso_part,"buffer",content);
+    content = cJSON_CreateIntArray(acount,commsize);     cJSON_AddItemToObject(jso_part,"allocated",content);
+    
+    /* write json meta data file */
+    {
+      FILE *fp;
+      char *jbuff = cJSON_Print(jso_file);
+      
+      fp = fopen(jfilename,"w");
+      fprintf(fp,"%s\n",jbuff);
+      fclose(fp);
+      /*printf("%s\n",jbuff);*/
+      free(jbuff);
+    }
+    
+    cJSON_Delete(jso_file);
+  }
+  
+  /* write raw binary data with the header */
+  if (rank == 0) {
+    fpbin = fopen(fieldfilename,"w");
+  }
+  for (f=0; f<db->nfields; f++) {
+    /* write only the data being used - we do this so that we can load all the data written in parallel on 1 rank if required */
+    ierr = MPIWrite_Blocking(fpbin,db->field[f]->data,db->L,db->field[f]->atomic_size,0,PETSC_FALSE,comm);
+  }
+  
+  if (fpbin)  { fclose(fpbin); }
+  if (pcount) { free(pcount); }
+  if (bcount) { free(bcount); }
+  if (acount) { free(acount); }
 }
 
-void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
+int _DataBucketRegisterFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *jso_root)
 {
-	switch (type) {
-		case DATABUCKET_VIEW_STDOUT:
-		{
-			int f;
-			long int L,buffer,allocated;
-			double memory_usage_total,memory_usage_total_local = 0.0;
-			int rank;
-			int ierr;
-			
-			ierr = MPI_Comm_rank(comm,&rank);
-			
-			DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);
-			
-			for( f=0; f<db->nfields; f++ ) {
-				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-				
-				memory_usage_total_local += memory_usage_f;
-			}
-			MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);
+  int ierr,rank;
+  int k,nf;
+  cJSON *flist,*f_k;
+  
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
+  flist = NULL;
+  nf = 0;
+  if (jso_root) {
+    flist = cJSON_GetObjectItem(jso_root,"fields");
+    if (!flist) { printf("<error> failed to locate key \"Fields\"\n"); return(1); }
+    nf = cJSON_GetArraySize(flist);
+    
+    f_k = cJSON_GetArrayItemRoot(flist);
+    for (k=0; k<nf; k++) {
+      int found;
+      char *field_name;
+      int _atomic_size;
+      size_t atomic_size;
+      char *registration_function;
+      
+      cJSON_GetObjectValue_char(f_k,"fieldName",&found,&field_name);
+      if (found == cJSON_False) { printf("<error> failed to locate key \"fieldName\"\n");  return(1); }
+      
+      cJSON_GetObjectValue_int(f_k,"atomicSize",&found,&_atomic_size);
+      if (found == cJSON_False) { printf("<error> failed to locate key \"atomicSize\"\n");  return(1); }
+      atomic_size = (size_t)_atomic_size;
+      
+      cJSON_GetObjectValue_char(f_k,"registrationFunction",&found,&registration_function);
+      if (found == cJSON_False) { printf("<error> failed to locate key \"registrationFunction\"\n");  return(1); }
+      
+      _DataBucketRegisterField(db,(const char*)registration_function,(const char*)field_name,atomic_size,NULL);
 
-			if (rank==0) {
-				printf("DataBucketView(MPI): (\"%s\")\n",filename);
-				printf("  L                  = %ld \n", L );
-				printf("  buffer (max)       = %ld \n", buffer );
-				printf("  allocated          = %ld \n", allocated );
-				
-				printf("  nfields registered = %d \n", db->nfields );
-				for( f=0; f<db->nfields; f++ ) {
-					double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-					
-					printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) : rank0\n", f, db->field[f]->name, memory_usage_f  );
-				}
-				
-				printf("  Total mem. usage                                                      = %1.2e (MB) : collective\n", memory_usage_total );
-			}			
-			
-		}
-			break;
-			
-		case DATABUCKET_VIEW_ASCII:
-		{
-			printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-			ERROR();
-		}
-			break;
-			
-		case DATABUCKET_VIEW_BINARY:
-		{
-			char *name;
-			int rank;
-			
-			/* create correct extension */
-			MPI_Comm_rank(comm,&rank);
-			asprintf(&name,"%s_p%1.5d",filename, rank );
+      f_k = cJSON_GetArrayItemNext(f_k);
+    }
+  }
+  
+  /* broadcast from root */
+  ierr = MPI_Bcast(&nf,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  for (k=0; k<nf; k++) {
+    char string_f[2048];
+    char string_r[2048];
+    int i,asize = 0;
+    size_t size;
+    
+    for (i=0; i<2048; i++) {
+      string_f[i] = '\0';
+      string_r[i] = '\0';
+    }
+    
+    if (rank == 0) { sprintf(string_f,"%s",db->field[k]->name); }
+    ierr = MPI_Bcast(string_f,2048,MPI_CHAR,0,comm);MPI_ERROR_CHECK(comm,ierr);
+    
+    if (rank == 0) { asize = (int)db->field[k]->atomic_size; }
+    ierr = MPI_Bcast(&asize,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+    size = (size_t)asize;
 
-			_DataBucketViewBinary(db,name);
-			
-			free(name);
-		}
-			break;
-			
-		case DATABUCKET_VIEW_HDF5:
-		{
-			printf("ERROR: Has not been implemented \n");
-			ERROR();
-		}
-			break;
-			
-		default:
-			printf("ERROR: Unknown method requested \n");
-			ERROR();
-			break;
-	}
+    //ierr = MPI_Bcast(db->field[k]->registration_function,1,MPI_CHAR,0,comm);MPI_ERROR_CHECK(comm,ierr);
+    if (rank == 0) { sprintf(string_r,"%s",db->field[k]->registration_function); }
+    ierr = MPI_Bcast(string_r,2048,MPI_CHAR,0,comm);MPI_ERROR_CHECK(comm,ierr);
+    
+    if (rank != 0) {
+      _DataBucketRegisterField(db,(const char*)string_r,(const char*)string_f,size,NULL);
+    }
+
+  }
+  return(0);
 }
 
-
-void DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
+int _DataBuckeLoadFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *jso_root)
 {
-	int nproc;
-	
-	MPI_Comm_size(comm,&nproc);
-	if (nproc==1) {
-		DataBucketView_SEQ(db,filename,type);
-	} else {
-		DataBucketView_MPI(comm,db,filename,type);
-	}
+  int ierr,rank,commsize;
+  int k,nf;
+  cJSON *flist,*f_k,*part;
+  char *filename,*dataformat;
+  FILE *fpdata;
+  int LBA[3],one2one = 1;
+  int L_total,B_max;
+  MPI_Status status;
+  
+  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
+  flist = NULL;
+  nf = 0;
+  if (jso_root) {
+    flist = cJSON_GetObjectItem(jso_root,"fields");
+    if (!flist) { printf("<error> failed to locate key \"fields\"\n"); return(1); }
+    nf = cJSON_GetArraySize(flist);
+    
+    f_k = cJSON_GetArrayItemRoot(flist);
+    for (k=0; k<nf; k++) {
+      int found;
+      
+      cJSON_GetObjectValue_char(f_k,"fileName",&found,&filename);
+      if (found == cJSON_False) { printf("<error> failed to locate key \"fileName\"\n"); return(1); }
+      
+      cJSON_GetObjectValue_char(f_k,"dataFormat",&found,&dataformat);
+      if (found == cJSON_False) { printf("<error> failed to locate key \"dataFormat\"\n"); return(1); }
+      
+      f_k = cJSON_GetArrayItemNext(f_k);
+    }
+  }
+
+  /* Determine if this is a valid load */
+  part = NULL;
+  if (jso_root) {
+    int found;
+    int commsize_file;
+    
+    part = cJSON_GetObjectItem(jso_root,"partition");
+    if (!part) { printf("<error> failed to locate key \"partition\"\n"); return(1); }
+    
+    cJSON_GetObjectValue_int(part,"commSize",&found,&commsize_file);
+    if (found == cJSON_False) { printf("<error> failed to locate key \"commSize\"\n"); return(1); }
+    
+    if ((commsize == 1) && (commsize != commsize_file)) {
+      one2one = 0;
+    }
+    
+    if ((commsize != 1) && (commsize != commsize_file)) {
+      one2one = -1;
+      printf("[ERROR][_DataBuckeLoadFieldsFromFile_NATIVE] It is only valid to load the data file on the same comm size as that which generated it, or on comm size = 1. Current comm size = %d : Input data generated with comm size = %d.\n",(int)commsize,(int)commsize_file);
+    }
+  }
+  ierr = MPI_Bcast(&one2one,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  if (one2one < 0) return(2);
+  
+  /* post receives - rank 0 will post sends for length and buffer next */
+  if ((one2one == 1) && (rank != 0)) {
+    ierr = MPI_Recv(LBA,3,MPI_INT,0,rank,comm,&status);MPI_ERROR_CHECK(comm,ierr);
+  }
+
+  L_total = 0;
+  B_max = 0;
+  if (jso_root) {
+    int r,found;
+    int commsize_file;
+    int *L_file,*B_file,nvals;
+    
+    cJSON_GetObjectValue_int(part,"commSize",&found,&commsize_file);
+    L_file = (int*)malloc(sizeof(int)*commsize_file);
+    B_file = (int*)malloc(sizeof(int)*commsize_file);
+    
+    cJSON_GetObjectValue_intarray(part,"length",&found,&nvals,L_file);
+    if (found == cJSON_False) { printf("<error> failed to locate key \"length\"\n"); }
+
+    cJSON_GetObjectValue_intarray(part,"buffer",&found,&nvals,B_file);
+    if (found == cJSON_False) { printf("<error> failed to locate key \"buffer\"\n"); }
+
+    /* determine sizes if we are loading a parallel data set on commsize = 1 */
+    for (r=0; r<commsize_file; r++) {
+      L_total += L_file[r];
+      if (B_file[r] > B_max) {
+        B_max = B_file[r];
+      }
+    }
+
+    LBA[0] = L_file[0];
+    LBA[1] = B_file[0];
+    LBA[2] = 0;
+
+    if (one2one == 1) {
+      for (r=1; r<commsize_file; r++) {
+        LBA[0] = L_file[r];
+        LBA[1] = B_file[r];
+        LBA[2] = 0;
+        ierr = MPI_Send(LBA,3,MPI_INT,r,r,comm);MPI_ERROR_CHECK(comm,ierr);
+      }
+    }
+    
+    free(L_file);
+    free(B_file);
+  }
+
+  /* Special case if we are loading a parallel data set on commsize = 1 */
+  if (one2one == 0) {
+    LBA[0] = L_total;
+    LBA[1] = B_max;
+    LBA[2] = 0;
+  }
+  
+  /* allocate space */
+  DataBucketSetSizes(db,LBA[0],LBA[1]);
+  
+  /* broadcast from root */
+  fpdata = NULL;
+  if (rank == 0) {
+    fpdata = fopen(filename,"r");
+    if (!fpdata) { printf("<error> failed to open file \"%s\"\n",filename); return(3); }
+  }
+
+  /* load data from file */
+  for (k=0; k<db->nfields; k++) {
+    ierr = MPIRead_Blocking(fpdata,(void**)&db->field[k]->data,db->L,db->field[k]->atomic_size,0,PETSC_FALSE,comm);MPI_ERROR_CHECK(comm,ierr);
+  }
+  
+  if (fpdata) { fclose(fpdata); }
+  return(0);
+}
+
+void DataBucketLoad_NATIVE(MPI_Comm comm,const char jfilename[],DataBucket *_db)
+{
+  int ierr,ierr_l,ierr_g,nproc,rank;
+  DataBucket db;
+  cJSON *jfile = NULL,*jdb = NULL;
+  
+  ierr = MPI_Comm_size(comm,&nproc);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
+  
+  if (rank == 0) {
+    cJSON_FileView(jfilename,&jfile);
+    if (!jfile) {
+      printf("<error> failed to open JSON file \"%s\"\n",jfilename);
+      *_db = NULL;
+      return;
+    }
+    jdb = cJSON_GetObjectItem(jfile,"DataBucket");
+  }
+  
+  DataBucketCreate(&db);
+  
+  /* load meta data */
+  ierr_l = _DataBucketRegisterFieldsFromFile_NATIVE(comm,db,jdb);
+  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(comm,ierr);
+  if (ierr_g != 0) { MPI_Abort(comm,ierr_g); }
+
+  DataBucketFinalize(db);
+
+  /* load binary data */
+  ierr_l = _DataBuckeLoadFieldsFromFile_NATIVE(comm,db,jdb);
+  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(comm,ierr);
+  if (ierr_g != 0) { MPI_Abort(comm,ierr_g); }
+  
+  if (jfile) { cJSON_Delete(jfile); }
+  
+  *_db = db;
+}
+
+int _DataBuckeLoadFieldsRedundantFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *jso_root)
+{
+  int ierr,rank,commsize;
+  int k,nf;
+  cJSON *flist,*f_k,*part;
+  char *filename,*dataformat;
+  FILE *fpdata;
+  int LBA[3];
+  int L_total,B_max;
+  
+  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
+  flist = NULL;
+  nf = 0;
+  if (jso_root) {
+    flist = cJSON_GetObjectItem(jso_root,"fields");
+    if (!flist) { printf("<error> failed to locate key \"fields\"\n"); return(1); }
+    nf = cJSON_GetArraySize(flist);
+    
+    f_k = cJSON_GetArrayItemRoot(flist);
+    for (k=0; k<nf; k++) {
+      int found;
+      
+      cJSON_GetObjectValue_char(f_k,"fileName",&found,&filename);
+      if (found == cJSON_False) { printf("<error> failed to locate key \"fileName\"\n"); return(1); }
+      
+      cJSON_GetObjectValue_char(f_k,"dataFormat",&found,&dataformat);
+      if (found == cJSON_False) { printf("<error> failed to locate key \"dataFormat\"\n"); return(1); }
+      
+      f_k = cJSON_GetArrayItemNext(f_k);
+    }
+  }
+  
+  part = NULL;
+  L_total = 0;
+  B_max = 0;
+  if (jso_root) {
+    int r,found;
+    int commsize_file;
+    int *L_file,*B_file,nvals;
+
+    part = cJSON_GetObjectItem(jso_root,"partition");
+    if (!part) { printf("<error> failed to locate key \"partition\"\n"); return(1); }
+    
+    cJSON_GetObjectValue_int(part,"commSize",&found,&commsize_file);
+    L_file = (int*)malloc(sizeof(int)*commsize_file);
+    B_file = (int*)malloc(sizeof(int)*commsize_file);
+    
+    cJSON_GetObjectValue_intarray(part,"length",&found,&nvals,L_file);
+    if (found == cJSON_False) { printf("<error> failed to locate key \"length\"\n"); return(1); }
+    
+    cJSON_GetObjectValue_intarray(part,"buffer",&found,&nvals,B_file);
+    if (found == cJSON_False) { printf("<error> failed to locate key \"buffer\"\n"); return(1); }
+    
+    /* Sum total sizes */
+    for (r=0; r<commsize_file; r++) {
+      L_total += L_file[r];
+      if (B_file[r] > B_max) {
+        B_max = B_file[r];
+      }
+    }
+    
+    free(L_file);
+    free(B_file);
+  }
+  
+  LBA[0] = L_total;
+  LBA[1] = B_max;
+  LBA[2] = 0;
+  ierr = MPI_Bcast(LBA,3,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  
+  /* allocate space */
+  DataBucketSetSizes(db,LBA[0],LBA[1]);
+  
+  /* broadcast from root */
+  fpdata = NULL;
+  if (rank == 0) {
+    fpdata = fopen(filename,"r");
+    if (!fpdata) { printf("<error> failed to open file \"%s\"\n",filename); return(3); }
+  }
+  
+  /* load data from file - ensure rank 0 reads everything - post read we broadcast */
+  LBA[0] = L_total;
+  LBA[1] = B_max;
+  LBA[2] = 0;
+  for (k=0; k<db->nfields; k++) {
+    ierr = MPIRead_Blocking(fpdata,(void**)&db->field[k]->data,LBA[0],db->field[k]->atomic_size,0,PETSC_FALSE,comm);MPI_ERROR_CHECK(comm,ierr);
+
+    ierr = MPI_Bcast(db->field[k]->data,db->L*db->field[k]->atomic_size,MPI_BYTE,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  }
+  
+  if (fpdata) { fclose(fpdata); }
+  return(0);
+}
+
+void DataBucketLoadRedundant_NATIVE(MPI_Comm comm,const char jfilename[],DataBucket *_db)
+{
+  int ierr,ierr_l,ierr_g,nproc,rank;
+  DataBucket db;
+  cJSON *jfile = NULL,*jdb = NULL;
+  
+  ierr = MPI_Comm_size(comm,&nproc);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
+  
+  if (rank == 0) {
+    cJSON_FileView(jfilename,&jfile);
+    if (!jfile) {
+      printf("<error> failed to open JSON file \"%s\"\n",jfilename);
+      *_db = NULL;
+      return;
+    }
+    jdb = cJSON_GetObjectItem(jfile,"DataBucket");
+  }
+  
+  DataBucketCreate(&db);
+  
+  /* load meta data */
+  ierr_l = _DataBucketRegisterFieldsFromFile_NATIVE(comm,db,jdb);
+  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(comm,ierr);
+  if (ierr_g != 0) { MPI_Abort(comm,ierr_g); }
+  
+  DataBucketFinalize(db);
+  
+  /* load binary data */
+  ierr_l = _DataBuckeLoadFieldsRedundantFromFile_NATIVE(comm,db,jdb);
+  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(comm,ierr);
+  if (ierr_g != 0) { MPI_Abort(comm,ierr_g); }
+  
+  if (jfile) { cJSON_Delete(jfile); }
+  
+  *_db = db;
+}
+
+void DataBucketLoadRedundantFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db)
+{
+  switch (type) {
+    case DATABUCKET_VIEW_STDOUT:
+      printf("ERROR: Cannot load (redundant) using viewer type = stdout\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_BINARY:
+      printf("ERROR: Cannot load (redundant) using viewer type = binary\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_NATIVE:
+      DataBucketLoadRedundant_NATIVE(comm,filename,db);
+      break;
+      
+    default:
+      printf("ERROR: Unknown viewer type\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+  }
+}
+
+void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketViewType type)
+{
+  switch (type) {
+    case DATABUCKET_VIEW_STDOUT:
+      DataBucketView_STDOUT(comm,db,prefix);
+      break;
+      
+    case DATABUCKET_VIEW_BINARY:
+      printf("ERROR: Binary viewer is not implemented\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+
+    case DATABUCKET_VIEW_NATIVE:
+      DataBucketView_NATIVE(comm,db,prefix);
+      break;
+      
+    default:
+      printf("ERROR: Unknown viewer type\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+  }
 }
 
 void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)

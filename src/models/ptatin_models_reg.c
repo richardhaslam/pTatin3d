@@ -26,20 +26,18 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
-#include "../ptatin_models.h"
+#include "ptatin_models.h"
 
 /* Users add prototypes here */
 extern PetscErrorCode pTatinModelRegister_Template(void);
 extern PetscErrorCode pTatinModelRegister_ViscousSinker(void);
 extern PetscErrorCode pTatinModelRegister_Gene3D(void);
-extern PetscErrorCode pTatinModelRegister_Gene3DNueve(void);
 extern PetscErrorCode pTatinModelRegister_Indentor(void);
-extern PetscErrorCode pTatinModelRegister_Rift3D(void);
 extern PetscErrorCode pTatinModelRegister_Rift3D_T(void);
-extern PetscErrorCode pTatinModelRegister_Sierra(void);
 extern PetscErrorCode pTatinModelRegister_AdvDiffExample(void);
 extern PetscErrorCode pTatinModelRegister_Delamination(void);
 extern PetscErrorCode pTatinModelRegister_Riftrh(void);
+extern PetscErrorCode pTatinModelRegister_Rift_oblique3d(void);
 extern PetscErrorCode pTatinModelRegister_GeoMod2008(void);
 extern PetscErrorCode pTatinModelRegister_MultilayerFolding(void);
 extern PetscErrorCode pTatinModelRegister_SubmarineLavaFlow(void);
@@ -51,6 +49,9 @@ extern PetscErrorCode pTatinModelRegister_ThermalSB(void);
 extern PetscErrorCode pTatinModelRegister_SD3D(void);
 extern PetscErrorCode pTatinModelRegister_PAS(void);
 extern PetscErrorCode pTatinModelRegister_PD(void);
+extern PetscErrorCode pTatinModelCreate_StaticBox(pTatinModel);
+extern PetscErrorCode pTatinModelCreate_StaticBoxTM(pTatinModel);
+extern PetscErrorCode pTatinModelCreate_AnlVV(pTatinModel m);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -63,14 +64,12 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_ViscousSinker();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Gene3D();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Gene3DNueve();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Indentor();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Rift3D();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Rift3D_T();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Sierra();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_AdvDiffExample();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_Rift_oblique3d();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_SubmarineLavaFlow();CHKERRQ(ierr);
@@ -82,6 +81,10 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_SD3D();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_PAS();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_PD();CHKERRQ(ierr);
- 
+
+  ierr = pTatinModelDynamicRegister("static_box",pTatinModelCreate_StaticBox);CHKERRQ(ierr);
+  ierr = pTatinModelDynamicRegister("static_box_thermomech",pTatinModelCreate_StaticBoxTM);CHKERRQ(ierr);
+  ierr = pTatinModelDynamicRegister("analytics_vv",pTatinModelCreate_AnlVV);CHKERRQ(ierr);
+
 	PetscFunctionReturn(0);
 }

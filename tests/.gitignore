@@ -1,0 +1,8 @@
+# Python artefacts
+__pycache__
+*.pyc
+
+# pyTestHarness
+pthBatchQueuingSystem.conf
+pthErrorReport.log
+*_sandbox

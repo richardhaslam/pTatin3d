@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -92,13 +91,13 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 	
 	/* experiment info */
 	data->experiment = 1;
-	ierr = PetscOptionsGetInt(NULL,"-gm08_experiment",&data->experiment,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-gm08_experiment",&data->experiment,&flg);CHKERRQ(ierr);
 	data->three_dimensional = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-gm08_three_dimensional",&data->three_dimensional,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-gm08_three_dimensional",&data->three_dimensional,&flg);CHKERRQ(ierr);
 	data->use_free_surface = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-gm08_use_free_surface",&data->use_free_surface,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-gm08_use_free_surface",&data->use_free_surface,&flg);CHKERRQ(ierr);
 	data->frictional_boundary_layer_delta = 0.2 * cm2m;
-	ierr = PetscOptionsGetReal(NULL,"-gm08_skin_thickness",&data->frictional_boundary_layer_delta,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-gm08_skin_thickness",&data->frictional_boundary_layer_delta,&flg);CHKERRQ(ierr);
 	
 	/* materials */
 	fac = 1.0;
@@ -261,8 +260,8 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 
 		ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 		
-		ierr = PetscOptionsInsertString("-stk_velocity_da_refine_hierarchy_z 1,1,1,1,1,1,1,1");CHKERRQ(ierr);
-		ierr = PetscOptionsInsertString("-stk_velocity_da_refine_z 1");CHKERRQ(ierr);
+		ierr = PetscOptionsInsertString(NULL,"-stk_velocity_da_refine_hierarchy_z 1,1,1,1,1,1,1,1");CHKERRQ(ierr);
+		ierr = PetscOptionsInsertString(NULL,"-stk_velocity_da_refine_z 1");CHKERRQ(ierr);
 		//ierr = DMDASetRefinementFactor(stokes->dav,PETSC_IGNORE,PETSC_IGNORE,1);CHKERRQ(ierr);
 
 		c->mz = 1;
@@ -512,6 +511,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_GeoMod2008(pTatinCtx c,void *ctx)
 
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(stokes->dav,0.0,data->Lx,0.0,data->Ly,0.0,data->Lz);CHKERRQ(ierr);
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(stokes,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -564,8 +567,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 			}
 		}
 		
-		density = -9.81 * density;
-
 		viscosity = viscosity / 1.0e10;
 		density   = density / 1.0e10;
 		
@@ -657,8 +658,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 			viscosity    = data->quartz_eta;
 			density      = data->quartz_rho;
 		}
-		
-		density = -9.81 * density;
 		
 		viscosity = viscosity / 1.0e10;
 		density   = density / 1.0e10;

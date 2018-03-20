@@ -1,0 +1,20 @@
+# Manual pdf
+pt3d-manual.pdf
+
+# Latex and Beamer intermediates
+*.toc
+*.bbl
+*.blg
+*.aux
+*.log
+*.nav
+*.snm
+*.out
+*.fls
+*.temp
+*.vrb
+*-blx.bib
+*.run.xml
+
+# latexmk
+*.fdb_latexmk

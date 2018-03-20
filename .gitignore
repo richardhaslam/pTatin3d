@@ -1,13 +1,20 @@
+# Build artefacts
 *.a
 *.d
 *.o
 *.DIR
 *.app
-*.aux
-*.log
-*.out
-pt3d-manual.pdf
-*.toc
+makefile.arch.log
+
+# Default output directories
 run/
 output/
+
+# OS X
 *.DS_Store
+
+# Local configuration
+makefile.arch
+
+# Test harness
+pythontestharness

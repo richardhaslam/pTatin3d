@@ -58,6 +58,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,const Pet
 	/* velocity */
 	vbasis_dofs = 3;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, vbasis_dofs,1, NULL,NULL,NULL, &dav );CHKERRQ(ierr);
+  ierr = DMSetUp(dav);CHKERRQ(ierr);
 	ierr = DMDAESetType_Q1Macro(dav);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -66,6 +67,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,const Pet
 	/* pressure */
 	pbasis_dofs = P_BASIS_FUNCTIONS;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+  ierr = DMSetUp(dap);CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
 	
@@ -137,79 +139,8 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes_Q1MacroP1(PhysCompStokes ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompLoadMesh_Stokes3d_Q1MacroP1"
-PetscErrorCode PhysCompLoadMesh_Stokes3d_Q1Macro(PhysCompStokes ctx,const char fname_vel[],const char fname_p[])
-{
-	DM dav,dap,multipys_pack;
-	PetscInt pbasis_dofs;
-	PetscInt Mp,Np,Pp,*lxv,*lyv,*lzv,MX,MY,MZ;
-	const PetscInt *lxp,*lyp,*lzp;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-
-	
-	/* velocity */
-	//vbasis_dofs = 3;
-	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_vel,&dav);CHKERRQ(ierr);
-	/* the above function call will load the initial geometry */
-	ierr = DMDAESetType_Q1Macro(dav);CHKERRQ(ierr);
-	
-	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
-	ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
-	
-	/* pressure */
-	MX = ctx->mx;
-	MY = ctx->my;
-	MZ = ctx->mz;
-	pbasis_dofs = P_BASIS_FUNCTIONS;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
-	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
-	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
-	
-	ierr = PetscFree(lxv);CHKERRQ(ierr);
-	ierr = PetscFree(lyv);CHKERRQ(ierr);
-	ierr = PetscFree(lzv);CHKERRQ(ierr);
-	
-	
-	/* stokes */
-	ierr = DMCompositeCreate(PETSC_COMM_WORLD,&multipys_pack);CHKERRQ(ierr);
-	ierr = DMCompositeAddDM(multipys_pack,dav);CHKERRQ(ierr);	
-	ierr = DMCompositeAddDM(multipys_pack,dap);CHKERRQ(ierr);	
-	
-	ierr = DMDASetFieldName(dav,0,"ux");CHKERRQ(ierr);
-	ierr = DMDASetFieldName(dav,1,"uy");CHKERRQ(ierr);
-	ierr = DMDASetFieldName(dav,2,"uz");CHKERRQ(ierr);
-	switch (P_BASIS_FUNCTIONS) {
-		case 1:
-			ierr = DMDASetFieldName(dap,0,"P0_p");CHKERRQ(ierr);
-			break;
-		case 4:
-			ierr = DMDASetFieldName(dap,0,"P1_p");CHKERRQ(ierr);
-			ierr = DMDASetFieldName(dap,1,"P1_dpdx");CHKERRQ(ierr);
-			ierr = DMDASetFieldName(dap,2,"P1_dpdy");CHKERRQ(ierr);
-			ierr = DMDASetFieldName(dap,3,"P1_dpdz");CHKERRQ(ierr);
-			break;
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Pressure space may ONLY contain 1 or 4 basis functions");
-			break;
-	}
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)dav,"stk_velocity_");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)dap,"stk_pressure_");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)multipys_pack,"stk_pack_");CHKERRQ(ierr);
-	
-	ctx->dav  = dav;
-	ctx->dap  = dap;
-	ctx->stokes_pack = multipys_pack;
-	
-	
-	PetscFunctionReturn(0);
-}
-
 /* re-usable functions */
 /*
-PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel[],const char fname_p[],const char fname_coors[]);
 PetscErrorCode PhysCompCreateBoundaryList_Stokes(PhysCompStokes ctx);
 */
 

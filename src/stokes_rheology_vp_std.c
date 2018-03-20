@@ -108,6 +108,7 @@ static inline void ComputeStrainRate3d(double ux[],double uy[],double uz[],doubl
 	D[2][0] = exz;		D[2][1] = eyz;		D[2][2] = ezz;
 }
 
+/*
 static inline void ComputeDeformationGradient3d(double ux[],double uy[],double uz[],double dNudx[],double dNudy[],double dNudz[],double L[NSD][NSD])
 {
 	int i,j,k;
@@ -132,6 +133,7 @@ static inline void ComputeDeformationGradient3d(double ux[],double uy[],double u
 		L[2][2] += dNudz[k] * uz[k];
 	}
 }
+*/
 
 static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 {
@@ -145,6 +147,7 @@ static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 	*A2 = sqrt( 0.5 * sum );	
 }
 
+/*
 static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
 {
 	const double one_third = 0.333333333333333;
@@ -152,6 +155,7 @@ static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
 	*A2 = one_third * ( A[0][0] + A[1][1] + A[2][2] );
 	
 }
+*/
 
 #undef __FUNCT__
 #define __FUNCT__ "private_EvaluateRheologyNonlinearitiesMarkers_VPSTD"
@@ -471,7 +475,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
 				double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield_inf;
 				
-				switch (MatType_data[ region_idx ].softening_type) {
+				switch (softening_type) {
 					case SOFTENING_NONE: {
 						
 					}
@@ -665,7 +669,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 			case DENSITY_CONSTANT: {
 				PetscReal rho_mp;
 				
-				rho_mp = -10.0*DensityConst_data[region_idx].density;
+				rho_mp = DensityConst_data[region_idx].density;
 				MPntPStokesSetField_density(mpprop_stokes,rho_mp);
 			}
 				break;
@@ -676,7 +680,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				PetscReal alpha = DensityBoussinesq_data[region_idx].alpha;
 				PetscReal beta  = DensityBoussinesq_data[region_idx].beta;
 				
-				rho_mp = -10.0*rho0*(1-alpha*T_mp+beta*pressure_mp);
+				rho_mp = rho0*(1-alpha*T_mp+beta*pressure_mp);
 				MPntPStokesSetField_density(mpprop_stokes,rho_mp);         
 			}
 				break;

@@ -47,7 +47,6 @@
 */
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "petscmath.h"
 #include "ptatin3d.h"
@@ -125,27 +124,27 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	rheology->eta_upper_cutoff_global = 1.0e+26;
 	rheology->eta_lower_cutoff_global = 1.0e+20;
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Lx",&data->Lx,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Ox",&data->Ox,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Ly",&data->Ly,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Oy",&data->Oy,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Lz",&data->Lz,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Oz",&data->Oz,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_Lx",&data->Lx,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_Ox",&data->Ox,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_Ly",&data->Ly,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_Oy",&data->Oy,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_Lz",&data->Lz,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_Oz",&data->Oz,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_velocity",&data->velocity,NULL);CHKERRQ(ierr); 	
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_velocity",&data->velocity,NULL);CHKERRQ(ierr); 	
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_viscosity_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_velocity_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_viscosity_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_velocity_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Ttop",&data->Ttop,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Tbot",&data->Tbot,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_Ttop",&data->Ttop,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_Tbot",&data->Tbot,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_eta0",&data->eta[0],NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_rho0",&data->rho[0],NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_diffusivity0",&data->diffusivity[0],NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_alpha0",&data->alpha[0],NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_H0",&data->H[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_eta0",&data->eta[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_rho0",&data->rho[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_diffusivity0",&data->diffusivity[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_alpha0",&data->alpha[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_conv2d_H0",&data->H[0],NULL);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[thermal_convection2d]: Ra = %1.4e \n",data->alpha[0]*10*DeltaT*data->Lx*data->Lx*data->Lx/(data->diffusivity[0]*data->eta[0]));
 	
@@ -208,7 +207,7 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 		MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
 	}
 
-	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 #endif	
 	
 	PetscFunctionReturn(0);
@@ -326,7 +325,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Thermal_Convection2d(pTatinCtx c,vo
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox,data->Lx, data->Oy,data->Ly, data->Oz, data->Lz);CHKERRQ(ierr);
 	ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(c);CHKERRQ(ierr);
-	
+  {
+    PetscReal gvec[] = { 0.0, -9.8, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+  }
+  
 	PetscFunctionReturn(0);
 }
 
@@ -361,17 +364,19 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx 
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
 		MPntPStokes   *mpprop_stokes;
-		double        *position,ycoord,xcoord,zcoord;
+		/* double        *position,ycoord,xcoord,zcoord; */
 		
 		DataFieldAccessPoint(PField_std,p,(void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
+    /*
 		MPntStdGetField_global_coord(material_point,&position);
-		
+	
 		xcoord = position[0] * data->length_bar;
 		ycoord = position[1] * data->length_bar;
 		zcoord = position[2] * data->length_bar;
+    */
 		
 		phase = 0;
 		/* user the setters provided for you */
@@ -401,18 +406,19 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx 
 #define __FUNCT__ "DMDAVecTraverse3d_PerturbationThermal_Convection2d"
 PetscBool DMDAVecTraverse3d_PerturbationThermal_Convection2d(PetscScalar position[], PetscScalar *val, void *ctx) 
 {
-	PetscScalar x,y,z;
+	PetscScalar x,y;
+  /* PetscScalar z; */
 	PetscReal  *coeffs;
 	PetscBool  impose;
 	PetscReal  Tbot,Ttop,Ly,Lx,Oy,Ox;
-	PetscReal  cm_yr2m_s;
+	/* PetscReal  cm_yr2m_s; */
 	
-	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
+	/* cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ; */
 	
 	/* get coordinates */
 	x = position[0];
 	y = position[1];
-	z = position[2];
+	/* z = position[2]; */
 	/* fetch user data */
 	coeffs = (PetscReal*)ctx;
 	Ttop       = coeffs[0]; 

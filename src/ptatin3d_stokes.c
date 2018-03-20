@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d_defs.h"
@@ -39,6 +38,8 @@
 #include "dmda_checkpoint.h"
 #include "element_type_Q2.h"
 #include "data_bucket.h"
+
+#include "petsc/private/snesimpl.h" /* for snes->ttol */
 
 #include "QPntVolCoefStokes_def.h"
 #include "QPntSurfCoefStokes_def.h"
@@ -150,39 +151,10 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	MY = my;
 	MZ = mz;
 
-#if 0
-	/* pressure */
-	pbasis_dofs = P_BASIS_FUNCTIONS;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, pbasis_dofs,0, 0,0,0, &dap );CHKERRQ(ierr);
-	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
-	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(dap,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*(Mp+1),&lxv);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*(Np+1),&lyv);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*(Pp+1),&lzv);CHKERRQ(ierr);
-	for (p=0; p<Mp; p++) {
-		lxv[p] = lxp[p] * 2;
-	} lxv[Mp-1]++;
-	for (p=0; p<Np; p++) {
-		lyv[p] = lyp[p] * 2;
-	} lyv[Np-1]++;
-	for (p=0; p<Pp; p++) {
-		lzv[p] = lzp[p] * 2;
-	} lzv[Pp-1]++;
-	
-	/* velocity */
-	vbasis_dofs = 3;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, vbasis_dofs,2, lxv,lyv,lzv, &dav );CHKERRQ(ierr);
-	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
-	ierr = PetscFree(lxv);CHKERRQ(ierr);
-	ierr = PetscFree(lyv);CHKERRQ(ierr);
-	ierr = PetscFree(lzv);CHKERRQ(ierr);
-#endif
-
-
 	/* velocity */
 	vbasis_dofs = 3;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, vbasis_dofs,2, NULL,NULL,NULL, &dav );CHKERRQ(ierr);
+  ierr = DMSetUp(dav);CHKERRQ(ierr);
 	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
 	ierr = DMSetMatType(dav,MATSBAIJ);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -191,6 +163,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	/* pressure */
 	pbasis_dofs = P_BASIS_FUNCTIONS;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+  ierr = DMSetUp(dap);CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
 	ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
@@ -382,146 +355,80 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_ScalarVelocity(PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompLoadMesh_Stokes3d"
-PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel[],const char fname_p[])
+#undef __FUNCT__
+#define __FUNCT__ "PhysCompSetup_Stokes"
+PetscErrorCode PhysCompSetup_Stokes(PhysCompStokes ctx,DM dav)
 {
-	DM dav,dap,multipys_pack;
-	PetscInt pbasis_dofs;
-	PetscInt Mp,Np,Pp,*lxv,*lyv,*lzv,MX,MY,MZ;
-	const PetscInt *lxp,*lyp,*lzp;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-
-#if 0	
-	/* pressure */
-	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_p,&dap);CHKERRQ(ierr);
-	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
-
-	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(dap,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*(Mp+1),&lxv);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*(Np+1),&lyv);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*(Pp+1),&lzv);CHKERRQ(ierr);
-	for (p=0; p<Mp; p++) {
-		lxv[p] = lxp[p] * 2;
-	} lxv[Mp-1]++;
-	for (p=0; p<Np; p++) {
-		lyv[p] = lyp[p] * 2;
-	} lyv[Np-1]++;
-	for (p=0; p<Pp; p++) {
-		lzv[p] = lzp[p] * 2;
-	} lzv[Pp-1]++;
-
-	
-	/* velocity */
-	/* FUCK ME, the layout changes and the Q2-P1 elements won't line up anymore...lame */
-//	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_vel,&dav);CHKERRQ(ierr);
-//	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
-
-	MX = ctx->mx;
-	MY = ctx->my;
-	MZ = ctx->mz;
-	
-	vbasis_dofs = 3;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, vbasis_dofs,2, lxv,lyv,lzv, &dav );CHKERRQ(ierr);
-	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
-	ierr = PetscFree(lxv);CHKERRQ(ierr);
-	ierr = PetscFree(lyv);CHKERRQ(ierr);
-	ierr = PetscFree(lzv);CHKERRQ(ierr);
-#endif
-	
-	
-	/* velocity */
-	//vbasis_dofs = 3;
-	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_vel,&dav);CHKERRQ(ierr);
-	/* the above function call will load the initial geometry */
-	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
-	
-	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
-	ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
-	
-	ierr = DMDAGetSizeElementQ2(dav,&ctx->mx,&ctx->my,&ctx->mz);CHKERRQ(ierr);
-	
-	/* pressure */
-	MX = ctx->mx;
-	MY = ctx->my;
-	MZ = ctx->mz;
-	
-	pbasis_dofs = P_BASIS_FUNCTIONS;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
-	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
-	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
-	
-	ierr = PetscFree(lxv);CHKERRQ(ierr);
-	ierr = PetscFree(lyv);CHKERRQ(ierr);
-	ierr = PetscFree(lzv);CHKERRQ(ierr);
-	
-	
-	/* stokes */
-	ierr = DMCompositeCreate(PETSC_COMM_WORLD,&multipys_pack);CHKERRQ(ierr);
-	ierr = DMCompositeAddDM(multipys_pack,dav);CHKERRQ(ierr);	
-	ierr = DMCompositeAddDM(multipys_pack,dap);CHKERRQ(ierr);	
-	
-	ierr = DMDASetFieldName(dav,0,"ux");CHKERRQ(ierr);
-	ierr = DMDASetFieldName(dav,1,"uy");CHKERRQ(ierr);
-	ierr = DMDASetFieldName(dav,2,"uz");CHKERRQ(ierr);
-	switch (P_BASIS_FUNCTIONS) {
-		case 1:
-			ierr = DMDASetFieldName(dap,0,"P0_p");CHKERRQ(ierr);
-			break;
-		case 4:
-			ierr = DMDASetFieldName(dap,0,"P1_p");CHKERRQ(ierr);
-			ierr = DMDASetFieldName(dap,1,"P1_dpdx");CHKERRQ(ierr);
-			ierr = DMDASetFieldName(dap,2,"P1_dpdy");CHKERRQ(ierr);
-			ierr = DMDASetFieldName(dap,3,"P1_dpdz");CHKERRQ(ierr);
-			break;
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Pressure space may ONLY contain 1 or 4 basis functions");
-			break;
-	}
+  DM dap,multipys_pack;
+  PetscInt pbasis_dofs;
+  PetscInt Mp,Np,Pp,*lxv,*lyv,*lzv,MX,MY,MZ;
+  const PetscInt *lxp,*lyp,*lzp;
+  MPI_Comm comm;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dav,&comm);CHKERRQ(ierr);
+  
+  /* velocity */
+  ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
+  ierr = DMSetMatType(dav,MATSBAIJ);CHKERRQ(ierr);
+  
+  ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
+  
+  ierr = DMDAGetSizeElementQ2(dav,&ctx->mx,&ctx->my,&ctx->mz);CHKERRQ(ierr);
+  
+  /* pressure */
+  MX = ctx->mx;
+  MY = ctx->my;
+  MZ = ctx->mz;
+  
+  pbasis_dofs = P_BASIS_FUNCTIONS;
+  ierr = DMDACreate3d( comm, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+  ierr = DMSetUp(dap);CHKERRQ(ierr);
+  ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
+  ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
+  
+  ierr = PetscFree(lxv);CHKERRQ(ierr);
+  ierr = PetscFree(lyv);CHKERRQ(ierr);
+  ierr = PetscFree(lzv);CHKERRQ(ierr);
+  
+  
+  /* stokes */
+  ierr = DMCompositeCreate(comm,&multipys_pack);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(multipys_pack,dav);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(multipys_pack,dap);CHKERRQ(ierr);
+  
+  ierr = DMDASetFieldName(dav,0,"ux");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(dav,1,"uy");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(dav,2,"uz");CHKERRQ(ierr);
+  switch (P_BASIS_FUNCTIONS) {
+    case 1:
+      ierr = DMDASetFieldName(dap,0,"P0_p");CHKERRQ(ierr);
+      break;
+    case 4:
+      ierr = DMDASetFieldName(dap,0,"P1_p");CHKERRQ(ierr);
+      ierr = DMDASetFieldName(dap,1,"P1_dpdx");CHKERRQ(ierr);
+      ierr = DMDASetFieldName(dap,2,"P1_dpdy");CHKERRQ(ierr);
+      ierr = DMDASetFieldName(dap,3,"P1_dpdz");CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Pressure space may ONLY contain 1 or 4 basis functions");
+      break;
+  }
   ierr = PetscObjectSetOptionsPrefix((PetscObject)dav,"stk_velocity_");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)dap,"stk_pressure_");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)multipys_pack,"stk_pack_");CHKERRQ(ierr);
-	
-	ctx->dav  = dav;
-	ctx->dap  = dap;
-	ctx->stokes_pack = multipys_pack;
-	
-	PetscFunctionReturn(0);
-}
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompSaveMesh_Stokes3d"
-PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel[],const char fname_p[],const char fname_coors[])
-{
-	DM dav,dap;
-	Vec coords;
-	PetscViewer viewer;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	
-	dav = ctx->dav;
-	dap = ctx->dap;
+  ierr = DMSetFromOptions(dav);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dap);CHKERRQ(ierr);
 
-	/* velocity */
-	ierr = DMDAPackDataToFile(dav,fname_vel);CHKERRQ(ierr);
-
-	/* pressure */
-	ierr = DMDAPackDataToFile(dap,fname_p);CHKERRQ(ierr);
-	
-	/* coords */
-	/* Why is this even here? - DMDAPackDataToFile() writes out the coordinates */
-	if (fname_coors) {
-		ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
-		ierr = PetscViewerBinaryOpen( PetscObjectComm((PetscObject)dav),fname_coors,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-		ierr = VecView(coords,viewer);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-	}
-	
-	PetscFunctionReturn(0);
+  ctx->dav  = dav;
+  ctx->dap  = dap;
+  ctx->stokes_pack = multipys_pack;
+  
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -537,7 +444,7 @@ PetscErrorCode pTatinStokesKSPMonitorBlocks(KSP ksp,PetscInt n,PetscReal rnorm,v
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
 	ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
-	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&w,&v);CHKERRQ(ierr);
 	
 	ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
@@ -569,31 +476,32 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
 	Q->dim  = nsd;
 	Q->type = VOLUME_QUAD;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"VolumeQuadratureCreate_GaussLegendreStokes:\n");
+	/*PetscPrintf(PETSC_COMM_WORLD,"VolumeQuadratureCreate_GaussLegendreStokes:\n");*/
 	switch (np_per_dim) {
 		case 1:
-			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 1 pnt Gauss Legendre quadrature\n");
+			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 1 pnt Gauss Legendre quadrature\n");*/
 			//QuadratureCreateGauss_1pnt_3D(&ngp,gp_xi,gp_weight);
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"This will result in a rank-deficient operator");
 			break;
 			
 		case 2:
-			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 2x2 pnt Gauss Legendre quadrature\n");
+			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 2x2 pnt Gauss Legendre quadrature\n");*/
 			QuadratureCreateGauss_2pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
 			break;
 			
 		case 3:
-			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");
+			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");*/
 			QuadratureCreateGauss_3pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
 			break;
 			
 		default:
-			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");
+			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");*/
 			QuadratureCreateGauss_3pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
 			break;
 	}
 	
 	Q->n_elements = ncells;
-	if (ncells!=0) {
+	if (ncells != 0) {
 		
 		DataBucketCreate(&Q->properties_db);
 		DataBucketRegisterField(Q->properties_db,QPntVolCoefStokes_classname, sizeof(QPntVolCoefStokes),NULL);
@@ -601,7 +509,10 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
 		
 		DataBucketSetInitialSizes(Q->properties_db,Q->npoints*ncells,1);
 		
+    /*
+    // Note: This call will hang if any rank contained zero elements
 		DataBucketView(PETSC_COMM_WORLD, Q->properties_db,"GaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+    */
 	}
 	
 	*quadrature = Q;
@@ -930,6 +841,7 @@ PetscErrorCode SurfaceQuadratureGetAllCellData_Stokes(SurfaceQuadrature Q,QPntSu
 PetscErrorCode SurfaceQuadratureGetCellData_Stokes(SurfaceQuadrature Q,QPntSurfCoefStokes coeffs[],PetscInt cidx,QPntSurfCoefStokes *cell[])
 {
   PetscFunctionBegin;
+  *cell = NULL;
 	if (cidx >= Q->nfaces) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"cidx > max cells");
 	}
@@ -969,15 +881,15 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 		
 		ctx->surfQ[face_index] = surfQ;
 	}
-
-	
+  
+  /*
 	for (face_index=0; face_index<HEX_EDGES; face_index++) {
 		char name[PETSC_MAX_PATH_LEN];
 
 		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"SurfaceGaussLegendre StokesCoefficients[face %D]",face_index);
     DataBucketView(PetscObjectComm((PetscObject)dav), ctx->surfQ[face_index]->properties_db,name,DATABUCKET_VIEW_STDOUT);
 	}
-	
+	*/
     
 	PetscFunctionReturn(0);
 }
@@ -988,7 +900,7 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *ctx)
 {
 	Vec X,dX,Xu,Xp,dXu,dXp;
-	PetscReal atol,rtol,stol,ttol;
+	PetscReal atol,rtol,stol;
 	PetscInt maxit,maxf;
 	PetscReal xnormUP[2],snormUP[2];
 	PetscReal alpha[2];
@@ -1022,9 +934,9 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
 	ierr = DMCompositeRestoreAccess(stokes_pack,dX,&dXu,&dXp);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 
-	if (!it) {
+	if (it==0) {
 		/* set parameter for default relative tolerance convergence test */
-        ttol = fnorm*rtol;
+        snes->ttol = fnorm*rtol;
 	}
 	
 	if (fnorm < atol) {
@@ -1032,13 +944,13 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
         ierr = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)atol);CHKERRQ(ierr);
 	}
 	
-	if (it && !*reason) {	
+	if (it>0 && !*reason) {
         ierr = PetscInfo2(snes,"ConvergenceTest : function norm %14.12e ?<? %14.12e\n",(double)fnorm,(double)atol);CHKERRQ(ierr);
 
 		ierr = PetscInfo2(snes,"ConvergenceTest : small update length (U): %14.12e ?<? %14.12e \n",(double)snormUP[0]/(double)xnormUP[0],(double)stol);CHKERRQ(ierr);
 		ierr = PetscInfo2(snes,"ConvergenceTest : small update length (P): %14.12e ?<? %14.12e \n",(double)snormUP[1]/(double)xnormUP[1],(double)stol);CHKERRQ(ierr);
 
-		ierr = PetscInfo2(snes,"ConvergenceTest : function norm %14.12e ?<? %14.12e (relative tolerance)\n",(double)fnorm,(double)ttol);CHKERRQ(ierr);
+		ierr = PetscInfo2(snes,"ConvergenceTest : function norm %14.12e ?<? %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
 		
 		// ||dX|| < eps ||X||
 		alpha[0] = 1.0;
@@ -1052,9 +964,9 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
       ierr = PetscInfo3(snes,"Converged due to small update length (P): %14.12e < %14.12e * %14.12e\n",(double)snormUP[1],(double)stol,(double)xnormUP[1]);CHKERRQ(ierr);
 		}
 	
-		if (fnorm <= ttol) {
+		if (fnorm <= snes->ttol) {
 			*reason = SNES_CONVERGED_FNORM_RELATIVE;
-      ierr = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)ttol);CHKERRQ(ierr);
+      ierr = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
 		}
 		
 	}
@@ -1093,10 +1005,10 @@ PetscErrorCode PetscOptionsInsertPrefixString(const char prefix[],const char opt
 	}
 	
 	if (!prefix) {
-		ierr = PetscOptionsInsertString(option);CHKERRQ(ierr);
+		ierr = PetscOptionsInsertString(NULL,option);CHKERRQ(ierr);
 	} else {
 		sprintf(opt,"-%s%s",prefix,&option[1]);
-		ierr = PetscOptionsInsertString(opt);CHKERRQ(ierr);
+		ierr = PetscOptionsInsertString(NULL,opt);CHKERRQ(ierr);
 	}
 		
 	PetscFunctionReturn(0);
@@ -1130,7 +1042,7 @@ PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_max_it 6");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_pc_type jacobi");CHKERRQ(ierr);
 	
-	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
 	
 	//ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type gmres");CHKERRQ(ierr);
@@ -1180,7 +1092,7 @@ PetscErrorCode SNESStokesPCMGSetOptions(SNES snes,PetscInt maxits,PetscBool mglo
 	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_mg_levels_ksp_max_it %D",maxits);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_pc_type jacobi");CHKERRQ(ierr);
@@ -1245,7 +1157,7 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,Petsc
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_type chebychev");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_norm_type NONE");CHKERRQ(ierr);
-	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_esteig_ksp_norm_type NONE");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_pc_type asm");CHKERRQ(ierr);
@@ -1373,7 +1285,7 @@ PetscErrorCode Stokes_KSPConvergenceTest_ScaledResiduals(KSP ksp,PetscInt it,Pet
     ierr = KSPGetTolerances(ksp,&rtol,&atol,NULL,NULL);CHKERRQ(ierr);
     
 	ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
-	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&w,&v);CHKERRQ(ierr);
 	
 	ierr = KSPBuildResidual(ksp,v,w,&F);CHKERRQ(ierr);
     ierr = VecAbs(F);CHKERRQ(ierr);
@@ -1420,38 +1332,37 @@ PetscErrorCode Stokes_KSPConvergenceTest_ScaledResiduals(KSP ksp,PetscInt it,Pet
 	ierr = KSPBuildSolution(ksp,v,&X);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
     
-#if 0
-    /* aggresive point wise checking */
-    {
-        PetscScalar *LA_Fi,*LA_Xi;
-        PetscInt fails = 0,fail_sum,i,m;
-        
-        ierr = VecGetLocalSize(F,&m);CHKERRQ(ierr);
-        ierr = VecGetArray(F,&LA_Fi);CHKERRQ(ierr);
-        ierr = VecGetArray(X,&LA_Xi);CHKERRQ(ierr);
-        
-        for (i=0; i<m; i++) {
-            if (PetscAbsReal(PetscRealPart(LA_Xi[i])) > 1.0e-16) {
-                if (PetscAbsReal(PetscRealPart(LA_Fi[i])) > rtol * PetscAbsReal(PetscRealPart(LA_Xi[i]))) {
-                    fails++;
-                }
-            }
-        }
-        ierr = VecRestoreArray(X,&LA_Xi);CHKERRQ(ierr);
-        ierr = VecRestoreArray(F,&LA_Fi);CHKERRQ(ierr);
-        
-        ierr = MPI_Allreduce(&fails,&fail_sum,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
-        
-        PetscPrintf(PETSC_COMM_WORLD,"  *** Stokes_KSPConvergenceTest_ScaledResiduals: failed sum %D ***\n",fail_sum);
-
-        *reason = KSP_CONVERGED_ITERATING;
-        if (fail_sum == 0) {
-            *reason = KSP_CONVERGED_RTOL;
-        }
-    }
-#endif
+  /* aggresive point wise checking */
+  /*
+  {
+    PetscScalar *LA_Fi,*LA_Xi;
+    PetscInt fails = 0,fail_sum,i,m;
     
-#if 1
+    ierr = VecGetLocalSize(F,&m);CHKERRQ(ierr);
+    ierr = VecGetArray(F,&LA_Fi);CHKERRQ(ierr);
+    ierr = VecGetArray(X,&LA_Xi);CHKERRQ(ierr);
+    
+    for (i=0; i<m; i++) {
+      if (PetscAbsReal(PetscRealPart(LA_Xi[i])) > 1.0e-16) {
+        if (PetscAbsReal(PetscRealPart(LA_Fi[i])) > rtol * PetscAbsReal(PetscRealPart(LA_Xi[i]))) {
+          fails++;
+        }
+      }
+    }
+    ierr = VecRestoreArray(X,&LA_Xi);CHKERRQ(ierr);
+    ierr = VecRestoreArray(F,&LA_Fi);CHKERRQ(ierr);
+    
+    ierr = MPI_Allreduce(&fails,&fail_sum,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)ksp));CHKERRQ(ierr);
+    
+    PetscPrintf(PETSC_COMM_WORLD,"  *** Stokes_KSPConvergenceTest_ScaledResiduals: failed sum %D ***\n",fail_sum);
+    
+    *reason = KSP_CONVERGED_ITERATING;
+    if (fail_sum == 0) {
+      *reason = KSP_CONVERGED_RTOL;
+    }
+  }
+  */
+  
     /* more relaxed vector-wise hecking */
     ierr = VecStrideMin(Xu,0,NULL,&minX[0]);CHKERRQ(ierr);
     ierr = VecStrideMin(Xu,1,NULL,&minX[1]);CHKERRQ(ierr);
@@ -1485,7 +1396,6 @@ PetscErrorCode Stokes_KSPConvergenceTest_ScaledResiduals(KSP ksp,PetscInt it,Pet
             *reason = KSP_CONVERGED_RTOL;
         }
     }
-#endif
     
 	ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,F,&Fu,&Fp);CHKERRQ(ierr);

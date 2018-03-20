@@ -25,12 +25,12 @@ pTatin3D heavily leverages functionality from [PETSc](http://www.mcs.anl.gov/pet
 
 Contributors:
 
-* Jed Brown            [jedbrown@mcs.anl.gov]
+* Jed Brown            [jed.brown@colorado.edu]
 * Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
-* Dave A. May          [dave.may@erdw.ethz.ch]
-* Patrick Sanan        [sananp@usi.ch]
+* Dave A. May          [david.may@earth.ox.ac.uk]
+* Patrick Sanan        [patrick.sanan@erdw.ethz.ch]
 
-For information about building and using pTatin3D, see the manual located in doc/tex.
+For information about building and using pTatin3D, see the manual located in doc/manual.
 
 More information about the implementation and performance of pTatin3D can be found 
 in the following publications:

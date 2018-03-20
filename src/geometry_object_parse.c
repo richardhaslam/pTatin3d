@@ -32,6 +32,7 @@
 #include "petsc.h"
 #include "geometry_object.h"
 #include "cJSON.h"
+#include "cjson_utils.h"
 #include "geometry_object_parse.h"
 
 
@@ -119,179 +120,6 @@ PetscErrorCode GeometryObjectLoadJSON(const char filename[],PetscInt *n,Geometry
     
     PetscFunctionReturn(0);
 }
-
-/*
- If we only want to go the next item in the list (in sequence),
- it is pointless to use the function cJSON_GetArrayItem().
- This function traverses the entire tree from the root upon each call.
- 
- Usage:
- gobject = cJSON_GetObjectItem(jfile,"GeometryObjectList");
- ngobj = cJSON_GetArraySize(gobject);
- 
- gobj_k = cJSON_GetArrayItemRoot(gobject);
- for (k=0; k<ngobj; k++) {
-   gobj_k = cJSON_GetArrayItemNext(gobj_k);
- }
-*/
-cJSON* cJSON_GetArrayItemRoot(cJSON *gobject)
-{
-    if (gobject) {
-        return cJSON_GetArrayItem(gobject,0);
-    } else {
-        return NULL;
-    }
-}
-
-cJSON* cJSON_GetArrayItemNext(cJSON *gobj_k)
-{
-    if (gobj_k) {
-        return gobj_k->next;
-    } else {
-        return NULL;
-    }
-}
-
-void cJSON_FileView(const char filename[],cJSON **jf)
-{
-    FILE  *fp = NULL;
-    char  *data;
-    long  len;
-    cJSON *jfile;
-
-    fp = fopen(filename,"rb");
-    if (!fp) {
-        *jf = NULL;
-        return;
-    }
-    
-    fseek(fp,0,SEEK_END);
-    
-    len = ftell(fp);
-    fseek(fp,0,SEEK_SET);
-	
-    data = malloc(sizeof(char)*(len+1));
-    fread(data,1,len,fp);
-    fclose(fp);
-
-    jfile = NULL;
-    jfile = cJSON_Parse(data);
-    free(data);
-    
-    if (!jfile) {
-        printf("***************************** cJSON PARSING ERROR *****************************\n%s\n**********************************************************\n",cJSON_GetErrorPtr());
-    }
-    
-    *jf = jfile;
-}
-
-void cJSON_GetObjectValue_bool(cJSON *cj,const char name[],int *found,int *val)
-{
-    cJSON *obj = NULL;
-    
-    *found = cJSON_True;
-    obj = cJSON_GetObjectItem(cj,name);
-    if (!obj) {
-        *val = -1;
-        *found = cJSON_False;
-        return;
-    }
-    
-    *val = obj->type;
-}
-
-void cJSON_GetObjectValue_int(cJSON *cj,const char name[],int *found,int *val)
-{
-    cJSON *obj = NULL;
-    
-    *found = cJSON_True;
-    obj = cJSON_GetObjectItem(cj,name);
-    if (!obj) {
-        *val = 0;
-        *found = cJSON_False;
-        return;
-    }
-    
-    *val = obj->valueint;
-}
-
-void cJSON_GetObjectValue_intarray(cJSON *cj,const char name[],int *found,int *nv,int vals[])
-{
-    cJSON *list = NULL;
-    int   k,len;
-    
-    *found = cJSON_True;
-    list = cJSON_GetObjectItem(cj,name);
-    if (!list) {
-        *nv = 0;
-        *found = cJSON_False;
-        return;
-    }
-    
-    len = cJSON_GetArraySize(list);
-    for (k=0; k<len; k++) {
-        cJSON *list_entry;
-
-        list_entry = cJSON_GetArrayItem(list,k);
-        vals[k] = list_entry->valueint;
-    }
-    
-    *nv = len;
-}
-
-void cJSON_GetObjectValue_double(cJSON *cj,const char name[],int *found,double *val)
-{
-    cJSON *obj = NULL;
-    
-    *found = cJSON_True;
-    obj = cJSON_GetObjectItem(cj,name);
-    if (!obj) {
-        *val = 0.0;
-        *found = cJSON_False;
-        return;
-    }
-    
-    *val = obj->valuedouble;
-}
-
-void cJSON_GetObjectValue_doublearray(cJSON *cj,const char name[],int *found,int *nv,double vals[])
-{
-    cJSON *list = NULL;
-    int   k,len;
-    
-    *found = cJSON_True;
-    list = cJSON_GetObjectItem(cj,name);
-    if (!list) {
-        *nv = 0;
-        *found = cJSON_False;
-        return;
-    }
-    
-    len = cJSON_GetArraySize(list);
-    for (k=0; k<len; k++) {
-        cJSON *list_entry;
-        
-        list_entry = cJSON_GetArrayItem(list,k);
-        vals[k] = list_entry->valuedouble;
-    }
-    
-    *nv = len;
-}
-
-void cJSON_GetObjectValue_char(cJSON *cj,const char name[],int *found,char **val)
-{
-    cJSON *obj = NULL;
-    
-    *found = cJSON_True;
-    obj = cJSON_GetObjectItem(cj,name);
-    if (!obj) {
-        *val = NULL;
-        *found = cJSON_False;
-        return;
-    }
-    *val = obj->valuestring;
-}
-
 
 /*
  Geometry file must contain the following array/list
@@ -494,6 +322,7 @@ PetscErrorCode GeometryObjectQueryFromJSONIsSetOperation(cJSON *obj,PetscBool *i
     char      *type;
     PetscBool same;
     
+    *isset = PETSC_FALSE;
     cJSON_GetObjectValue_char(obj,"type",&found,&type);
     if (found == cJSON_False) {
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"JSON.GeometryObject requires field \"type\"");
@@ -501,7 +330,6 @@ PetscErrorCode GeometryObjectQueryFromJSONIsSetOperation(cJSON *obj,PetscBool *i
     
     PetscStrcmp(type,GeomTypeNames[(int)GeomType_SetOperation],&same);
 
-    *isset = PETSC_FALSE;
     if (same) {
         *isset = PETSC_TRUE;
     }
@@ -886,6 +714,8 @@ PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
             ierr = GeometryObjectSetType_HalfSpace(go,cx,sign,axis);CHKERRQ(ierr);
         }
             break;
+        case GeomType_NULL:
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Not defined for undefined geometry type");
     }
 
     {
@@ -895,11 +725,11 @@ PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
         if (cj_rotation) {
             cJSON  *cj_r_angle = NULL;
             cJSON  *cj_r_axis = NULL;
-            cJSON  *cj_r_deg = NULL;
+            /* cJSON  *cj_r_deg = NULL; */
             int    k,nag,nax;
             double         rotation_angle[GEOM_SHAPE_MAX_ROTATIONS];
             GeomRotateAxis rotation_axis[GEOM_SHAPE_MAX_ROTATIONS];
-            PetscBool      same,isdgerees;
+            /* PetscBool     isdegrees; */
             
             cj_r_angle = cJSON_GetObjectItem(cj_rotation,"angle");
             cj_r_axis  = cJSON_GetObjectItem(cj_rotation,"axis");
@@ -918,19 +748,20 @@ PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
             }
             
             cJSON_GetObjectValue_doublearray(cj_rotation,"angle",&found,&nag,rotation_angle);
-
-            isdgerees = PETSC_FALSE;
+            /*
+            isdegrees = PETSC_FALSE;
             cj_r_deg  = cJSON_GetObjectItem(cj_rotation,"unit");
             if (cj_r_deg) {
-                char *truename;
+                char      *truename;
+                PetscBool same;
                 
                 truename = cj_r_deg->valuestring;
-
-                same = PETSC_FALSE; PetscStrcmp(truename,"degree",&same);  if (same) { isdgerees = PETSC_TRUE; }
-                same = PETSC_FALSE; PetscStrcmp(truename,"degrees",&same); if (same) { isdgerees = PETSC_TRUE; }
-                same = PETSC_FALSE; PetscStrcmp(truename,"deg",&same);     if (same) { isdgerees = PETSC_TRUE; }
-                same = PETSC_FALSE; PetscStrcmp(truename,"d",&same);       if (same) { isdgerees = PETSC_TRUE; }
+                same = PETSC_FALSE; PetscStrcmp(truename,"degree",&same);  if (same) { isdegrees = PETSC_TRUE; }
+                same = PETSC_FALSE; PetscStrcmp(truename,"degrees",&same); if (same) { isdegrees = PETSC_TRUE; }
+                same = PETSC_FALSE; PetscStrcmp(truename,"deg",&same);     if (same) { isdegrees = PETSC_TRUE; }
+                same = PETSC_FALSE; PetscStrcmp(truename,"d",&same);       if (same) { isdegrees = PETSC_TRUE; }
             }
+            */
             for (k=0; k<nag; k++) {
                 rotation_angle[k] = rotation_angle[k] * M_PI/180.0;
             }

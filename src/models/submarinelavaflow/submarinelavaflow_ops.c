@@ -36,7 +36,6 @@
 */
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -85,7 +84,7 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 
 	
 	data->model_conf = MT_HORIZ;
-	PetscOptionsGetInt(NULL,"-submarine_model",(PetscInt*)&data->model_conf,&flg);
+	PetscOptionsGetInt(NULL,NULL,"-submarine_model",(PetscInt*)&data->model_conf,&flg);
 	
 	
 	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
@@ -96,10 +95,10 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	rheology->eta_lower_cutoff_global = 1.0e-5/ETA_SCALE;
 
 	/* set flag for thermal solver to be switched on */
-	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 	
 	
-	//ierr = PetscOptionsGetReal(NULL,"-model_submarinelavaflow_param1",&data->param1,&flg);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetReal(NULL,NULL,"-model_submarinelavaflow_param1",&data->param1,&flg);CHKERRQ(ierr);
 
 	/* define geometry here so everyone can use it */
 	ierr = GeometryObjectCreate("domain",&domain);CHKERRQ(ierr);
@@ -200,14 +199,12 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 PetscBool ApplyBasalVelocityJBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *vy_values;
-	PetscReal x,y,z;
+	PetscReal x;
 	
 	PetscFunctionBegin;
 	vy_values = (PetscReal*)ctx;
 	
 	x   = pos[0];
-	y   = pos[1];
-	z   = pos[2];
 	
 	if (x <= 0.2) {
 		*val = vy_values[0];
@@ -222,14 +219,11 @@ PetscBool ApplyBasalVelocityJBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 PetscBool ApplyBasalVelocityJBC_Spherical(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *vy_values;
-	PetscReal x,y,z,radius;
+	PetscReal radius;
 	
 	PetscFunctionBegin;
 	vy_values = (PetscReal*)ctx;
 	
-	x   = pos[0];
-	y   = pos[1];
-	z   = pos[2];
 	radius = sqrt(pos[0]*pos[0] + 0.0*pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
 	
 	if (radius <= 0.2) {
@@ -245,14 +239,12 @@ PetscBool ApplyBasalVelocityJBC_Spherical(PetscScalar pos[],PetscScalar *val,voi
 PetscBool ApplyBasalVelocityJQuadraticBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *vy_values;
-	PetscReal x,y,z,rad,max;
+	PetscReal x,rad,max;
 	
 	PetscFunctionBegin;
 	vy_values = (PetscReal*)ctx;
 	
 	x   = pos[0];
-	y   = pos[1];
-	z   = pos[2];
 	
 	rad = 0.35;
 	max = rad*rad;
@@ -307,14 +299,12 @@ PetscErrorCode SubmarineLavaFlow_VelocityBC(BCList bclist,DM dav,pTatinCtx c,Sub
 PetscBool ApplyBasalThermalBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *base_values;
-	PetscReal x,y,z;
+	PetscReal x;
 	
 
 	base_values = (PetscReal*)ctx;
 	
 	x   = pos[0];
-	y   = pos[1];
-	z   = pos[2];
 	
 	if (x <= 0.2) {
 		*val = base_values[0];
@@ -329,14 +319,11 @@ PetscBool ApplyBasalThermalBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 PetscBool ApplyBasalThermalBC_Spherical(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *base_values;
-	PetscReal x,y,z,radius;
+	PetscReal radius;
 	
 	
 	base_values = (PetscReal*)ctx;
 	
-	x   = pos[0];
-	y   = pos[1];
-	z   = pos[2];
 	radius = sqrt(pos[0]*pos[0] + 0.0*pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
 	
 	if (radius <= 0.2) {
@@ -432,7 +419,8 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
 	PhysCompStokes stokes;
 	DM             stokes_pack,dav,dap;
 	MPI_Comm       comm;
-	PetscInt       M,N,P,pI,pJ,pK,rI,rJ,rK,rIJ,lmx,lmy,lmz;
+	PetscInt       M,N,P,pI,pJ,pK,rJ,rK,rIJ,lmx,lmy,lmz;
+  /* PetscInt      rI; */
 	PetscInt       npx,pi,pk,pni,pnk;
 	PetscReal      dx,dz,inlet_x0,inlet_x1;
 	PetscMPIInt    rank;
@@ -482,7 +470,7 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
 	rK  = (PetscInt)rank / (pI*pJ);
 	rIJ = (PetscInt)rank - rK * pI*pJ;  
 	rJ = rIJ / pI;
-	rI = rIJ - rJ*pI;
+	/* rI = rIJ - rJ*pI; */
 	
 	dx = (gmax[0] - gmin[0])/((PetscReal)((M-1)/2));
 	dz = (gmax[2] - gmin[2])/((PetscReal)((P-1)/2));
@@ -608,7 +596,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
 	PetscErrorCode ierr;
 
 	apply_inflow = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-submarine_inflow_bc",&apply_inflow,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-submarine_inflow_bc",&apply_inflow,NULL);
 	if (apply_inflow) {
 		ierr = SubmarineLavaFlow_ApplyInflow(c,data);CHKERRQ(ierr);
 	}
@@ -620,10 +608,9 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
 #define __FUNCT__ "lower_surface"
 PetscBool lower_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar *val,void *ctx)
 {
-	PetscScalar x,y,z,factor;
+	PetscScalar x,z,factor;
 	
 	x = pos[0];
-	y = pos[1];
 	z = pos[2];
 
 	factor = *((PetscScalar*)ctx);
@@ -643,10 +630,9 @@ PetscBool lower_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar 
 #define __FUNCT__ "upper_surface"
 PetscBool upper_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar *val,void *ctx)
 {
-	PetscScalar x,y,z,factor;
+	PetscScalar x,z,factor;
 	
 	x = pos[0];
-	y = pos[1];
 	z = pos[2];
 	
 	factor = *((PetscScalar*)ctx);
@@ -700,7 +686,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void 
 		PetscInt Nmax,indexN;
 
 		factor = 1.0;		
-		PetscOptionsGetScalar(NULL,"-subdmarine_roughness_factor",&factor,NULL);
+		PetscOptionsGetScalar(NULL,NULL,"-subdmarine_roughness_factor",&factor,NULL);
 		if (factor < 0.0) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"0 <= factor <= 1.0"); }
 		if (factor > 1.0) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"0 <= factor <= 1.0"); }
 		indexN = 0;

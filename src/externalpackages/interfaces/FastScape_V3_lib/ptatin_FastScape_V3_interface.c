@@ -109,11 +109,11 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 	
 	/* parse parameters */
 	flg = PETSC_FALSE;
-	PetscOptionsGetInt(NULL,"-fastscape_refinement_factor",&refinement_factor,&flg);
+	PetscOptionsGetInt(NULL,NULL,"-fastscape_refinement_factor",&refinement_factor,&flg);
 	if (flg) { PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Using refinement factor %D\n",refinement_factor); }
 
 	flg = PETSC_FALSE;
-	PetscOptionsGetReal(NULL,"-fastscape_dt",&dt_spm,&flg);
+	PetscOptionsGetReal(NULL,NULL,"-fastscape_dt",&dt_spm,&flg);
 	if (flg) { PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Using dt %1.4e\n",dt_spm); }
 	
 	if (dt_spm > dt_mechanical) {

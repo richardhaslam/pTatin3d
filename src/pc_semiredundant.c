@@ -27,7 +27,7 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscksp.h>           /*I "petscksp.h" I*/
 #include "sub_comm.h"
 
@@ -83,7 +83,7 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,PetscMPISubComm subcomm,MatReuse reu
         ierr = ISCreateStride(comm,1,start,1,&isrow);CHKERRQ(ierr);
     }
     
-    ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Alocal);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Alocal);CHKERRQ(ierr);
     Alocal = *_Alocal;
     
     /* insert entries */
@@ -214,7 +214,7 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,PetscMPISubComm subcomm,Ma
         ierr = ISCreateStride(comm,1,start,1,&isrow);CHKERRQ(ierr);
     }
     
-    ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Alocal);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Alocal);CHKERRQ(ierr);
     Alocal = *_Alocal;
     
     /* insert entries */
@@ -342,7 +342,7 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
             /* create xred with empty local arrays, because xdup's arrays will be placed into it */
             ierr = VecCreateMPIWithArray(red->subcomm->sub_comm,1,m,PETSC_DECIDE,NULL,&red->xred);CHKERRQ(ierr);
             
-            ierr = MatGetVecs(red->Ared,NULL,&red->yred);CHKERRQ(ierr);
+            ierr = MatCreateVecs(red->Ared,NULL,&red->yred);CHKERRQ(ierr);
         }
         
     } else {
@@ -363,7 +363,7 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
         Vec      x;
         
         ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-        ierr = MatGetVecs(red->A,&x,NULL);CHKERRQ(ierr);
+        ierr = MatCreateVecs(red->A,&x,NULL);CHKERRQ(ierr);
         
         if (red->xred) {
             ierr = VecGetOwnershipRange(red->xred,&st,&ed);CHKERRQ(ierr);
@@ -494,13 +494,13 @@ static PetscErrorCode PCDestroy_SemiRedundant(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SemiRedundant"
-static PetscErrorCode PCSetFromOptions_SemiRedundant(PC pc)
+static PetscErrorCode PCSetFromOptions_SemiRedundant(PetscOptionItems *PetscOptionsObject,PC pc)
 {
     PetscErrorCode   ierr;
     PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
     
     PetscFunctionBegin;
-    ierr = PetscOptionsHead("SemiRedundant options");CHKERRQ(ierr);
+    ierr = PetscOptionsHead(PetscOptionsObject,"SemiRedundant options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_semiredundant_factor","Factor to reduce parent communication size by","PCSemiRedundantSetFactor",red->nsubcomm_factor,&red->nsubcomm_factor,0);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_semiredundant_fuse_blocks","Fuse original matrix partitioning and preserve block size","PCSemiRedundantFuseBlocks",red->fuse_blocks,&red->fuse_blocks,0);CHKERRQ(ierr);
     ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -532,13 +532,13 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
             } else {
                 ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: preserving original matrix partition boundaries\n");CHKERRQ(ierr);
             }
-            ierr = PetscViewerGetSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
+            ierr = PetscViewerGetSubViewer(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
             ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
             if (red->subcomm->parent_rank_active_in_subcomm) {
                 ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
             }
             ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-            ierr = PetscViewerRestoreSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
+            ierr = PetscViewerRestoreSubViewer(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
         }
     } else if (isstring) { 
         ierr = PetscViewerStringSPrintf(viewer," SemiRedundant preconditioner");CHKERRQ(ierr);

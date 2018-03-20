@@ -30,7 +30,7 @@
 
 #include <petsc.h>
 #include <petscdm.h>
-#include <petsc-private/dmdaimpl.h>
+#include <petsc/private/dmdaimpl.h>
 #include "ptatin3d_defs.h"
 #include "dmda_update_coords.h"
 #include "dmda_compare.h"
@@ -405,6 +405,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	*/
 	
 	ierr = DMDACreate3d(PetscObjectComm((PetscObject)dmq2),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, Mp,Np,Pp, ndofs,1, lxq1,lyq1,lzq1, &dm );CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
 	
 	//ierr = DMView(dmq2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	//ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -571,6 +572,7 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	}
 	
 	ierr = DMDACreate3d(PetscObjectComm((PetscObject)dmq2),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, ndofs,1, lxq2,lyq2,lzq2, &dm );CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
 	
 	//ierr = DMView(dmq2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	//ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -660,6 +662,7 @@ PetscErrorCode DMDACreateQ1(MPI_Comm comm,PetscInt MX,PetscInt MY,PetscInt MZ,Pe
 	PetscFunctionBegin;
 	
 	ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndofs,1, 0,0,0, &dm );CHKERRQ(ierr);
+  ierr = DMSetUp(dm);CHKERRQ(ierr);
 	
 	/* add the space for the data structure */
 	ierr = DMAttachDMDAE(dm);CHKERRQ(ierr);

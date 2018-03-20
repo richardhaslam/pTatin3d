@@ -51,7 +51,7 @@
 -fieldsplit_u_pc_mg_levels 3
 -fieldsplit_u_pc_mg_log
 -fieldsplit_u_mg_levels_ksp_type chebyshev
--fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0.2,1.1
+-fieldsplit_u_mg_levels_ksp_chebyshev_esteig 0.2,1.1
 -fieldsplit_u_mg_levels_ksp_max_it 2
 -fieldsplit_u_mg_levels_pc_type jacobi
 -fieldsplit_u_mg_coarse_ksp_type preonly
@@ -59,5 +59,5 @@
 -fieldsplit_u_mg_coarse_pc_gamg_threshold 0.01
 -fieldsplit_u_mg_coarse_mg_levels_ksp_max_it 2
 -fieldsplit_u_mg_coarse_mg_levels_ksp_type chebyshev
--fieldsplit_u_mg_coarse_mg_levels_ksp_chebyshev_estimate_eigenvalues 0.2,1.1
+-fieldsplit_u_mg_coarse_mg_levels_ksp_chebyshev_esteig 0.2,1.1
 -log_summary

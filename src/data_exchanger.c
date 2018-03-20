@@ -125,13 +125,12 @@ PetscLogEvent PTATIN_DataExchangerEnd;
 DataEx DataExCreate(MPI_Comm comm,const PetscInt count)
 {
 	DataEx         d;
-	PetscErrorCode ierr;
 	
 	d = (DataEx)malloc( sizeof(struct _p_DataEx) );
 	memset( d, 0, sizeof(struct _p_DataEx) );
 	
-	ierr = MPI_Comm_dup(comm,&d->comm);
-	ierr = MPI_Comm_rank(d->comm,&d->rank);
+	MPI_Comm_dup(comm,&d->comm);
+	MPI_Comm_rank(d->comm,&d->rank);
 	
 	d->instance = count;
 	
@@ -407,7 +406,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"************************** Starting _DataExCompleteCommunicationMap ************************** \n");
+	/*PetscPrintf(PETSC_COMM_WORLD,"************************** Starting _DataExCompleteCommunicationMap ************************** \n");*/
 	PetscTime(&t0);
 
 	n_ = n;
@@ -421,13 +420,13 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	rank_i_ = rank_i;
 
 	ierr = MatCreate(comm,&A);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(A,"DataExCMap_");CHKERRQ(ierr);
 	ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,size,size);CHKERRQ(ierr);
 	ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
 	
 	ierr = MPI_Allreduce(&n_,&max_nnz,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
 	ierr = MatSeqAIJSetPreallocation(A,n_,NULL);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"max_nnz = %D \n", max_nnz );
-	//printf("[%d]: nnz = %d \n", rank_i,n_ );
+	/*PetscPrintf(PETSC_COMM_WORLD,"max_nnz = %D \n", max_nnz );*/
 	{
 		ierr = MatMPIAIJSetPreallocation(A,1,NULL,n_,NULL);CHKERRQ(ierr);
 	}
@@ -453,10 +452,12 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-	ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-	ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  /*
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  */
+  
 	/* 
 	What the fuck is this? Is this necessary at all?
 	Why cannot I just use MatGetRow on the single row living on the current rank??
@@ -501,8 +502,9 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 
 	ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 	PetscTime(&t1);
+  /*
 	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap [setup time: %1.4e (sec)] ************************** \n",t1-t0);
-	
+	*/
 	PetscFunctionReturn(0);
 }
 

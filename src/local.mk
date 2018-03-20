@@ -1,4 +1,5 @@
 libptatin3d-y.c += $(call thisdir, \
+            pswarm.c \
 			dmda_update_coords.c \
 			dmda_project_coords.c \
 			dmda_compare.c \
@@ -30,6 +31,7 @@ libptatin3d-y.c += $(call thisdir, \
 			output_paraview.c \
 			xdmf_writer.c \
 			output_material_points.c \
+            output_material_points_p0.c \
 			material_point_utils.c \
 			material_point_std_utils.c \
 			material_point_point_location.c \
@@ -44,12 +46,14 @@ libptatin3d-y.c += $(call thisdir, \
 			phys_comp_energy.c \
 			energy_assembly.c \
 			energy_output.c \
+			energy_coefficients.c \
 			ptatin3d_stokes_q1macrop1.c \
 			ptatin3d.c \
 			ptatin_std_dirichlet_boundary_conditions.c \
 			ptatin_models.c \
 			rheology.c \
 			material_constants.c \
+                        material_constants_energy.c \
 			stokes_rheology_viscous.c \
 			stokes_rheology_vp_std.c \
 			stokes_rheology_lava.c \
@@ -57,6 +61,8 @@ libptatin3d-y.c += $(call thisdir, \
 			stokes_operators_mf.c \
 			stokes_operators.c \
 			stokes_operators_tensor.c \
+			stokes_operators_avx.c \
+			stokes_operators_subrepart.c \
 			quadrature.c \
 			phase_map.c \
 			cartgrid.c \
@@ -65,7 +71,6 @@ libptatin3d-y.c += $(call thisdir, \
 			stokes_assembly.c \
 			monitors.c \
 			mp_advection.c \
-			units.c \
 			model_utils.c \
 			eigen_operators.c \
 			ksp_chebyrn.c \
@@ -74,47 +79,28 @@ libptatin3d-y.c += $(call thisdir, \
 			pc_dmdarepart.c \
 			geometry_object.c \
 			geometry_object_evaluator.c \
-			cJSON.c \
+			cJSON.c cjson_utils.c \
 			geometry_object_parse.c \
 			spm_utils.c \
 			petsc_utils.c \
+            mpiio_blocking.c \
+            inorms.c \
+            quantity.c \
 	)
 
-libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
-			stokes_operators_avx.c \
+libptatin3d-$(CONFIG_CUDA).cu += $(call thisdir, \
+			stokes_operators_cuda.cu \
 	)
+
+libptatin3d-$(CONFIG_OPENCL).c += $(call thisdir, \
+			stokes_operators_opencl.c \
+	)
+
 # One file needs special flags.
 $(OBJDIR)/$(call thisdir,ptatin_init.o) : CFLAGS += -DCOMPFLAGS='$(TATIN_CFLAGS)'
 
 libptatin3d-$(CONFIG_FORTRAN).f += $(call thisdir, \
 			stokes_q2p1_mf_operators_def.f90 \
-	)
-
-ptatin-tests-y.c += $(call thisdir, \
-			test_dmda_update_coords.c \
-			test_dmda_redundant.c \
-			test_dmda_remesh.c \
-			test_dmda_duplicate.c \
-			test_dmda_checkpoint.c \
-			test_dmda_gmg.c \
-			test_mat_assem.c \
-			test_q2dmda_remesh.c \
-			test_stokes_operators.c \
-			test_stokes_operators_approximations.c \
-			test_mp_advection.c \
-			test_material_point_load.c \
-			test_swarms.c \
-			test_swarms_exchanger.c \
-			test_stokes_q1macrop1.c \
-			ptatin_read_matrix.c \
-			test_petsc_wsmp.c \
-			test_cjson.c \
-			ptatin_driver_nostokessolve.c \
-			ptatin_driver_asmsolve.c \
-			ptatin_driver_asmsolve_approx.c \
-			ptatin_driver_asmsolve2.c \
-			ptatin_driver_basic.c \
-			ptatin_driver_ic_spm.c \
 	)
 
 ptatin-drivers-y.c += $(call thisdir, \
@@ -123,8 +109,9 @@ ptatin-drivers-y.c += $(call thisdir, \
 			ptatin_driver_energy.c \
 			ptatin_driver_linear_ts.c \
 			ptatin_driver_nonlinear_ts.c \
+			ptatin_driver_ts_init.c \
 	)
 
 TATIN_INC += -I$(abspath $(call thisdir,.))
 
-include $(call incsubdirs,externalpackages material_constants models)
+include $(call incsubdirs,externalpackages material_constants models tests)

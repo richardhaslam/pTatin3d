@@ -1,0 +1,67 @@
+#
+# Example: Water tank
+#   Launch using: ptatin_driver_linear_ts.app
+#
+
+-checkpoint_disable
+
+# ---- Select model ---- #
+-ptatin_model static_box
+
+# Model parameter (constant or variable density)
+-variable_density false
+
+# Mesh resolution
+-mx 4
+-my 4
+-mz 4
+
+# Passive swarm definition
+-passive_pswarm_region_index 1
+-passive_pswarm_pressure
+-passive_pswarm_coord_layout 2
+-passive_pswarm_box_min 1.0,0.0,1.0
+-passive_pswarm_box_max 5.0,6.0,5.0
+-passive_pswarm_box_nx 3,10,3
+
+# Material point resolution per cell
+-lattice_layout_Nx 3
+-lattice_layout_Ny 3
+-lattice_layout_Nz 3
+
+# use P0 projection
+-coefficient_projection_type 0
+
+-mp_popctrl_np_lower 4
+-mp_popctrl_np_upper 60
+-mp_popctrl_nxp 2
+-mp_popctrl_nyp 2
+-mp_popctrl_nzp 2
+
+# ---- Define ptatin timestepping/io parameters ---- #
+-output_path ex1_staticBox
+-nsteps 2
+-output_frequency 1
+
+-dt_min 1.0e-6
+-dt_max 0.5
+
+
+
+# ---- Solver configuration ---- #
+-stokes_snes_monitor_up false
+-stokes_ksp_monitor_up false
+#-dau_nlevels 1
+-A11_operator_type 0
+-ksp_type fgmres
+-ksp_rtol 1.0e-20
+-ksp_atol 1.0e-12
+-fieldsplit_u_ksp_type preonly
+-fieldsplit_u_pc_type lu
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+#-log_view
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-stk_velocity_dm_mat_type aij

@@ -413,7 +413,7 @@ PetscErrorCode apply_mppc_nn_patch(
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
 #if (MPPC_LOG_LEVEL >= 2)
-                    PetscPrintf(PETCS_COMM_SELF,"[LOG]     patch(%D)-(%D,%D,%D) cell(%D)-(%D,%D,%D)  : ppcell = %D \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
+                    PetscPrintf(PETSC_COMM_SELF,"[LOG]     patch(%D)-(%D,%D,%D) cell(%D)-(%D,%D,%D)  : ppcell = %D \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
 #endif
                     for (p=0; p<points_per_patch; p++) {
                         MPntStd *marker_p;
@@ -429,7 +429,7 @@ PetscErrorCode apply_mppc_nn_patch(
                         patch_point_coords[3*point_count+2] = marker_p->coor[2];
                         patch_point_idx[point_count]        = pid_unsorted;
 #if (MPPC_LOG_LEVEL >= 2)
-                        PetscPrintf(PETCS_COMM_SELF,"[LOG]       patch(%D)/cell(%D) -> p(%D):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
+                        PetscPrintf(PETSC_COMM_SELF,"[LOG]       patch(%D)/cell(%D) -> p(%D):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
 #endif
                         point_count++;
                     }
@@ -439,7 +439,7 @@ PetscErrorCode apply_mppc_nn_patch(
         }
         DataFieldRestoreAccess(PField);
 #if (MPPC_LOG_LEVEL >= 2)
-        PetscPrintf(PETCS_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
+        PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
 #endif
         
         /* create trial coordinates - find closest point */
@@ -540,10 +540,10 @@ PetscErrorCode apply_mppc_nn_patch(
     ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,npoints_init32,Lnew32);CHKERRQ(ierr);
     
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_init      = %d \n", npoints_init32);
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_current-1 = %d \n", npoints_current32);
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_current-2 = %d \n", Lnew32);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_init      = %d \n", npoints_init32);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_current-1 = %d \n", npoints_current32);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_current-2 = %d \n", Lnew32);
 #endif
     
     PetscFunctionReturn(0);
@@ -630,7 +630,7 @@ PetscErrorCode apply_mppc_nn_patch2(
     }
     
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  np_per_patch_max = %D \n", np_per_cell_max );
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  np_per_patch_max = %D \n", np_per_cell_max );
 #endif
     ierr = MPI_Allreduce( &cells_needing_new_points64, &cells_needing_new_points_g64, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
     if (cells_needing_new_points_g64 == 0) {
@@ -683,7 +683,7 @@ PetscErrorCode apply_mppc_nn_patch2(
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
 #if (MPPC_LOG_LEVEL >= 2)
-                    PetscPrintf(PETCS_COMM_SELF,"[LOG]     patch(%D)-(%D,%D,%D) cell(%D)-(%D,%D,%D)  : ppcell = %D \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
+                    PetscPrintf(PETSC_COMM_SELF,"[LOG]     patch(%D)-(%D,%D,%D) cell(%D)-(%D,%D,%D)  : ppcell = %D \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
 #endif
                     for (p=0; p<points_per_patch; p++) {
                         MPntStd *marker_p;
@@ -699,7 +699,7 @@ PetscErrorCode apply_mppc_nn_patch2(
                         patch_points[point_count].coor[0] = (PetscReal)marker_p->coor[2];
                         patch_points[point_count].point_index = pid_unsorted;
 #if (MPPC_LOG_LEVEL >= 2)
-                        PetscPrintf(PETCS_COMM_SELF,"[LOG]       patch(%D)/cell(%D) -> p(%D):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
+                        PetscPrintf(PETSC_COMM_SELF,"[LOG]       patch(%D)/cell(%D) -> p(%D):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
 #endif
                         point_count++;
                     }
@@ -709,7 +709,7 @@ PetscErrorCode apply_mppc_nn_patch2(
         }
         DataFieldRestoreAccess(PField);
 #if (MPPC_LOG_LEVEL >= 2)
-        PetscPrintf(PETCS_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
+        PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
 #endif
         
         /* create trial coordinates - find closest point */
@@ -811,10 +811,10 @@ PetscErrorCode apply_mppc_nn_patch2(
     ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,npoints_init32,Lnew32);CHKERRQ(ierr);
     
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_init      = %d \n", npoints_init32);
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_current-1 = %d \n", npoints_current32);
-    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_current-2 = %d \n", Lnew32);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_init      = %d \n", npoints_init32);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_current-1 = %d \n", npoints_current32);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  npoints_current-2 = %d \n", Lnew32);
 #endif
     
     PetscFunctionReturn(0);
@@ -1109,21 +1109,21 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
     /* options for control number of points per cell */
     np_lower = 0;
     np_upper = 60;
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
     
     /* options for injection of markers */
     nxp = 2;
     nyp = 2;
     nzp = 2;
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nxp",&nxp,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nyp",&nyp,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nxp",&nxp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nyp",&nyp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
     
     perturb = 0.1;
-    ierr = PetscOptionsGetReal(NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
     patch_extent = 1;
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
     
     ierr = pTatinGetMaterialPoints(ctx,&db,NULL);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)ctx->stokes_ctx->dav,&comm);CHKERRQ(ierr);

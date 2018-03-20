@@ -112,19 +112,21 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
+		PetscOptionsGetBool(NULL,NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
+  T = NULL;
+  f = NULL;
+  JE = NULL;
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 
-		ierr = PetscOptionsGetBool(NULL,"-use_jfnk_energy",&use_JFNK_T,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,NULL,"-use_jfnk_energy",&use_JFNK_T,NULL);CHKERRQ(ierr);
 		
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
 
-		JE = NULL;
 		if (!use_JFNK_T) {
 			ierr = DMSetMatType(energy->daT,MATAIJ);CHKERRQ(ierr);
 			ierr = DMCreateMatrix(energy->daT,&JE);CHKERRQ(ierr);
@@ -220,13 +222,10 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X,energy,energy->dt);CHKERRQ(ierr);
 			
 			// crappy way - make it non-linear
-	#if 0		
-			ierr = TS_FormJacobianEnergy(user->time,T,user->dt,JE,JE,(void*)energy);CHKERRQ(ierr);
-			ierr = TS_FormFunctionEnergy(user->time,T,user->dt,f,(void*)energy);CHKERRQ(ierr);
+      /*
+			ierr = TS_FormJacobianEnergy(user->time,T,user->dt,JE,JE,(void*)user);CHKERRQ(ierr);
+			ierr = TS_FormFunctionEnergy(user->time,T,user->dt,f,(void*)user);CHKERRQ(ierr);
 
-			//ierr = VecSetRandom(f,0);CHKERRQ(ierr);
-			//ierr = VecSet(f,12.1);CHKERRQ(ierr);
-					
 			ierr = KSPCreate(PETSC_COMM_WORLD,&kspT);CHKERRQ(ierr);
 			ierr = KSPSetOptionsPrefix(kspT,"T_");CHKERRQ(ierr);
 			ierr = KSPSetOperators(kspT,JE,JE);CHKERRQ(ierr);
@@ -235,17 +234,16 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			ierr = KSPSolve(kspT,f,T);CHKERRQ(ierr);
 
 			ierr = KSPDestroy(&kspT);CHKERRQ(ierr);
-	#endif
+      */
 			
-	#if 1
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
 
-			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)user);CHKERRQ(ierr);
 			if (use_JFNK_T) {
-				ierr = SNESSetJacobian(snesT,NULL,NULL,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+				ierr = SNESSetJacobian(snesT,NULL,NULL,SNES_FormJacobianEnergy,(void*)user);CHKERRQ(ierr);
 			} else {
-				ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+				ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)user);CHKERRQ(ierr);
 			}
 					
 			ierr = SNESSetType(snesT,SNESKSPONLY);
@@ -254,21 +252,23 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
 			
 			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
-	#endif
-			ierr = pTatinPhysCompEnergy_Update(energy,dav,T);CHKERRQ(ierr);
+
+      ierr = pTatinPhysCompEnergy_Update(energy,dav,T);CHKERRQ(ierr);
 			
 			user->time = user->time + user->dt;
 			
-			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%.4D",tk);
-			ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
+      if (tk%user->output_frequency == 0) {
+        PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%.4D",tk);
+        ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
+      }
 		
 		}
 	}	
 	
 	
-	ierr = VecDestroy(&T);CHKERRQ(ierr);
+	if (T)  { ierr = VecDestroy(&T);CHKERRQ(ierr); }
 	if (JE) { ierr = MatDestroy(&JE);CHKERRQ(ierr); }
-	ierr = VecDestroy(&f);CHKERRQ(ierr);
+	if (f)  { ierr = VecDestroy(&f);CHKERRQ(ierr); }
 	
 	ierr = VecDestroy(&X);CHKERRQ(ierr);
 	ierr = VecDestroy(&F);CHKERRQ(ierr);

@@ -1,0 +1,158 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: bitbucket:jedbrown/ptatin3d 
+** commit hash: b3e0321fa5dcd5326131f6a42b7f53acb22cc913 (dmay/ptatin-v1.0) 
+** log[b3e0321f]: Dave May (dave.mayhem23@gmail.com) | 2018-03-19 13:54:42 +0000 
+** git status: Your branch is up-to-date 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -Wall -g
+**                                                                       
+** AVX not detected - optimized kernels will not be used.
+** If your system supports AVX, consider adding options,
+** e.g. -march=native, to TATIN_CFLAGS in makefile.arch
+** ====================================================================================== 
+DataBucketView <Material Constants>:
+  L                  = 200 
+  buffer (max)       = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) : rank0
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) : rank0
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) : rank0
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) : rank0
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) : rank0
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) : rank0
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) : rank0
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) : rank0
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) : rank0
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
+  Total mem. usage                                                      = 8.00e-02 (MB) : <collective over 1 ranks>
+[pTatin] Created output directory: ./output 
+[pTatin] Created log file: ./output/ptatin.log-2018.03.19_15:13:39 
+[pTatin] Created options file: ./output/ptatin.options-2018.03.19_15:13:39 
+[pTatin] Created options file: ./output/ptatin.options 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "indentor"
+  [pTatinModel]: Registering model [4] with name "rift3D_T"
+  [pTatinModel]: Registering model [5] with name "advdiff_example"
+  [pTatinModel]: Registering model [6] with name "delamination"
+  [pTatinModel]: Registering model [7] with name "Riftrh"
+  [pTatinModel]: Registering model [8] with name "Rift_oblique3d"
+  [pTatinModel]: Registering model [9] with name "geomod2008"
+  [pTatinModel]: Registering model [10] with name "multilayer_folding"
+  [pTatinModel]: Registering model [11] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [12] with name "ex_subduction"
+  [pTatinModel]: Registering model [13] with name "iplus"
+  [pTatinModel]: Registering model [14] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [15] with name "convection2d"
+  [pTatinModel]: Registering model [16] with name "thermal_sb"
+  [pTatinModel]: Registering model [17] with name "sd3d"
+  [pTatinModel]: Registering model [18] with name "pas"
+  [pTatinModel]: Registering model [19] with name "pd"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+  [pTatinModel]: -ptatin_model "advdiff_example" was detected
+[[ModelInitialize_AdvDiffExample]]
+AdvDiff test: Skew advection test of Hughes.
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization: 0.0002 (sec)]]
+[[Swarm->coordinate assignment: 2048 points : 0.0008 (sec)]]
+[[SwarmDMDA3dDataExchangerCreate: time = 9.5606e-04 (sec)]]
+[[ModelApplyInitialMeshGeometry_AdvDiffExample]]
+PhysCompCreateMesh_Energy: Generating overlapping Q1 DMDA
+[[ModelApplyInitialMaterialGeometry_AdvDiffExample]]
+MPntPEnergy field offset[0] 0 
+MPntPEnergy field offset[1] 8 
+QPntVolCoefEnergy field offset[0] 0 
+QPntVolCoefEnergy field offset[1] 8 
+DataBucketView <materialpoints>:
+  L                  = 2048 
+  buffer (max)       = 1000 
+  allocated          = 3048 
+  nfields registered = 4 
+    [  0]: field name  ==>>                        MPntStd : Mem. usage = 1.95e-01 (MB) : rank0
+    [  1]: field name  ==>>                    MPntPStokes : Mem. usage = 4.88e-02 (MB) : rank0
+    [  2]: field name  ==>>                  MPntPStokesPl : Mem. usage = 2.44e-02 (MB) : rank0
+    [  3]: field name  ==>>                    MPntPEnergy : Mem. usage = 4.88e-02 (MB) : rank0
+  Total mem. usage                                                      = 3.17e-01 (MB) : <collective over 1 ranks>
+DataBucketView <materialconstants>:
+  L                  = 200 
+  buffer (max)       = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) : rank0
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) : rank0
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) : rank0
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) : rank0
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) : rank0
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) : rank0
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) : rank0
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) : rank0
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) : rank0
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
+  Total mem. usage                                                      = 8.00e-02 (MB) : <collective over 1 ranks>
+[[ModelApplyInitialSolution_AdvDiffExample]]
+WARNING: coordinates not set
+[[ModelApplyBoundaryCondition_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[pTatin] Created output directory: ./output/step0 
+  writing pvdfilename ./output/timeseries_vp.pvd 
+  writing pvdfilename ./output/timeseries_energy.pvd 
+  TimeStep control(EnergyCFL): | current = 6.2500e-03 : trial = 3.1220e-02 | ==>> dt used = 6.2500e-03 |
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelOutput_AdvDiffExample]]
+[[ModelDestroy_Template]]
+[[ModelDestroy_ViscousSinker]]
+[[ModelDestroy_Gene3D]]
+[[ModelDestroy_Indentor]]
+[[ModelDestroy_Rift3D_T]]
+[[ModelDestroy_AdvDiffExample]]
+[[ModelDestroy_Delamination]]
+[[ModelDestroy_Riftrh]]
+[[ModelDestroy_Rift_oblique3d]]
+[[ModelDestroy_MultilayerFolding]]
+[[ModelDestroy_SubmarineLavaFlow]]
+[[ModelDestroy_ExSubduction]]
+[[ModelDestroy_iPLUS]]
+[[ModelDestroy_Subduction_Initiation2d]]
+[[ModelDestroy_Thermal_Convection2d]]
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+Option left: name:-ksp_monitor (no value)
+Option left: name:-snes_monitor (no value)

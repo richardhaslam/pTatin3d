@@ -31,7 +31,7 @@
 #include <petsc.h>
 #include <petscvec.h>
 #include <petscdm.h>
-#include <petsc-private/dmdaimpl.h>
+#include <petsc/private/dmdaimpl.h>
 
 #include "dmda_update_coords.h"
 #include "dmda_project_coords.h"
@@ -43,7 +43,7 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 	DM daf,dac;
 	DM cdaf,cdac;
 	Vec coordsc,coordsf;
-	VecScatter inject;
+    Mat inject;
 	PetscInt L;
 	PetscErrorCode ierr;
 	
@@ -60,9 +60,8 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 		ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 		
 		ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
-		ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-		ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-		ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+        ierr = MatMult(inject,coordsf,coordsc);CHKERRQ(ierr);
+        ierr = MatDestroy(&inject);CHKERRQ(ierr);
 	}
 	
 	/* update ghost coordinates for all levels except the finest */
@@ -79,7 +78,7 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 {
 	DM cdaf,cdac;
 	Vec coordsc,coordsf;
-	VecScatter inject;
+    Mat inject;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -91,9 +90,8 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 	ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 	
 	ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
-	ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+    ierr = MatMult(inject,coordsf,coordsc);CHKERRQ(ierr);
+    ierr = MatDestroy(&inject);CHKERRQ(ierr);
 	
 	/* update ghost coordinates */
 	ierr = DMDAUpdateGhostedCoordinates(dac);CHKERRQ(ierr);

@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d.h"
@@ -452,7 +451,7 @@ PetscErrorCode SwarmViewGeneric_PVTUXML(const int nfields,const MaterialPointFie
         int i32;
         
         PetscMPIIntCast(i,&i32);
-		asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 );
+		if (asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
 		free(sourcename);
 	}
@@ -481,9 +480,9 @@ PetscErrorCode SwarmViewGeneric_ParaView(DataBucket db,const int nfields,const M
 	
 	ierr = pTatinGenerateParallelVTKName(prefix,"vtu",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	//#ifdef __VTK_ASCII__
@@ -497,9 +496,9 @@ PetscErrorCode SwarmViewGeneric_ParaView(DataBucket db,const int nfields,const M
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvtu",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -887,15 +886,16 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(const 
 	
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		PetscViewer viewer;
 		
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "SwarmUpdateProperties_LocalL2Proj_Stokes.vtk", &viewer);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+		ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 		ierr = DMView(clone, viewer);CHKERRQ(ierr);
 		ierr = VecView(properties_A1, viewer);CHKERRQ(ierr);
 		ierr = VecView(properties_A2, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
 		
@@ -1173,7 +1173,7 @@ PetscErrorCode _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGr
     PetscInt          p,i,nel,nen,e;
     const PetscInt    *elnidx;
     PetscInt          nqp;
-    PetscReal         *qp_coor,*qp_weight;
+    PetscReal         *qp_coor;
     QPntVolCoefStokes *all_quadraturepoints,*cell_quadraturepoints;
     PetscErrorCode ierr;
     
@@ -1188,7 +1188,6 @@ PetscErrorCode _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGr
     
     nqp       = Q->npoints;
     qp_coor   = Q->q_xi_coor;
-    qp_weight = Q->q_weight;
     
     ierr = DMGetLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);  ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
     ierr = DMGetLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);  ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
@@ -1317,39 +1316,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 	}
 	ierr = DMGetGlobalVector(clone[nlevels-1],&properties_B);CHKERRQ(ierr);
 	ierr = VecZeroEntries(properties_B);CHKERRQ(ierr);
-	
     
-#if 0
-
-	switch (coefficient_projection_type) {
-        case -1:
-         /*
-         If null projection is chosen, then we assume we have defined quadrature point values on the fine mesh already (by some other means), thus we do not interpolate the smoothed nodal viscosity onto the quadrature points
-         */
-            break;
-            
-        case 0:
-            break;
-            
-        case 1:
-            /* This doesn't need to be performed as any call to pTatin_EvaluateRheologyNonlinearitiesMarkers() will have already performed such an interpolation from markers to quadrature points
-            */
-            ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
-                    clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],Q[nlevels-1] );CHKERRQ(ierr);
-            break;
-            
-        case 2:
-            break;
-            
-        case 3:
-            break;
-            
-        case 4:
-            ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,Q[nlevels-1]);CHKERRQ(ierr);
-            break;
-	}
-#endif
-	
 	switch (coefficient_projection_type) {
         /*
          If the following projection methods are chosen, 
@@ -1422,20 +1389,21 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
     
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,&flg);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,&flg);
 	if (view) {
 		PetscViewer viewer;
 		
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "SwarmUpdateProperties_LocalL2Proj_Stokes_fine.vtk", &viewer);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+		ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 		ierr = DMView(clone[nlevels-1], viewer);CHKERRQ(ierr);
 		ierr = VecView(properties_A1[nlevels-1], viewer);CHKERRQ(ierr);
 		ierr = VecView(properties_A2[nlevels-1], viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
 
 	ptype = 0;
-	ierr = PetscOptionsGetInt(NULL,"-mp_hierarchy_projection_type",&ptype,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-mp_hierarchy_projection_type",&ptype,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=1; k--) {
 		
 		switch (ptype) {
@@ -1459,17 +1427,12 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 				
 			case 1:
 			{
-				VecScatter inject;
+                Mat inject;
 
 				ierr = DMCreateInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
-				
-				ierr = VecScatterBegin(inject,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-				ierr = VecScatterEnd(inject  ,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-				
-				ierr = VecScatterBegin(inject,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-				ierr = VecScatterEnd(inject  ,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-				
-				ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+                ierr = MatMult(inject,properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
+                ierr = MatMult(inject,properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
+                ierr = MatDestroy(&inject);CHKERRQ(ierr);
 			}
 				break;
 				
@@ -1488,10 +1451,11 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 			
 			PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"SwarmUpdateProperties_LocalL2Proj_Stokes_%D.vtk",k-1);
 			ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, name, &viewer);CHKERRQ(ierr);
-			ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+			ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 			ierr = DMView(clone[k-1], viewer);CHKERRQ(ierr);
 			ierr = VecView(properties_A1[k-1], viewer);CHKERRQ(ierr);
 			ierr = VecView(properties_A2[k-1], viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
 			ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 		}
 		
@@ -1515,23 +1479,23 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 #define __FUNCT__ "_compute_memory_offsets"
 PetscErrorCode _compute_memory_offsets(void *ref,void *target,size_t *size)
 {
-	int i;
-	size_t len;
-	void *stride;
+	int       i;
+	size_t    len;
+	void      *stride;
+	PetscBool found;
 	
 	PetscFunctionBegin;
-	*size = -1;
+	found = PETSC_FALSE;
 	len = 0;
 	for (i=0; i<64; i++) {
 		stride = (char*)ref + len;
 		if (stride == target) {
 			*size = len;
+			found = PETSC_TRUE;
 		}
 		len = len + sizeof(char);
 	}
-	if ( (*size) == -1 ) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot determine memory offset");
-	}	
+	if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot determine memory offset");
 	PetscFunctionReturn(0);
 }
 
@@ -1819,16 +1783,17 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 	
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		char filename[256];
 		PetscViewer viewer;
 		
 		sprintf(filename,"MaterialPointProjection_stokes_member_%d.vtk",(int)member );
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+		ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 		ierr = DMView(clone, viewer);CHKERRQ(ierr);
 		ierr = VecView(properties_A, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
 	
@@ -2640,16 +2605,17 @@ PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoi
 
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		char filename[PETSC_MAX_PATH_LEN];
 		PetscViewer viewer;
 		
 		PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"MProjectionQ1_stokes_eta_Lv%D.vtk",level );
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+		ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 		ierr = DMView(clone, viewer);CHKERRQ(ierr);
 		ierr = VecView(properties_A, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
 	
@@ -2748,6 +2714,8 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
                 cell_quadraturepoints[0].eta *= eta_p; /* GEOMETRIC */
                 cell_quadraturepoints[1].eta += 1.0;
                 break;
+            case CoefAvgNULL:
+                SETERRQ(PetscObjectComm((PetscObject)clone),PETSC_ERR_USER,"CoefAvgNULL not supported");
         }
         
         switch (rho_type) {
@@ -2763,13 +2731,15 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
                 cell_quadraturepoints[0].rho *= rho_p; /* GEOMETRIC */
                 cell_quadraturepoints[1].rho += 1.0;
                 break;
+            case CoefAvgNULL:
+                SETERRQ(PetscObjectComm((PetscObject)clone),PETSC_ERR_USER,"CoefAvgNULL not supported");
         }
     }
     PetscTime(&t1);
     
     /* Compute cell wise average and set constant value on all quadrature points within each element */
     for (e=0; e<nel; e++) {
-        double avg_field;
+        double avg_field = 0.0;
         
         ierr = VolumeQuadratureGetCellData_Stokes(Q,all_quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
         
@@ -2800,6 +2770,8 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
                 avg_field  = pow(prod_field,1.0/sum_np);
                 break;
             }
+            case CoefAvgNULL:
+                SETERRQ(PetscObjectComm((PetscObject)clone),PETSC_ERR_USER,"CoefAvgNULL not supported");
         }
         /* If the averaging type was one of arth,harm,geom, set constant value on quadrature point */
         if (eta_type != CoefAvgNULL) {
@@ -2835,6 +2807,8 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
                 avg_field  = pow(prod_field,1.0/sum_np);
                 break;
             }
+            case CoefAvgNULL:
+                SETERRQ(PetscObjectComm((PetscObject)clone),PETSC_ERR_USER,"CoefAvgNULL not supported");
         }
         /* If the averaging type was one of arth,harm,geom, set constant value on quadrature point */
         if (rho_type != CoefAvgNULL) {
@@ -3030,6 +3004,7 @@ PetscErrorCode _get_field_MPntStd(MPAccess X,const int p,MPntStd **point)
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntStd must be registered");
 	}
 	if (X == NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
+  if (p < 0 || p >= X->db->L) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER,"MPntStd.AccessPoint() index %d is invalid. Must be in range [0,%d)",p,X->db->L);
 	PField = X->PField[ X->mp_std_field_idx ];
 	DataFieldAccessPoint(PField,p,(void**)point);
 	
@@ -3045,6 +3020,7 @@ PetscErrorCode _get_field_MPntPStokes(MPAccess X,const int p,MPntPStokes **point
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPStokes must be registered");
 	}
 	if (X == NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
+  if (p < 0 || p >= X->db->L) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER,"MPntPStokes.AccessPoint() index %d is invalid. Must be in range [0,%d)",p,X->db->L);
 	PField = X->PField[ X->mp_stokes_field_idx ];
 	DataFieldAccessPoint(PField,p,(void**)point);
 	
@@ -3060,6 +3036,7 @@ PetscErrorCode _get_field_MPntPStokesPl(MPAccess X,const int p,MPntPStokesPl **p
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPStokesPl must be registered");
 	}
 	if (X == NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
+  if (p < 0 || p >= X->db->L) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER,"MPntPStokesPl.AccessPoint() index %d is invalid. Must be in range [0,%d)",p,X->db->L);
 	PField = X->PField[ X->mp_stokespl_field_idx ];
 	DataFieldAccessPoint(PField,p,(void**)point);
 	
@@ -3075,6 +3052,7 @@ PetscErrorCode _get_field_MPntPEnergy(MPAccess X,const int p,MPntPEnergy **point
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPEnergy must be registered");
 	}
 	if (X == NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
+  if (p < 0 || p >= X->db->L) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER,"MPntPEnergy.AccessPoint() index %d is invalid. Must be in range [0,%d)",p,X->db->L);
 	PField = X->PField[ X->mp_energy_field_idx ];
 	DataFieldAccessPoint(PField,p,(void**)point);
 	
@@ -3082,6 +3060,20 @@ PetscErrorCode _get_field_MPntPEnergy(MPAccess X,const int p,MPntPEnergy **point
 }
 
 /* std */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_point_index"
+PetscErrorCode MaterialPointGet_point_index(MPAccess X,const int p,long int *var)
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdGetField_point_index(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_global_coord"
 PetscErrorCode MaterialPointGet_global_coord(MPAccess X,const int p,double *var[])
@@ -3324,6 +3316,20 @@ PetscErrorCode MaterialPointSet_heat_source(MPAccess X,const int p,double var)
 }
 
 /* std */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_point_index"
+PetscErrorCode MaterialPointSet_point_index(MPAccess X,const int p,long int var)
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdSetField_point_index(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_global_coord"
 PetscErrorCode MaterialPointSet_global_coord(MPAccess X,const int p,double var[])

@@ -39,7 +39,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_DensityBoussinesq_def.h"
+#include "material_constants/MaterialConst_DensityBoussinesq_def.h"
 
 
 const char MaterialConst_DensityBoussinesq_classname[] = "MaterialConst_DensityBoussinesq";

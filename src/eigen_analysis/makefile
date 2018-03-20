@@ -14,25 +14,21 @@ export EXT_TATIN_INC	=	-I${PTATIN_DIR}/src
 export EXT_TATIN_LIB	=	-L${PTATIN_DIR}/${PETSC_ARCH}/lib -lptatin3d -lptatin3dmodels -lptatin3d
 
 # slepc
-include ${SLEPC_DIR}/conf/slepc_variables
-include ${SLEPC_DIR}/conf/slepc_rules
+include ${SLEPC_DIR}/lib/slepc/conf/slepc_variables
+include ${SLEPC_DIR}/lib/slepc/conf/slepc_rules
 export EXT_SLEPC_INC = ${SLEPC_INCLUDE}
 export EXT_SLEPC_LIB = ${SLEPC_LIB}
 
 # petsc
-include ${PETSC_DIR}/conf/variables
-#include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+#include ${PETSC_DIR}/lib/petsc/conf/rules
 export EXT_PETSC_INC = -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
 #export EXT_PETSC_LIB = ${PETSC_LIB}
 
-# libz
-export LIBZ_DIR = /usr/include
-export EXT_LIBZ_INC = -I${LIBZ_DIR}
-export EXT_LIBZ_LIB = -lz
 
 # combine every thing here
-export TATIN_INC	=	-I. ${EXT_TATIN_INC} ${EXT_SLEPC_INC} ${EXT_PETSC_INC} ${EXT_LIBZ_INC}
-export TATIN_LIB	=	${EXT_TATIN_LIB} ${EXT_SLEPC_LIB} ${EXT_LIBZ_LIB}
+export TATIN_INC	=	-I. ${EXT_TATIN_INC} ${EXT_SLEPC_INC} ${EXT_PETSC_INC}
+export TATIN_LIB	=	${EXT_TATIN_LIB} ${EXT_SLEPC_LIB}
 
 ## Set flags here, or run >make TATIN_CFLAGS='-g -O0'
 export TATIN_CFLAGS_DEBUG				= -O0 -g -Wno-unused-variable -Wall

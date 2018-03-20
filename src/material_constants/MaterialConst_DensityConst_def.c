@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_DensityConst_def.h"
+#include "material_constants/MaterialConst_DensityConst_def.h"
 
 
 const char MaterialConst_DensityConst_classname[] = "MaterialConst_DensityConst";

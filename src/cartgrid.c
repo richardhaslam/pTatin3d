@@ -42,51 +42,52 @@ PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,Pe
 PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,PetscBool *found);
 
 
-
 #undef __FUNCT__
 #define __FUNCT__ "CartGridCreate"
 PetscErrorCode CartGridCreate(CartGrid *map)
 {
-	CartGrid p;
-    
-    PetscFunctionBegin;
-	PetscNew(&p);
-    
-    p->type = CARTGRID_INMEM;
-    p->getindex = CartGridGetIndex_InMem;
-    p->getvalue = CartGridGetValue_InMem;
-    p->destroy = NULL;
-    
-	*map = p;
-    PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+  CartGrid       p;
+
+  PetscFunctionBegin;
+  *map = NULL;
+  ierr = PetscNew(&p);CHKERRQ(ierr);
+
+  p->type = CARTGRID_INMEM;
+  p->getindex = CartGridGetIndex_InMem;
+  p->getvalue = CartGridGetValue_InMem;
+  p->destroy = NULL;
+
+  *map = p;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "CartGridDestroy"
 PetscErrorCode CartGridDestroy(CartGrid *map)
 {
-	CartGrid p;
-    
-    PetscFunctionBegin;
-	if (!map) { PetscFunctionReturn(0); }
-	p = *map;
-	
-	if (p->data) {
-		PetscFree(p->data);
-		p->data = NULL;
-	}
+  CartGrid p;
 
-    if (p->type == CARTGRID_OUTOFCORE) {
-        if (p->data_fp) {
-            fclose(p->data_fp);
-            p->data_fp = NULL;
-        }
+  PetscFunctionBegin;
+  if (!map) { PetscFunctionReturn(0); }
+  p = *map;
+
+  if (p->data) {
+    PetscFree(p->data);
+    p->data = NULL;
+  }
+
+  if (p->type == CARTGRID_OUTOFCORE) {
+    if (p->data_fp) {
+      fclose(p->data_fp);
+      p->data_fp = NULL;
     }
-    
-    PetscFree(p);
-    
-	*map = NULL;
-    PetscFunctionReturn(0);
+  }
+
+  PetscFree(p);
+
+  *map = NULL;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -231,7 +232,7 @@ PetscErrorCode CartGridSetUp_InMem(CartGrid map)
     
     fp_data = fopen(map->datafile_name,"r");
     if (!fp_data) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",map->datafile_name);
-    fread(map->data,map->bytes,map->mx * map->my * map->mz,fp_data);
+    if (fread(map->data,map->bytes,(size_t)(map->mx * map->my * map->mz),fp_data) != (size_t)(map->mx * map->my * map->mz)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() error");
     fclose(fp_data);
     
     PetscFunctionReturn(0);
@@ -436,7 +437,7 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
     fseek(map->data_fp,offset,SEEK_CUR);
     
     /* fread */
-    fread(value,map->bytes,1,map->data_fp);
+    if (fread(value,map->bytes,1,map->data_fp) != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() error");
  
     PetscFunctionReturn(0);
 }
@@ -445,11 +446,12 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
 #define __FUNCT__ "CartGridGetValue"
 PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
-	(*found) = PETSC_FALSE;
-    ierr = map->getvalue(map,xp,value,found);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  (*found) = PETSC_FALSE;
+  ierr = map->getvalue(map,xp,value,found);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -504,7 +506,7 @@ PetscErrorCode CartGridSetUp(CartGrid map)
 
     /* header */
 ParseHeader:
-    fgets(str,STRMAX,fp);
+    if (!fgets(str,STRMAX,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets() failed");
     if (str[0] == '#') { goto ParseHeader; }
     if (str[0] == '!') { goto ParseHeader; }
     if (str[0] == '%') { goto ParseHeader; }
@@ -556,15 +558,15 @@ ParseHeader:
     }
     
     /* read header: dim */
-    fscanf(fp,"%d\n",&dim);
+    if (fscanf(fp,"%d\n",&dim) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
     map->dim = (PetscInt)dim;
     
     if (dim == 2) {
         /* read header: mx,my */
-        fscanf(fp,"%d %d",&mx,&my);
+        if (fscanf(fp,"%d %d",&mx,&my) < 2) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
         mz = 1;
         /* read header: x0,x1,y0,y1 */
-        fscanf(fp,"%lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1]);
+        if (fscanf(fp,"%lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1]) < 4) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
         zr[0] = -1.0e32;
         zr[1] =  1.032;
         printf("[%d x %d] --> [%1.4e,%1.4e] x [%1.4e,%1.4e]\n",mx,my,xr[0],xr[1],yr[0],yr[1]);
@@ -574,9 +576,9 @@ ParseHeader:
         dz = 0.0;
     } else if (dim == 3) {
         /* read header: mx,my,mz */
-        fscanf(fp,"%d %d %d",&mx,&my,&mz);
+        if (fscanf(fp,"%d %d %d",&mx,&my,&mz) < 3) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
         /* read header: x0,x1,y0,y1,z0,z1 */
-        fscanf(fp,"%lf %lf %lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1],&zr[0],&zr[1]);
+        if (fscanf(fp,"%lf %lf %lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1],&zr[0],&zr[1]) < 6) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
         printf("[%d x %d x %d] --> [%1.2e,%1.2e] x [%1.2e,%1.2e] x [%1.2e,%1.2e]\n",mx,my,mz,xr[0],xr[1],yr[0],yr[1],zr[0],zr[1]);
 
         dx = (xr[1] - xr[0])/(double)(mx);
@@ -758,7 +760,7 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
                     for (i=0; i<map->mx; i++) {
 
                         /* fread */
-                        fread(data_i,map->bytes,1,map->data_fp);
+                        if (fread(data_i,map->bytes,1,map->data_fp) != 1)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() error");
 
                         switch (map->data_type) {
                             case CARTGRID_INT:
@@ -834,7 +836,7 @@ PetscErrorCode pTatinCtxGetCartGrid(pTatinCtx ctx,CartGrid *map)
 #define __FUNCT__ "ex1"
 PetscErrorCode ex1(void)
 {
-    CartGrid           cg;
+    CartGrid       cg;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -876,7 +878,7 @@ PetscErrorCode ex1(void)
 PetscErrorCode ex2(void)
 {
     PetscReal      xr[2],yr[2],zr[2];
-    CartGrid           cgin,cg;
+    CartGrid       cgin,cg;
     int            i,j,k;
     long int       *data;
     PetscErrorCode ierr;
@@ -934,21 +936,3 @@ PetscErrorCode ex2(void)
     
 	PetscFunctionReturn(0);
 }
-
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "main"
-int main(int argc,char **args)
-{
-    PetscErrorCode ierr;
-    
-    ierr = PetscInitialize(&argc,&args,(char*)0,NULL);CHKERRQ(ierr);
-
-    //ierr = ex1();CHKERRQ(ierr);
-    ierr = ex2();CHKERRQ(ierr);
-    
-    
-    ierr = PetscFinalize();CHKERRQ(ierr);
-    return 0;
-}
-#endif

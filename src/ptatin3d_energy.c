@@ -77,48 +77,18 @@ PetscErrorCode pTatinPhysCompCreate_Energy(pTatinCtx user)
 {
 	PetscErrorCode ierr;
 	PhysCompStokes stokes_ctx;
+  PetscInt energy_mesh_type;
 	
 	PetscFunctionBegin;
-	
 	stokes_ctx = user->stokes_ctx;
+  /* create from data */
+  
+  energy_mesh_type = 1; /* default is Q1 overlapping Q2 */
+  ierr = PetscOptionsGetInt(NULL,NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
+  ierr = PhysCompNew_Energy(stokes_ctx->dav,-1,-1,-1,energy_mesh_type,&user->energy_ctx);CHKERRQ(ierr);
 	
 	if (user->restart_from_file) {
-		/* load from file */
-		char t_name[PETSC_MAX_PATH_LEN];
-		char told_name[PETSC_MAX_PATH_LEN];
-		char xold_name[PETSC_MAX_PATH_LEN];
-		char v_name[PETSC_MAX_PATH_LEN];
-		
-		/* dav,dap */
-		if (!StringEmpty(user->restart_prefix)) {
-			sprintf(t_name,   "%s/ptat3dcpf.dmda-t_%s",user->restart_dir,user->restart_prefix);
-			sprintf(told_name,"%s/ptat3dcpf.dmda-t_old_%s",user->restart_dir,user->restart_prefix);
-			sprintf(xold_name,"%s/ptat3dcpf.dmda-x_old_%s",user->restart_dir,user->restart_prefix);
-			sprintf(v_name,   "%s/ptat3dcpf.dmda-u_minus_v_%s",user->restart_dir,user->restart_prefix);
-		} else {
-			sprintf(t_name,   "%s/ptat3dcpf.dmda-t",user->restart_dir);
-			sprintf(told_name,"%s/ptat3dcpf.dmda-t_old",user->restart_dir);
-			sprintf(xold_name,"%s/ptat3dcpf.dmda-x_old",user->restart_dir);
-			sprintf(v_name,   "%s/ptat3dcpf.dmda-u_minus_v",user->restart_dir);
-		}
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", t_name );
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", told_name );
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", xold_name );
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", v_name );
-		
-		ierr = PhysCompLoad_Energy();CHKERRQ(ierr);
-	} else {
-		/* create from data */
-		PetscInt energy_mesh_type;
-		
-		energy_mesh_type = 1; /* default is Q1 overlapping Q2 */
-		ierr = PetscOptionsGetInt(NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
-		ierr = PhysCompNew_Energy(stokes_ctx->dav,-1,-1,-1,energy_mesh_type,&user->energy_ctx);CHKERRQ(ierr);
-	}	
-	
-	
-	if (user->restart_from_file) {
-		
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinPhysCompCreate_Energy should not be called during restart");
 	} else {
 		ierr = PhysCompAddMaterialPointCoefficients_Energy(user->materialpoint_db);CHKERRQ(ierr);
 	}
@@ -310,16 +280,17 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		char filename[256];
 		PetscViewer viewer;
 		
 		sprintf(filename,"MaterialPointProjection_energy_member_%d.vtk",(int)member );
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+		ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 		ierr = DMView(clone, viewer);CHKERRQ(ierr);
 		ierr = VecView(properties_A, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
 	
@@ -367,7 +338,6 @@ PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx)
 PetscErrorCode _pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompEnergy energy,PetscReal dt)
 {
 	Vec            coordinates;
-	PetscReal      min,max;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -377,11 +347,16 @@ PetscErrorCode _pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompEnergy energy,Pet
 	ierr = VecAXPY(energy->u_minus_V,-1.0,coordinates);CHKERRQ(ierr);
 	ierr = VecAXPY(energy->u_minus_V, 1.0,energy->Xold);CHKERRQ(ierr);
 	ierr = VecScale(energy->u_minus_V,1.0/dt);CHKERRQ(ierr);
-	
-	ierr = VecMin(energy->u_minus_V,0,&min);CHKERRQ(ierr);
-	ierr = VecMax(energy->u_minus_V,0,&max);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"ALE(vel) min = %1.4e : max = %1.4e \n", min,max);
-	
+
+  /*
+  {
+    PetscReal      min,max;
+    
+    ierr = VecMin(energy->u_minus_V,0,&min);CHKERRQ(ierr);
+    ierr = VecMax(energy->u_minus_V,0,&max);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"ALE(vel) min = %1.4e : max = %1.4e \n", min,max);
+  }
+  */
 	PetscFunctionReturn(0);
 }
 
@@ -571,10 +546,11 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
   ierr = MPI_Allreduce(&min_dt_diff,&g_dt_diff,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
 	ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  /*
 	PetscPrintf(PETSC_COMM_WORLD,"Diffusion dt = %1.12e \n", g_dt_diff );
 	PetscPrintf(PETSC_COMM_WORLD,"Advective dt = %1.12e \n", g_dt_adv );
 	PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );
-	
+	*/
 	*timestep = g_dt_adv;
 	if (g_dt_diff < g_dt_adv) {
 		*timestep = g_dt_diff;

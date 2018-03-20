@@ -33,7 +33,7 @@
 
 typedef enum { GENEBC_FreeSlip=0, GENEBC_NoSlip, GENEBC_FreeSlipFreeSurface, GENEBC_NoSlipFreeSurface } GENE3DBC;
 typedef enum { GENE_LayeredCake=0, GENE_ExtrudeFromMap, GENE_ReadFromCAD} GENE3DINIGEOM;
-const PetscInt LAYER_MAX = 100; 
+enum {LAYER_MAX = 100};
 
 typedef struct {
 	PetscInt  nmaterials;

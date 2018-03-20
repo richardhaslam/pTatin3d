@@ -89,10 +89,10 @@ static char model_help[] = "\
  [3] Example usage:
  
  <2d model>
- ./ptatin_driver_linear_ts.app -options_file test_option_files/test_basic_mfgmg.opts  -ptatin_model ex_subduction -output_path tsub -mx 92 -my 48 -dau_nlevels 3 -exsubduction_mode2d -fieldsplit_u_mg_levels_est_ksp_max_it 4 -fieldsplit_u_mg_levels_ksp_max_it 4
+ ./ptatin_driver_linear_ts.app -options_file test_option_files/test_basic_mfgmg.opts  -ptatin_model ex_subduction -output_path tsub -mx 92 -my 48 -dau_nlevels 3 -exsubduction_mode2d -fieldsplit_u_mg_levels_esteig_ksp_max_it 4 -fieldsplit_u_mg_levels_ksp_max_it 4
 
  <3d, finite plate model>
- ./ptatin_driver_linear_ts.app -options_file test_option_files/test_basic_mfgmg.opts  -ptatin_model ex_subduction -output_path tsub -mx 16 -my 12 -mz 16  -dau_nlevels 3 -fieldsplit_u_mg_levels_est_ksp_max_it 4 -fieldsplit_u_mg_levels_ksp_max_it 4 -lattice_layout_Nx 6 -lattice_layout_Ny 6 -lattice_layout_Nz 6 -exsubduction_finite_plate -exsubduction_finite_plate_width_factor 0.5 -mp_popctrl_np_upper 1000 -constant_dt 1.0e-5 -fieldsplit_u_ksp_rtol 1.0e-1 -ksp_atol 1.0e-4 -nsteps 3000
+ ./ptatin_driver_linear_ts.app -options_file test_option_files/test_basic_mfgmg.opts  -ptatin_model ex_subduction -output_path tsub -mx 16 -my 12 -mz 16  -dau_nlevels 3 -fieldsplit_u_mg_levels_esteig_ksp_max_it 4 -fieldsplit_u_mg_levels_ksp_max_it 4 -lattice_layout_Nx 6 -lattice_layout_Ny 6 -lattice_layout_Nz 6 -exsubduction_finite_plate -exsubduction_finite_plate_width_factor 0.5 -mp_popctrl_np_upper 1000 -constant_dt 1.0e-5 -fieldsplit_u_ksp_rtol 1.0e-1 -ksp_atol 1.0e-4 -nsteps 3000
  
 */
 
@@ -148,14 +148,14 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
     data->domain[1] = 700.0e3 / char_length;
     data->domain[2] = 3000.0e3  / char_length;
     
-    PetscOptionsGetBool(NULL,"-exsubduction_mode2d",&mode_2d,NULL);
+    PetscOptionsGetBool(NULL,NULL,"-exsubduction_mode2d",&mode_2d,NULL);
     if (mode_2d) {
         ierr = pTatin3d_DefineVelocityMeshQuasi2D(c);CHKERRQ(ierr);
         data->domain[2] = 50.0e3 / char_length;
-        PetscOptionsInsertString("-da_refine_z 1");
+        PetscOptionsInsertString(NULL,"-da_refine_z 1");
     }
     data->dip = 90.0;
-    PetscOptionsGetReal(NULL,"-exsubduction_dip",&data->dip,NULL);
+    PetscOptionsGetReal(NULL,NULL,"-exsubduction_dip",&data->dip,NULL);
     
     data->eta[ RegionId_Mantle ]      = 1.0e21/char_eta;     data->rho[ RegionId_Mantle ]      = 3200.0*char_rhsscale;
     data->eta[ RegionId_Slab ]        = 1.0e23/char_eta;     data->rho[ RegionId_Slab ]        = 3300.0*char_rhsscale;
@@ -192,13 +192,13 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
     data->go[RegionId_Slab] = G;
     data->ngo = 3;
     
-    PetscOptionsGetBool(NULL,"-exsubduction_finite_plate",&finite_plate,NULL);
+    PetscOptionsGetBool(NULL,NULL,"-exsubduction_finite_plate",&finite_plate,NULL);
     if (finite_plate) {
         GeometryObject mask;
         PetscReal      factor;
         
         factor = 0.25;
-        PetscOptionsGetReal(NULL,"-exsubduction_finite_plate_width_factor",&factor,NULL);
+        PetscOptionsGetReal(NULL,NULL,"-exsubduction_finite_plate_width_factor",&factor,NULL);
         
         ierr = GeometryObjectCreate("mask",&mask);CHKERRQ(ierr);
         x0[0] = 0.0e3 / char_length;      x0[1] =   0.0e3 / char_length;   x0[2] = 0.0;
@@ -312,7 +312,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ExSubduction(pTatinCtx c,void *ctx)
     ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
     
     ierr = DMDASetUniformCoordinates(dav,0.0,data->domain[0],0.0,data->domain[1],0.0,data->domain[2]);CHKERRQ(ierr);
-    PetscOptionsGetBool(NULL,"-exsubduction_mode2d",&mode_2d,NULL);
+    PetscOptionsGetBool(NULL,NULL,"-exsubduction_mode2d",&mode_2d,NULL);
     if (mode_2d) {
         ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(c);CHKERRQ(ierr);
     }

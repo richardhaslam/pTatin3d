@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d.h"
@@ -108,12 +107,13 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
     modeldata->rhs_scale = 1.0 / modeldata->rhs_scale;
 
     modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,"-model_output_si",&modeldata->output_si,0);
+    PetscOptionsGetBool(NULL,NULL,"-model_output_si",&modeldata->output_si,0);
     
     modeldata->model_type = CASE_1A;
     modeldata->slab_length = 250.0;
     
-    PetscOptionsGetInt(NULL,"-model_sd3d_mtype",&mtype,0);
+    mtype = 0;
+    PetscOptionsGetInt(NULL,NULL,"-model_sd3d_mtype",&mtype,NULL);
     switch (mtype) {
         case 0:
             modeldata->model_type = CASE_1A;
@@ -134,7 +134,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         case 4:
             modeldata->model_type = CASE_2C;
             PetscPrintf(PETSC_COMM_WORLD,"  [model sd3d]: CASE 2C\n");
-            PetscOptionsGetReal(NULL,"-model_sd3d_case2c_slab_ly",&modeldata->slab_length,0);
+            PetscOptionsGetReal(NULL,NULL,"-model_sd3d_case2c_slab_ly",&modeldata->slab_length,0);
             PetscPrintf(PETSC_COMM_WORLD,"  [model sd3d]: slab length = %1.4e (km)\n",modeldata->slab_length);
             break;
     }
@@ -169,7 +169,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         n_exp    = 3.0;
     }
     
-    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3150.0 * 9.81 / 10.0);
+    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3150.0);
     /* eta = F . pow(preexp_A,-1/n) . pow(e,1/n-1) . exp(E/nRT) */
     MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexp_A, F, 0.0, 0.0, n_exp, 1.0);
     MaterialConstantsScaleValues_ViscosityArrh(materialconstants,regionidx, modeldata->eta_bar, modeldata->p_bar );
@@ -186,7 +186,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         preexp_A = 1.0;
         n_exp    = 4.0;
         
-        MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3300.0 * 9.81 / 10.0);
+        MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3300.0);
         /* eta = F . pow(preexp_A,-1/n) . pow(e,1/n-1) . exp(E/nR(T+T0)) */
         MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexp_A, F, 0.0, 0.0, n_exp, 1.0); /* set T0 = 1 to ensure I can calc E/nR(T-T0) */
         MaterialConstantsScaleValues_ViscosityArrh(materialconstants,regionidx, modeldata->eta_bar, modeldata->p_bar );
@@ -275,6 +275,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SD3D(pTatinCtx ptatinctx,void *mode
     Ly = 660.0 * 1.0e3; /* km */
     Lz = 500.0 * 1.0e3; /* km */
 	ierr = DMDASetUniformCoordinates(dav,0.0,Lx/modeldata->x_bar, 0.0,Ly/modeldata->x_bar, 0.0,Lz/modeldata->x_bar);CHKERRQ(ierr);
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(stokes,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -568,11 +572,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         if (ridx == MANTLE_IDX) {
             /* mantle - background */
             ierr = MaterialPointSet_viscosity(mpX,  p, 1.0e21/data->eta_bar);CHKERRQ(ierr);
-            ierr = MaterialPointSet_density(mpX,    p, -data->rhs_scale * 3150.0 * 9.81);CHKERRQ(ierr);
+            ierr = MaterialPointSet_density(mpX,    p, data->rhs_scale * 3150.0);CHKERRQ(ierr);
         } else {
             /* slab */
             ierr = MaterialPointSet_viscosity(mpX,  p, 1.0e22/data->eta_bar);CHKERRQ(ierr);
-            ierr = MaterialPointSet_density(mpX,    p, -data->rhs_scale * 3300.0 * 9.81);CHKERRQ(ierr);
+            ierr = MaterialPointSet_density(mpX,    p, data->rhs_scale * 3300.0);CHKERRQ(ierr);
         }
     }
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
@@ -606,6 +610,8 @@ PetscErrorCode SD3D_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,SD3DCtx 
             break;
         case CASE_1B:
             ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,NORTH_FACE,0.0);CHKERRQ(ierr);
+            break;
+        default:
             break;
     }
     
@@ -673,7 +679,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *
     PetscReal      gmin[3],gmax[3];
     int            pidx_w;
     PetscMPIInt    rank,rank_w;
-    double         shared_coord[3];
+    double         shared_coord[] = {0.0,0.0,0.0};
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
@@ -686,7 +692,8 @@ PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *
     coord[2] = 0.0;
     ierr = MPntStdIdentifyFromPosition(db,coord,coord_mask,SLAB_EDGE_IDX,1.0e-16,&pidx_w,&rank_w);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"slab edge identified: pidx_w,rank_w %d %d\n",pidx_w,rank_w);
-
+  if (rank_w == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"No point satisfying ||coord[] - mp.coor[]|| < tol was found");
+  
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
     shared_coord[0] = shared_coord[1] = shared_coord[2] = 1.0e32;
@@ -701,8 +708,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
 
     ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"slab edge range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
-    
+  
     *W = w;
     *Dn = shared_coord[1];
     
@@ -718,7 +724,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,Pe
     PetscReal      gmin[3],gmax[3];
     int            pidx_w;
     PetscMPIInt    rank,rank_w;
-    double         shared_coord[3];
+    double         shared_coord[] = {0.0,0.0,0.0};
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
@@ -731,7 +737,8 @@ PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,Pe
     coord[2] = 0.0;
     ierr = MPntStdIdentifyFromPosition(db,coord,coord_mask,SLAB_BACK_FACE_IDX,1.0e-16,&pidx_w,&rank_w);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"slab edge (back face) identified: pidx_w,rank_w %d %d\n",pidx_w,rank_w);
-    
+  if (rank_w == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"No point satisfying ||coord[] - mp.coor[]|| < tol was found");
+  
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
     shared_coord[0] = shared_coord[1] = shared_coord[2] = 1.0e32;
@@ -746,8 +753,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,Pe
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
     
     ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"slab edge (back face) range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
-    
+  
     *W = w;
     *Dn = shared_coord[1];
     
@@ -763,7 +769,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
     PetscReal      gmin[3],gmax[3];
     int            pidx_w;
     PetscMPIInt    rank,rank_w;
-    double         shared_coord[3];
+    double         shared_coord[] = {0.0,0.0,0.0};;
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
@@ -776,7 +782,8 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
     coord[2] = w;
     ierr = MPntStdIdentifyFromPosition(db,coord,coord_mask,SLAB_FRONT_FACE_IDX,1.0e-16,&pidx_w,&rank_w);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"slab edge (front face) identified: pidx_w,rank_w %d %d\n",pidx_w,rank_w);
-    
+  if (rank_w == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"No point satisfying ||coord[] - mp.coor[]|| < tol was found");
+  
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
     shared_coord[0] = shared_coord[1] = shared_coord[2] = 1.0e32;
@@ -791,8 +798,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
     
     ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"slab edge (front face) range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
-    
+  
     *W = w;
     *Dn = shared_coord[1];
     
@@ -968,16 +974,21 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
     ierr = SD3DOutput_ComputeDs(materialpoint_db,&Ds);CHKERRQ(ierr);
 
     ierr = SD3DOutput_ComputeWDn_minX(materialpoint_db,&W,&Dn);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"[step %D] slab edge range: W,Dn %1.4e %1.4e\n",ptatinctx->step,W,Dn);
     //Dn = 660.0e3/modeldata->x_bar - Dn;
     //W = 500.0e3/modeldata->x_bar - W;
 
     ierr = SD3DOutput_ComputeWDn_backface_minX(materialpoint_db,&Wx,&Dnx);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"[step %D] slab edge (back face) range: W,Dn %1.4e %1.4e\n",ptatinctx->step,Wx,Dnx);
+  
     ierr = SD3DOutput_ComputeWDn_frontface_minZ(materialpoint_db,&Wz,&Dnz);CHKERRQ(ierr);
-    
+    PetscPrintf(PETSC_COMM_WORLD,"[step %D] slab edge (front face) range: W,Dn %1.4e %1.4e\n",ptatinctx->step,Wz,Dnz);
+  
     
     ierr = SD3DOutput_ComputeZrange(dav,range);CHKERRQ(ierr);
     
     ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    volume = 0.0;
     ierr = SD3DOutput_ComputeVrms(dav,velocity,&volume,&Vrms);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
     

@@ -27,10 +27,14 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
+#include "element_utils_q1.h"
 #include "element_utils_q2.h"
 
-#define ELEMENT_OPERATION_STANDARD
-//#define ELEMENT_OPERATION_OPTIMIZED
+#define PTAT3D_ELEMENT_OPERATION_STANDARD
+//#define PTAT3D_ELEMENT_OPERATION_OPTIMIZED
+#if defined(PTAT3D_ELEMENT_OPERATION_STANDARD) && defined(PTAT_ELEMENT_OPERATION_OPTIMIZED)
+#error Only one of PTAT3D_ELEMENT_OPERATION_STANDARD and PTAT_ELEMENT_OPERATION_OPTIMIZED may be defined
+#endif
 
 
 void P3D_ConstructNi_Q2_2D(PetscReal _xi[],PetscReal Ni[])
@@ -96,7 +100,7 @@ void P3D_ConstructNi_Q2_3D(PetscReal _xi[],PetscReal Ni[])
 	PetscReal basis_NI[3][3];
 	
 	for( d=0; d<3; d++ ) {
-		double xi = _xi[d];
+		PetscReal xi = _xi[d];
 		
 		basis_NI[d][0] = 0.5 * xi * (xi-1.0); // 0.5 * ( xi^2 - xi )
 		basis_NI[d][1] = (1.0+xi) * (1.0-xi); // 1 - xi^2
@@ -116,13 +120,13 @@ void P3D_ConstructNi_Q2_3D(PetscReal _xi[],PetscReal Ni[])
 
 void P3D_ConstructGNi_Q2_3D(PetscReal _xi[],PetscReal GNi[3][Q2_NODES_PER_EL_3D])
 {
-	double basis_NI[3][3];
-	double basis_GNI[3][3];
-	int i,j,k,d,cnt;
+	PetscReal basis_NI[3][3];
+	PetscReal basis_GNI[3][3];
+	PetscInt i,j,k,d,cnt;
 	
 	
 	for( d=0; d<3; d++ ) {
-		double xi = _xi[d];
+		PetscReal xi = _xi[d];
 		
 		basis_NI[d][0] = 0.5 * xi * (xi-1.0); // 0.5 * ( xi^2 - xi )
 		basis_NI[d][1] = (1.0+xi) * (1.0-xi); // 1 - xi^2
@@ -217,6 +221,56 @@ void P3D_ConstructNi_P1GRel_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[]
 	 _xg[1] = 2.0*( _xg[1] - avg_y ) / Ly ;
 	 */
 	P3D_ConstructNi_P1L_3D( _xg, coords, Ni );
+}
+
+void P3D_ConstructNi_P1GRel_VertexBased_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[])
+{
+  PetscReal _xg[3];
+  PetscInt i,d;
+  PetscReal Ni_geom[8],centroid[3],elvert[3*8],Lx[3];
+  
+  P3D_ConstructNi_Q1_3D(_xi,Ni_geom);
+  for (d=0; d<3; d++) {
+    elvert[3*0+d] = coords[3*0+d];
+    elvert[3*1+d] = coords[3*2+d];
+    elvert[3*2+d] = coords[3*6+d];
+    elvert[3*3+d] = coords[3*8+d];
+    
+    elvert[3*4+d] = coords[3*18+d];
+    elvert[3*5+d] = coords[3*20+d];
+    elvert[3*6+d] = coords[3*24+d];
+    elvert[3*7+d] = coords[3*26+d];
+    
+    centroid[d] = coords[3*13+d];
+  }
+  Lx[0] = coords[3*14  ] - coords[3*12  ];
+  Lx[1] = coords[3*16+1] - coords[3*10+1];
+  Lx[2] = coords[3*22+2] - coords[3*4 +2];
+  
+  {
+    // init
+    for (d=0; d<3; d++) {
+      _xg[d] = 0.0;
+    }
+    
+    // interpolate coords
+    for (i=0; i<Q1_NODES_PER_EL_3D; i++) {
+      for (d=0; d<3; d++) {
+        _xg[d] += Ni_geom[i] * elvert[3*i+d];
+      }
+    }
+    
+    // compute relative position
+    for (d=0; d<3; d++) {
+      _xg[d] = ( _xg[d] - centroid[d] ) / Lx[d] ;
+    }
+    
+    // define basis
+    Ni[0] = 1.0;
+    for (d=0; d<3; d++) {
+      Ni[1+d] = _xg[d];
+    }
+  }
 }
 
 void P3D_prepare_elementQ2_3x3(PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI[][NPE],PetscReal GNI[][3][NPE])
@@ -342,7 +396,7 @@ void P3D_prepare_elementQ2(PetscInt nqp,PetscReal WEIGHT[],PetscReal XI[][3],Pet
 	}
 }
 
-#ifdef ELEMENT_OPERATION_STANDARD
+#if defined(PTAT3D_ELEMENT_OPERATION_STANDARD)
 void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
 																 PetscReal detJ[],
 																 PetscReal dNudx[][NPE],
@@ -382,8 +436,8 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],Pet
 		/* flops = [NQP*NPE] * 18 */
 		
 		detJ[p] = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) // a
-		- J[0][1]*(J[1][0]*J[2][2] + J[1][2]*J[2][0]) 
-		+ J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]); // c
+            - J[0][1]*(J[1][0]*J[2][2] - J[1][2]*J[2][0])
+		        + J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]); // c
 		/* flops = [NQP] * 14 */
 		
 		t4  = J[2][0] * J[0][1];
@@ -421,7 +475,7 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],Pet
 }
 #endif
 
-#ifdef ELEMENT_OPERATION_OPTIMIZED
+#if defined(PTAT3D_ELEMENT_OPERATION_OPTIMIZED)
 void P3D_evaluate_geometry_elementQ2(PetscInt nqp,
                                      PetscReal el_coords[NPE*3],
                                      PetscReal GNI[][3][NPE],
@@ -459,7 +513,7 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,
 
 /* <option_A> */
 		detJ[p] = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1])  // a
-		        - J[0][1]*(J[1][0]*J[2][2] + J[1][2]*J[2][0])  // b
+		        - J[0][1]*(J[1][0]*J[2][2] - J[1][2]*J[2][0])  // b
 		        + J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]); // c
 		/* flops = [NQP] * 14 */
 		
@@ -472,7 +526,7 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,
 		
 		t17 = 1.0/detJ[p]; // [NQP] * 1
 /* </option_A> */
-#ifdef COMPUTE_DETERMINANT_OPTION_B
+#if defined(PTAT3D_COMPUTE_DETERMINANT_OPTION_B)
 	 /* 
 		 NOTE: Option A and option B are identical, however B uses 2 less operations.
 		 We elected for option A as more unit tests fail with option B variant due to small floating point differences 
@@ -551,8 +605,8 @@ void P3D_evaluate_geometry_elementQ2_1gp(PetscReal GNI_centre[3][NPE],
 	}
 	
 	detJp = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) // a
-	- J[0][1]*(J[1][0]*J[2][2] + J[1][2]*J[2][0]) 
-	+ J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]); // c
+	      - J[0][1]*(J[1][0]*J[2][2] - J[1][2]*J[2][0])
+	      + J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]); // c
 	/* flops = [NQP] * 14 */
 	
 	t4  = J[2][0] * J[0][1];

@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -87,33 +86,33 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->Lx = 1200.0e3;
 	data->Ly = 250.0e3;
 	data->Lz = 1200.0e3;
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_Lx",&data->Lx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_Ly",&data->Ly,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_Lz",&data->Lz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_Lx",&data->Lx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_Ly",&data->Ly,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_Lz",&data->Lz,&flg);CHKERRQ(ierr);
 	
 	data->hc = 60.0e3;
 	data->hm = 60.0e3;
 	data->ha = 130.0e3;
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_hc",&data->hc,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_hm",&data->hm,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_ha",&data->ha,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_hc",&data->hc,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_hm",&data->hm,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_ha",&data->ha,&flg);CHKERRQ(ierr);
 	
 	/* seed geometry */
 	data->dxs = 12.0e3;
 	data->dys = 6.0e3;
 	data->dzs = 1200.0e3;
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_dxs",&data->dxs,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_dys",&data->dys,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_dzs",&data->dzs,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_dxs",&data->dxs,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_dys",&data->dys,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_dzs",&data->dzs,&flg);CHKERRQ(ierr);
 	
 	/* velocity boundary condition geometry */
 	data->hvbx1 = 125.0e3;
 	data->hvbx2 = 115.0e3;
 	data->vx_up = 0.5*cm_per_yer2m_per_sec;
 	/* VELOCITY BOUNDARY CONDITION GEOMETRY */
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
 	
 	/* material propoerties */
 	data->rhoc = 2800.0;
@@ -123,12 +122,12 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->etam = 1.0e21;
 	data->etaa = 1.0e19;
 	/* MATERIAL PARAMETERS */
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_rhoc",&data->rhoc,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_rhom",&data->rhom,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_rhoa",&data->rhoa,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_etac",&data->etac,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_etam",&data->etam,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_etaa",&data->etaa,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_rhoc",&data->rhoc,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_rhom",&data->rhom,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_rhoa",&data->rhoa,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_etac",&data->etac,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_etam",&data->etam,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_etaa",&data->etaa,&flg);CHKERRQ(ierr);
 	
 	/*Temperature */
 	if(use_energy) {
@@ -186,7 +185,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	rheology->eta_lower_cutoff_global = 1.e+19;
 	data->runmises = PETSC_FALSE;
 	
-	//    ierr = PetscOptionsGetInt(NULL,"-model_Riftrh_param2",&data->param2,&flg);CHKERRQ(ierr);
+	//    ierr = PetscOptionsGetInt(NULL,NULL,"-model_Riftrh_param2",&data->param2,&flg);CHKERRQ(ierr);
 	
 	/* Material constants */
 	MaterialConstantsSetDefaults(materialconstants);
@@ -290,19 +289,19 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	
 	/* Read the options */
 	/* cutoff */
-	ierr = PetscOptionsGetBool(NULL,"-model_Riftrh_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-model_Riftrh_runwithmises",&data->runmises,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Riftrh_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Riftrh_runwithmises",&data->runmises,NULL);CHKERRQ(ierr);
 	/* scaling */
 	nondim = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_Riftrh_nondimensional",&nondim,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Riftrh_nondimensional",&nondim,NULL);CHKERRQ(ierr);
 	if (nondim){
 		data->dimensional = PETSC_FALSE;
 	} else {
-		ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
-		ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
-		ierr = PetscOptionsGetReal(NULL,"-model_Riftrh_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-model_Riftrh_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
 	}
 	
 	/* compute vxdown */
@@ -380,11 +379,11 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	}
 	
 	data->output_markers = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_Riftrh_output_markers",&data->output_markers,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Riftrh_output_markers",&data->output_markers,NULL);CHKERRQ(ierr);
 	
 	/* USE ENERGY EQUATION */
 	if(use_energy){
-		ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+		ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
@@ -409,7 +408,7 @@ PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	PetscOptionsGetBool(NULL,"-model_Riftrh_use_initial_up_field",&use_initial_up_field,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-model_Riftrh_use_initial_up_field",&use_initial_up_field,NULL);
 	
 	if (use_initial_up_field) {
 		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] Using velocity from boundary condition and mantle hydrostatic pressure as initial condition\n");
@@ -439,7 +438,7 @@ PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 		HPctx.surface_pressure = 0.0;
 		HPctx.ref_height = height;
 		HPctx.ref_N      = c->stokes_ctx->my-1;
-		HPctx.grav       = 10.0;
+		HPctx.grav       = 9.8;
 		HPctx.rho        = data->rhom;
 		ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
 		ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
@@ -718,6 +717,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"[riftrh] Lx = %1.4e \n", data->Lx );
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -732,7 +735,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	DataBucket             db;
 	DataField              PField_std,PField_stokes,PField_pls;
 	int                    phase;
-	PetscScalar            ha_dimensional,hm_dimensional,hc_dimensional,notch_height,notch_width,x_center,y_center,z_center;
+	PetscScalar            ha_dimensional,hm_dimensional,notch_height,notch_width,x_center,z_center;
+  /* PetscScalar           hc_dimensional,y_center; */
 	PetscScalar            xp_dimensional,yp_dimensional,zp_dimensional;
 	PetscErrorCode ierr;
 	MPAccess           mpX;
@@ -757,9 +761,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	
 	ha_dimensional = data->ha * data->length_bar;
 	hm_dimensional = data->hm * data->length_bar;
-	hc_dimensional = data->hc * data->length_bar;
+	/* hc_dimensional = data->hc * data->length_bar; */
 	x_center       = 0.5 * data->Lx * data->length_bar;
-	y_center       = 0.5 * data->Ly * data->length_bar;
+	/* y_center       = 0.5 * data->Ly * data->length_bar; */
 	z_center       = 0.5 * data->Lz * data->length_bar;
 	notch_width    = 50.0e3;
 	notch_height   = 30.0e3;

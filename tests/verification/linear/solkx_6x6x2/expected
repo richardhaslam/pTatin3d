@@ -1,0 +1,142 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -Wall -g
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** AVX not detected - optimized kernels will not be used.
+** If your system supports AVX, consider adding options,
+** e.g. -march=native, to TATIN_CFLAGS in makefile.arch
+** ====================================================================================== 
+DataBucketView <Material Constants>:
+  L                  = 200 
+  buffer (max)       = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) : rank0
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) : rank0
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) : rank0
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) : rank0
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) : rank0
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) : rank0
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) : rank0
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) : rank0
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) : rank0
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
+  Total mem. usage                                                      = 8.00e-02 (MB) : <collective over 1 ranks>
+[pTatin] Created output directory: analytics_solkx 
+[pTatin] Created log file: analytics_solkx/ptatin.log-2018.03.14_18:43:09 
+[pTatin] Created options file: analytics_solkx/ptatin.options-2018.03.14_18:43:09 
+[pTatin] Created options file: analytics_solkx/ptatin.options 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "indentor"
+  [pTatinModel]: Registering model [4] with name "rift3D_T"
+  [pTatinModel]: Registering model [5] with name "advdiff_example"
+  [pTatinModel]: Registering model [6] with name "delamination"
+  [pTatinModel]: Registering model [7] with name "Riftrh"
+  [pTatinModel]: Registering model [8] with name "Rift_oblique3d"
+  [pTatinModel]: Registering model [9] with name "geomod2008"
+  [pTatinModel]: Registering model [10] with name "multilayer_folding"
+  [pTatinModel]: Registering model [11] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [12] with name "ex_subduction"
+  [pTatinModel]: Registering model [13] with name "iplus"
+  [pTatinModel]: Registering model [14] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [15] with name "convection2d"
+  [pTatinModel]: Registering model [16] with name "thermal_sb"
+  [pTatinModel]: Registering model [17] with name "sd3d"
+  [pTatinModel]: Registering model [18] with name "pas"
+  [pTatinModel]: Registering model [19] with name "pd"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+  [pTatinModel]: Registering model [20] with name "analytics_vv"
+  [pTatinModel]: -ptatin_model "analytics_vv" was detected
+  MaterialPointsStokes: Using one2one projection
+[[Swarm initialization: 0.0001 (sec)]]
+[[Swarm->coordinate assignment: 1944 points : 0.0007 (sec)]]
+[[SwarmDMDA3dDataExchangerCreate: time = 1.7715e-04 (sec)]]
+[[SwarmDMDA3dDataExchangerCreate: time = 6.2943e-05 (sec)]]
+[PSwarmSetUpCoords_FillBox]
+Mesh size (6 x 6 x 2) : MG levels 2  
+         level [ 0]: global Q2 elements (3 x 3 x 1) 
+         level [ 1]: global Q2 elements (6 x 6 x 2) 
+[r   0]: level [ 0]: local Q2 elements  (3 x 3 x 1) 
+[r   0]: level [ 1]: local Q2 elements  (6 x 6 x 2) 
+[r   0]: level [ 0]: element range [0 - 2] x [0 - 2] x [0 - 0] 
+[r   0]: level [ 1]: element range [0 - 5] x [0 - 5] x [0 - 1] 
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 2.60e-05 (sec)
+Level [1]: Coarse grid type :: Re-discretisation :: assembled operator 
+Level [0]: Coarse grid type :: Re-discretisation :: assembled operator 
+   [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 3.29e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 2.69e-05 (sec)
+  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 2.304766918639e-02, 0.000000000000e+00, 0.000000000000e+00 ]
+  1 KSP Component U,V,W,P residual norm [ 4.016330390365e-04, 1.699592438965e-03, 3.030600760210e-04, 3.389604363718e-03 ]
+  2 KSP Component U,V,W,P residual norm [ 3.965034443548e-04, 9.836636186417e-04, 2.386597288069e-04, 1.446840234242e-03 ]
+  3 KSP Component U,V,W,P residual norm [ 1.046599381246e-04, 2.301443449197e-04, 4.583335405541e-05, 5.616483828069e-05 ]
+  4 KSP Component U,V,W,P residual norm [ 2.110559583507e-05, 6.565088703788e-06, 2.057199073649e-06, 1.097701112607e-05 ]
+  5 KSP Component U,V,W,P residual norm [ 8.274535470453e-06, 6.459309306782e-06, 3.396295553515e-06, 3.866061102153e-06 ]
+  6 KSP Component U,V,W,P residual norm [ 5.792176199935e-07, 5.754720394631e-07, 2.386057329404e-07, 3.593651812422e-07 ]
+  7 KSP Component U,V,W,P residual norm [ 2.017660920545e-07, 1.087193068668e-07, 3.993408613696e-08, 1.888597918201e-07 ]
+  8 KSP Component U,V,W,P residual norm [ 4.161335890681e-08, 4.389852043357e-08, 1.116874211189e-08, 8.494465718115e-09 ]
+  9 KSP Component U,V,W,P residual norm [ 8.266580895787e-09, 5.511939550594e-09, 2.244465708852e-09, 5.611442733266e-09 ]
+ 10 KSP Component U,V,W,P residual norm [ 2.980573271890e-09, 2.183258074940e-09, 9.003049478197e-10, 1.907930949133e-09 ]
+ 11 KSP Component U,V,W,P residual norm [ 4.511976298535e-10, 3.780828404693e-10, 1.915505748001e-10, 4.034456308923e-10 ]
+ 12 KSP Component U,V,W,P residual norm [ 1.932164712969e-10, 1.846802577148e-10, 8.964176324353e-11, 2.034611518202e-10 ]
+ 13 KSP Component U,V,W,P residual norm [ 4.287163190219e-11, 3.919760308789e-11, 1.600176079376e-11, 3.478817089815e-11 ]
+ 14 KSP Component U,V,W,P residual norm [ 1.711204359286e-11, 1.766520281759e-11, 6.726433350768e-12, 1.468508119058e-11 ]
+ 15 KSP Component U,V,W,P residual norm [ 3.937458654577e-12, 2.917299373344e-12, 1.447406755422e-12, 3.069518846796e-12 ]
+ 16 KSP Component U,V,W,P residual norm [ 1.454127162901e-12, 1.334065489757e-12, 6.067611669120e-13, 1.222351037495e-12 ]
+ 17 KSP Component U,V,W,P residual norm [ 3.442668995686e-13, 2.701990602722e-13, 1.123432048440e-13, 2.891836668736e-13 ]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 2.81e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 2.81e-05 (sec)
+  writing pvdfilename analytics_solkx/timeseries_passive_pswarm.pvd 
+  writing pvdfilename analytics_solkx/timeseries_vp.pvd 
+  writing pvdfilename analytics_solkx/timeseries_mpoints_std.pvd 
+[inorms] +1.666666666667e-01,+2.930624652157e-05,+1.203548390320e-03,+1.203905139090e-03,+3.926752908083e-03
+  TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 2.7527e+01 [accepted] | ==>> dt used = 2.7527e+01 |
+  TimeStep control(StkSurfaceCourant): | current = 2.7527e+01 : trial = 1.0000e+32 | ==>> dt used = 2.7527e+01 |
+  timestep[] dt_courant = 2.7527e+01 
+[[ModelDestroy_Template]]
+[[ModelDestroy_ViscousSinker]]
+[[ModelDestroy_Gene3D]]
+[[ModelDestroy_Indentor]]
+[[ModelDestroy_Rift3D_T]]
+[[ModelDestroy_AdvDiffExample]]
+[[ModelDestroy_Delamination]]
+[[ModelDestroy_Riftrh]]
+[[ModelDestroy_Rift_oblique3d]]
+[[ModelDestroy_MultilayerFolding]]
+[[ModelDestroy_SubmarineLavaFlow]]
+[[ModelDestroy_ExSubduction]]
+[[ModelDestroy_iPLUS]]
+[[ModelDestroy_Subduction_Initiation2d]]
+[[ModelDestroy_Thermal_Convection2d]]
+[[ModelDestroy_AnlVV]]

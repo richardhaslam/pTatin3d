@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d.h"
@@ -86,9 +85,9 @@ PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
     modeldata->x_bar   = 1.0;  /* m */
     modeldata->eta_bar = 1.0; /* eta */
     
-    PetscOptionsGetReal(NULL,"-model_charc_v",&modeldata->v_bar,0);
-    PetscOptionsGetReal(NULL,"-model_charc_x",&modeldata->x_bar,0);
-    PetscOptionsGetReal(NULL,"-model_charc_eta",&modeldata->eta_bar,0);
+    PetscOptionsGetReal(NULL,NULL,"-model_charc_v",&modeldata->v_bar,0);
+    PetscOptionsGetReal(NULL,NULL,"-model_charc_x",&modeldata->x_bar,0);
+    PetscOptionsGetReal(NULL,NULL,"-model_charc_eta",&modeldata->eta_bar,0);
     
     modeldata->t_bar = modeldata->x_bar/modeldata->v_bar; /* time (sec) */
     modeldata->p_bar = modeldata->eta_bar * modeldata->v_bar / modeldata->x_bar; /* stress */
@@ -97,7 +96,7 @@ PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
     modeldata->rhs_scale = 1.0 / modeldata->rhs_scale;
 
     modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,"-model_output_si",&modeldata->output_si,0);
+    PetscOptionsGetBool(NULL,NULL,"-model_output_si",&modeldata->output_si,0);
     
     /* --------------------------------- domain size --------------------------------- */
     modeldata->domain[0] = 1.0;
@@ -107,7 +106,7 @@ PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
         PetscInt nd = 3;
         
         flg = PETSC_FALSE;
-        PetscOptionsGetRealArray(NULL,"-model_domain_size",modeldata->domain,&nd,&flg);
+        PetscOptionsGetRealArray(NULL,NULL,"-model_domain_size",modeldata->domain,&nd,&flg);
         if (flg) {
             if (nd != 3) {
                 SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"param:\"model domain size\" - status:\"missing entry\" => expected 3 entries, only found %D",nd);
@@ -211,7 +210,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PAS(pTatinCtx ptatinctx,void *model
 	ierr = DMDASetUniformCoordinates(dav,-modeldata->domain[0]/2.0,modeldata->domain[0]/2.0, -modeldata->domain[1]/2.0,modeldata->domain[1]/2.0, -modeldata->domain[2]/2.0,modeldata->domain[2]/2.0);CHKERRQ(ierr);
 
     flg = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,"-model_domain_2d",&flg,0);
+    PetscOptionsGetBool(NULL,NULL,"-model_domain_2d",&flg,0);
     if (flg) {
         ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(ptatinctx);CHKERRQ(ierr);
     }

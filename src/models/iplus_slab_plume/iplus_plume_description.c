@@ -27,7 +27,6 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -48,7 +47,8 @@
 PetscErrorCode iPLUS_DetermineElementsContainingPlumeInlet(DM dav,iPLUSCtx *data)
 {
     MPI_Comm       comm;
-    PetscInt       rank,M,N,P,pI,pJ,pK,rI,rJ,rK,rIJ;
+    PetscInt       rank,M,N,P,pI,pJ,pK,rJ,rK,rIJ;
+    /* PetscInt      rI; */
     PetscMPIInt    _rank;
     const PetscInt *elnidx_u;
     PetscInt       nel,nen_u,e,k;
@@ -72,7 +72,7 @@ PetscErrorCode iPLUS_DetermineElementsContainingPlumeInlet(DM dav,iPLUSCtx *data
     rK  = rank / (pI*pJ);
     rIJ = rank - rK * pI*pJ;
     rJ = rIJ / pI;
-    rI = rIJ - rJ*pI;
+    /* rI = rIJ - rJ*pI; */
     
     ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
     ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);

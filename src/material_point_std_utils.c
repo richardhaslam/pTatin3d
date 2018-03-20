@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -78,7 +77,7 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
 		}
 	}
 	ierr = MPI_Allreduce( &max_local, &max, 1, MPI_LONG, MPI_MAX, comm );CHKERRQ(ierr);
-	PetscPrintf(comm,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);
+	/*PetscPrintf(comm,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);*/
 	max = max + 1;
 	
 	/* give particles a unique identifier */
@@ -121,10 +120,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 	
 	PetscFunctionBegin;
 	
-	PetscOptionsGetReal(NULL,"-lattice_layout_perturb", &perturb, NULL );
-	PetscOptionsGetInt(NULL,"-lattice_layout_Nx", &Nxp[0], NULL );
-	PetscOptionsGetInt(NULL,"-lattice_layout_Ny", &Nxp[1], NULL );
-	PetscOptionsGetInt(NULL,"-lattice_layout_Nz", &Nxp[2], NULL );
+	PetscOptionsGetReal(NULL,NULL,"-lattice_layout_perturb", &perturb, NULL );
+	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Nx", &Nxp[0], NULL );
+	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Ny", &Nxp[1], NULL );
+	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Nz", &Nxp[2], NULL );
 	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
@@ -275,7 +274,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
             xip[2] = q_coor[3*q+2];
             
             pTatin_ConstructNi_Q2_3D(xip,Ni);
-            
+            xp[0] = 0.0; xp[1] = 0.0; xp[2] = 0.0;
             for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
                 xp[0] += Ni[k] * el_coords[NSD*k+0];
                 xp[1] += Ni[k] * el_coords[NSD*k+1];
@@ -328,7 +327,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 	
 	PetscFunctionBegin;
 	
-	PetscOptionsGetInt(NULL,"-random_layout_Np", &nPerCell, NULL );
+	PetscOptionsGetInt(NULL,NULL,"-random_layout_Np", &nPerCell, NULL );
 	
 	// re-size //
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
@@ -1166,7 +1165,7 @@ PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
         int i32;
         
         PetscMPIIntCast(i,&i32);
-		asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 );
+		if (asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
 		free(sourcename);
 	}
@@ -1195,9 +1194,9 @@ PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const
 	
 	ierr = pTatinGenerateParallelVTKName(prefix,"vtu",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 
 //#ifdef __VTK_ASCII__
@@ -1211,9 +1210,9 @@ PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvtu",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -1228,7 +1227,7 @@ PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const
 
 #undef __FUNCT__
 #define __FUNCT__ "SwarmMPntStd_CoordAssignment_InsertWithinPlane"
-PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM dav,PetscInt Nxp2[],PetscInt region_idx,PetscReal vert_coord[])
+PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM dav,PetscInt Nxp2[],PetscInt region_idx,PetscReal vertex_coor[])
 {
     PetscInt       Npxi,Npeta,i,j,n;
     PetscReal      xip[2],dxi,deta,Nip[4];
@@ -1241,6 +1240,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
 	PetscScalar    *LA_gcoords;
 	const PetscInt *elnidx_u;
 	PetscInt       lmx,lmy,lmz;
+  int            _region_idx;
 	PetscErrorCode ierr;
 	
     Npxi  = Nxp2[0];
@@ -1262,7 +1262,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
 	ierr = DMDAGetElements_pTatinQ2P1(dav,0,0,&elnidx_u);CHKERRQ(ierr);
 	
 	ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-    
+  
+  PetscMPIIntCast(region_idx,&_region_idx);
+
     for (j=0; j<Npeta; j++) {
         for (i=0; i<Npxi; i++) {
             PetscBool point_on_edge;
@@ -1276,9 +1278,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
             
             mp_std.coor[0] = mp_std.coor[1] = mp_std.coor[2] = 0.0;
             for (n=0; n<4; n++) {
-                mp_std.coor[0] += vert_coord[3*n+0] * Nip[n];
-                mp_std.coor[1] += vert_coord[3*n+1] * Nip[n];
-                mp_std.coor[2] += vert_coord[3*n+2] * Nip[n];
+                mp_std.coor[0] += (double)vertex_coor[3*n+0] * Nip[n];
+                mp_std.coor[1] += (double)vertex_coor[3*n+1] * Nip[n];
+                mp_std.coor[2] += (double)vertex_coor[3*n+2] * Nip[n];
             }
             
             InverseMappingDomain_3dQ2(tolerance,max_its,
@@ -1305,7 +1307,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
                 ierr = MaterialPointSet_local_coord(mpX,pidx,mp_std.xi);CHKERRQ(ierr);
                 ierr = MaterialPointSet_local_element_index(mpX,pidx,mp_std.wil);CHKERRQ(ierr);
                 
-                ierr = MaterialPointSet_phase_index(mpX,pidx,(int)region_idx);CHKERRQ(ierr);
+                ierr = MaterialPointSet_phase_index(mpX,pidx,_region_idx);CHKERRQ(ierr);
                 
                 ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
             }
@@ -1314,4 +1316,88 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SwarmMPntStd_CoordAssignment_InsertFromList"
+PetscErrorCode SwarmMPntStd_CoordAssignment_InsertFromList(DataBucket db,DM dav,PetscInt nlist,PetscReal coor_l[],PetscInt region_idx,PetscBool use_natural_index)
+{
+  PetscInt       n;
+  MPAccess       mpX;
+  double         tolerance;
+  int            max_its;
+  PetscBool      use_nonzero_guess,monitor;
+  DM             cda;
+  Vec            gcoords;
+  PetscScalar    *LA_gcoords;
+  const PetscInt *elnidx_u;
+  PetscInt       lmx,lmy,lmz;
+  PetscBool      point_found;
+  int            n_points_orig,n_points_curr,np_local,_region_idx;
+  PetscErrorCode ierr;
+  
+  tolerance         = 1.0e-10;
+  max_its           = 10;
+  use_nonzero_guess = PETSC_FALSE;
+  monitor           = PETSC_FALSE;
+  
+  ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  
+  ierr = DMDAGetElements_pTatinQ2P1(dav,0,0,&elnidx_u);CHKERRQ(ierr);
+  
+  ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+  DataBucketGetSizes(db,&n_points_orig,0,0);
+  
+  PetscMPIIntCast(region_idx,&_region_idx);
+
+  np_local = 0;
+  for (n=0; n<nlist; n++) {
+    MPntStd mp_std;
+    
+    mp_std.coor[0] = (double)coor_l[3*n+0];
+    mp_std.coor[1] = (double)coor_l[3*n+1];
+    mp_std.coor[2] = (double)coor_l[3*n+2];
+    
+    InverseMappingDomain_3dQ2(tolerance,max_its,
+                              use_nonzero_guess,
+                              monitor,
+                              (const double*)LA_gcoords, (const int)lmx,(const int)lmy,(const int)lmz, (const int*)elnidx_u,
+                              1, &mp_std );
+    
+    point_found = PETSC_TRUE;
+    if (mp_std.wil == -1) {
+      point_found = PETSC_FALSE;
+    }
+    
+    if (point_found) {
+      int pidx;
+      
+      DataBucketGetSizes(db,&n_points_curr,0,0);
+      DataBucketSetSizes(db,n_points_curr+1,-1);
+      pidx = n_points_curr;
+      
+      ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+      
+      ierr = MaterialPointSet_global_coord(mpX,pidx,mp_std.coor);CHKERRQ(ierr);
+      ierr = MaterialPointSet_local_coord(mpX,pidx,mp_std.xi);CHKERRQ(ierr);
+      ierr = MaterialPointSet_local_element_index(mpX,pidx,mp_std.wil);CHKERRQ(ierr);
+      
+      ierr = MaterialPointSet_phase_index(mpX,pidx,_region_idx);CHKERRQ(ierr);
+      
+      ierr = MaterialPointSet_point_index(mpX,pidx,(long int)n);CHKERRQ(ierr);
+      
+      ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+      np_local++;
+    }
+  }
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  
+  if (!use_natural_index) {
+    ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)dav),db,n_points_orig,np_local);CHKERRQ(ierr);
+  }
+  
+  PetscFunctionReturn(0);
 }

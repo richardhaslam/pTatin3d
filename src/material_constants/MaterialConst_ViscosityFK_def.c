@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_ViscosityFK_def.h"
+#include "material_constants/MaterialConst_ViscosityFK_def.h"
 
 
 const char MaterialConst_ViscosityFK_classname[] = "MaterialConst_ViscosityFK";

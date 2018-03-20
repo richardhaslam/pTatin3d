@@ -1,0 +1,42 @@
+# ------------------------------------------------------------------------
+# Example makefile showing how to invoke support for WSMP within ptatin
+# ------------------------------------------------------------------------
+# To test your ptatin build, please execute either
+#
+# <serial - wsmp>
+#   ./${PETSC_ARCH}/bin/test_petsc_wsmp.app
+#
+# <parallel - pwsmp>
+#  ./${PETSC_ARCH}/bin/test_petsc_wsmp.app
+#  mpiexec -n 3 ./${PETSC_ARCH}/bin/test_petsc_wsmp.app
+# ------------------------------------------------------------------------
+
+LOCAL_TATIN_CFLAGS	:= -std=gnu99 -Wall
+LOCAL_TATIN_FFLAGS	:= -ffree-line-length-4000
+
+# ------------------------------------------------
+#  Link against either WSMP or PWSMP - not both
+# ------------------------------------------------
+
+#  -- Sequential, multi-threaded version of WSMP --
+#
+#LOCAL_TATIN_CFLAGS += -DTATIN_HAVE_WSSMP
+#WSMP_LIB := -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lwsmp64
+
+#  -- Parallel, distributed memory version of WSMP --
+#
+LOCAL_TATIN_CFLAGS += -DTATIN_HAVE_PWSSMP
+WSMP_LIB := -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lpwsmp
+
+export TATIN_CFLAGS = ${LOCAL_TATIN_CFLAGS}
+export TATIN_FFLAGS = ${LOCAL_TATIN_FFLAGS}
+export TATIN_LIB = ${WSMP_LIB}
+
+# ----------------------------------------------------------------------------
+#  -- pTatin external packages (user to edit)
+#  User should select which packages are present
+#    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
+#    ** please compile external packages using the PETSc compiler          **
+# ----------------------------------------------------------------------------
+CONFIG_SPMA      = n
+CONFIG_FASTSCAPE = n

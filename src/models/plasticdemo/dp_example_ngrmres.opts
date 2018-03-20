@@ -44,12 +44,12 @@
 -npc_fieldsplit_u_pc_mg_levels 3
 -npc_fieldsplit_u_mg_coarse_pc_type lu
 #-npc_fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
--npc_fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
+-npc_fieldsplit_u_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1
 -npc_fieldsplit_u_mg_levels_ksp_max_it 10
 -npc_fieldsplit_u_mg_levels_ksp_type chebyshev
 -npc_fieldsplit_u_mg_levels_pc_type jacobi
 #-npc_fieldsplit_u_mg_levels_ksp_norm_type NONE
-#-npc_fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+#-npc_fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE
 -npc_ksp_type fgmres
 -mx 64
 -my 16

@@ -30,7 +30,7 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
-#include "petsc-private/dmdaimpl.h"    /*I   "petscdm.h"   I*/
+#include "petsc/private/dmdaimpl.h"    /*I   "petscdm.h"   I*/
 #include "sub_comm.h"
 #include "dmda_update_coords.h"
 #include "dmda_redundant.h"
@@ -40,6 +40,7 @@
 /* This is only needed as the DMDACreate3d() forces a call to DMSetFromOptions().
  This parses the options -da_processors_x,y,z even when the comm size is 1, which screws up my seq surface DM.
  This function is a copy of DMDACreate3d() without the call to DMSetFromOptions()
+  Note: this can now be removed, as this call was taken out in PETSc 3.8
 */
 #undef __FUNCT__
 #define __FUNCT__ "x_DMDACreate3d"
@@ -52,7 +53,7 @@ PetscErrorCode  x_DMDACreate3d(
 	
   PetscFunctionBegin;
   ierr = DMDACreate(comm, da);CHKERRQ(ierr);
-  ierr = DMDASetDim(*da, 3);CHKERRQ(ierr);
+  ierr = DMSetDimension(*da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, P);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(*da, wrap[0],wrap[1],wrap[2]);CHKERRQ(ierr);
@@ -163,19 +164,20 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 	}
 	
 	/* generate a local da to store the coords on */
-#if 0
-	ierr = DMDACreate3d( PETSC_COMM_SELF, DMDA_NONPERIODIC, st, (ei-si),(ej-sj),(ek-sk), PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, n_dofs, sw, 0,0,0, &_sda );CHKERRQ(ierr);
-	/* this doesn't do anything :( */
-	ierr = DMSetOptionsPrefix(_sda,"redundant_");CHKERRQ(ierr);
-	/* we have to call this, as flags like -da_processors_z 3 get filtered down into DMSetUp_DA_3D() even when 
-	 1) DMOptionsPrefix is set
-	 2) The comm is serial
-	 3) 1 is passed in for the processor size
+  /* Note, we cannot use
+	   ierr = DMDACreate3d( PETSC_COMM_SELF, DMDA_NONPERIODIC, st, (ei-si),(ej-sj),(ek-sk), PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, n_dofs, sw, 0,0,0, &_sda );CHKERRQ(ierr);
+	   ierr = DMSetUp(_sda);CHKERRQ(ierr);
+	   ierr = DMSetOptionsPrefix(_sda,"redundant_");CHKERRQ(ierr);
+   
+	   We have to call this, as flags like -da_processors_z 3 get filtered down into DMSetUp_DA_3D() even when
+	   1) DMOptionsPrefix is set
+	   2) The comm is serial
+	   3) 1 is passed in for the processor size
 	*/
-#endif
 	
 	ierr = x_DMDACreate3d( PETSC_COMM_SELF, wrapNP, st, (ei-si),(ej-sj),(ek-sk), PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, n_dofs, sw, 0,0,0, &_sda );CHKERRQ(ierr);
 	/* more hacky shit due to DMSetFromOptions() in constructor */
+  /* Note: DMSetFromOptions() was removed in PETSc 3.8 so this hack could be cleaned up */
 	{
 		DM dd_da_coordinates;
 		PetscInt _m,_n,_p,_M,_N,_P;
@@ -237,6 +239,7 @@ PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,PetscMPISubComm *su
 	ierr = DMDAGetInfo( da, 0, &M,&N,&P, 0,0,0, &dof,&sw,&wrap[0],&wrap[1],&wrap[2],&st );CHKERRQ(ierr);
 	if (active) {
 		ierr = DMDACreate3d(subcomm,wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, NULL,NULL,NULL, &_sda );CHKERRQ(ierr);
+    ierr = DMSetUp(_sda);CHKERRQ(ierr);
 	} else {
 		_sda = NULL;
 	}
