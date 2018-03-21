@@ -123,14 +123,14 @@ PetscErrorCode GeometryObjectEvaluateRegionIndex(GeometryObjectEval goe,double p
   ierr = GeometryObjectPointInside(goe->go,pos,&inside);CHKERRQ(ierr);
 
   if (assigned) {
-      switch (inside) {
-        case 0:
-          *assigned = PETSC_FALSE;
-          break;
-        case 1:
-          *assigned = PETSC_TRUE;
-          break;
-      }
+    switch (inside) {
+      case 0:
+        *assigned = PETSC_FALSE;
+        break;
+      case 1:
+        *assigned = PETSC_TRUE;
+        break;
+    }
   }
 
   *region = GEOM_OBJECT_EVAL_REGION_INDEX_NULL;
