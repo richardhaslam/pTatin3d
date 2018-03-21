@@ -28,12 +28,12 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 /*
- Interface to call the surface process model FastScape_V3
- - In general, this interface could be used with all SPM's
- - FastScape specific calls should be embedded inside the
-  #ifdef PTATIN_HAVE_FASTSCAPE_V3
+   Interface to call the surface process model FastScape_V3
+   - In general, this interface could be used with all SPM's
+   - FastScape specific calls should be embedded inside the
+#ifdef PTATIN_HAVE_FASTSCAPE_V3
 
-  #endif
+#endif
 
 */
 
@@ -49,24 +49,22 @@
 #include "spm_utils.h"
 
 PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
-  pTatinCtx pctx,Vec X,
-  PetscInt refinement_factor,
-  PetscReal Lstar,PetscReal Vstar,
-  PetscReal dt_mechanical,PetscReal dt_spm,
-  PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc);
+    pTatinCtx pctx,Vec X,
+    PetscInt refinement_factor,
+    PetscReal Lstar,PetscReal Vstar,
+    PetscReal dt_mechanical,PetscReal dt_spm,
+    PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc);
 
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
 extern void fastscape_(char *name,int *len,double *sheight,int* snx,int* sny,double* dx,double* dy,int* nsteps,int* nfreq,double* dt,int* law,double* m,double* kf,double* kd,int* bc);
 #endif
 
-
-
 PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
-  pTatinCtx pctx,Vec X,
-  PetscInt refinement_factor,
-  PetscReal Lstar,PetscReal Vstar,
-  PetscReal dt_mechanical,PetscReal dt_spm,
-  PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
+    pTatinCtx pctx,Vec X,
+    PetscInt refinement_factor,
+    PetscReal Lstar,PetscReal Vstar,
+    PetscReal dt_mechanical,PetscReal dt_spm,
+    PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
 {
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
   PetscErrorCode ierr;
@@ -84,11 +82,11 @@ PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 }
 
 PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
-  pTatinCtx pctx,Vec X,
-  PetscInt refinement_factor,
-  PetscReal Lstar,PetscReal Vstar,
-  PetscReal dt_mechanical,PetscReal dt_spm,
-  PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
+    pTatinCtx pctx,Vec X,
+    PetscInt refinement_factor,
+    PetscReal Lstar,PetscReal Vstar,
+    PetscReal dt_mechanical,PetscReal dt_spm,
+    PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
 {
   PetscBool       debug = PETSC_TRUE;
   PhysCompStokes  stokes;
@@ -99,7 +97,6 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
   PetscLogDouble  t0,t1;
   PetscBool       flg;
   PetscErrorCode  ierr;
-
 
   PetscFunctionBegin;
 
@@ -147,8 +144,8 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
     int    k,law,bc,nsteps,nfreq;
     double dt,m,kf,kd;
-        char *outputpath;
-        int slen;
+    char *outputpath;
+    int slen;
 #endif
 
     /* generate regular 2d mesh */
@@ -220,8 +217,8 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
     kd  = (double)_kd; /* not used */
     bc  = (int)_bc;   /* four digit number 0101 */
     law = (int)_law;
-        outputpath = pctx->outputpath;
-        slen = strlen(outputpath);
+    outputpath = pctx->outputpath;
+    slen = strlen(outputpath);
     fastscape_(outputpath,&slen,sheight,&snx,&sny,&dx,&dy,&nsteps,&nfreq,&dt,&law,&m,&kf,&kd,&bc);
 
     /* unscale topo */
