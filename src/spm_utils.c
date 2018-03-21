@@ -407,7 +407,25 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
         }
 
         /* send */
-        ierr = MPI_Send(sendchunk,nl,MPIU_REAL,pID,0,comm);CHKERRQ(ierr);
+        if (pID != 0) {
+          ierr = MPI_Send(sendchunk,nl,MPIU_REAL,pID,0,comm);CHKERRQ(ierr);
+        } else {
+          Vec        _coords;
+          DMDACoor3d ***_LA_coords;
+
+          ierr = DMGetCoordinateDM(dm_mech,&cda_mech);CHKERRQ(ierr);
+          ierr = DMGetCoordinates(dm_mech,&_coords);CHKERRQ(ierr);
+          ierr = DMDAVecGetArray(cda_mech,_coords,&_LA_coords);CHKERRQ(ierr);
+          for (k=sk; k<sk+ek; k++) {
+            for (i=si; i<si+ei; i++) {
+              PetscInt local_idx;
+
+              local_idx = (i-si) + (k-sk)*ei;
+              _LA_coords[k][N-1][i].y = sendchunk[ local_idx ];
+            }
+          }
+          ierr = DMDAVecRestoreArray(cda_mech,_coords,&_LA_coords);CHKERRQ(ierr);
+        }
 
         ierr = PetscFree(sendchunk);CHKERRQ(ierr);
       }
@@ -420,7 +438,7 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
   ierr = DMGetCoordinateDM(dm_mech,&cda_mech);CHKERRQ(ierr);
   ierr = DMGetCoordinates(dm_mech,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda_mech,coords,&LA_coords);CHKERRQ(ierr);
-  if (surface_rank) {
+  if (surface_rank && (rank != 0)) {
     if (rJ != (pJ-1)) {
       SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank of surface sub-domain must define rJ = %D - detected %D",pJ-1,rJ);
     }
