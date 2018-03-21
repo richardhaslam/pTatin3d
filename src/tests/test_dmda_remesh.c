@@ -206,25 +206,173 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt n
   PetscFunctionReturn(0);
 }
 
+/* swiss cross test */
+PetscErrorCode test_DMDACoordinateRefinementTransferFunction_a(PetscInt nx,PetscInt ny,PetscInt nz)
+{
+  PetscErrorCode ierr;
+  PetscReal x0,x1,y0,y1,z0,z1;
+  DM da;
+  Vec x;
+  PetscViewer vv;
+
+  PetscFunctionBegin;
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
+
+  x0 = y0 = z0 = 0.0;
+  x1 = y1 = z1 = 1.0;
+  ierr = DMDASetUniformCoordinates(da,x0,x1,y0,y1,z0,z1);CHKERRQ(ierr);
+
+  /* output */
+  ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da),"test_dmda_remesh_in.vtk",&vv);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(vv,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"phi");CHKERRQ(ierr);
+  ierr = DMView(da,vv);CHKERRQ(ierr);
+  ierr = VecView(x,vv);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+
+  {
+    PetscInt npoints,dir;
+    PetscReal xref[10],xnat[10];
+
+    npoints = 6;
+    xref[0] = 0.0;
+    xref[1] = 0.2;
+    xref[2] = 0.4;
+    xref[3] = 0.6;
+    xref[4] = 0.8;
+    xref[5] = 1.0;
+
+    xnat[0] = 0.0;
+    xnat[1] = 0.4;
+    xnat[2] = 0.48;
+    xnat[3] = 0.52;
+    xnat[4] = 0.6;
+    xnat[5] = 1.0;
+
+    dir = 0;
+    ierr = DMDACoordinateRefinementTransferFunction(da,dir,PETSC_FALSE,npoints,xref,xnat);CHKERRQ(ierr);
+
+    dir = 2;
+    ierr = DMDACoordinateRefinementTransferFunction(da,dir,PETSC_FALSE,npoints,xref,xnat);CHKERRQ(ierr);
+  }
+
+  /* output refined mesh */
+  ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da),"test_dmda_remesh_out.vtk",&vv);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(vv,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"phi");CHKERRQ(ierr);
+  ierr = DMView(da,vv);CHKERRQ(ierr);
+  ierr = VecView(x,vv);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+/* surface refinement */
+PetscErrorCode test_DMDACoordinateRefinementTransferFunction_b(PetscInt nx,PetscInt ny,PetscInt nz)
+{
+  PetscErrorCode ierr;
+  PetscReal x0,x1,y0,y1,z0,z1;
+  DM da;
+  Vec x;
+  PetscViewer vv;
+
+  PetscFunctionBegin;
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
+
+  x0 = y0 = z0 = 0.0;
+  x1 = y1 = z1 = 1.0;
+  ierr = DMDASetUniformCoordinates(da,x0,x1,y0,y1,z0,z1);CHKERRQ(ierr);
+  ierr = MeshDeformation_GaussianBump_YMAX(da,0.3,-5.6);CHKERRQ(ierr);
+
+  /* output */
+  ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da),"test_dmda_remesh_in.vtk",&vv);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(vv,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"phi");CHKERRQ(ierr);
+  ierr = DMView(da,vv);CHKERRQ(ierr);
+  ierr = VecView(x,vv);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+
+  {
+    PetscInt npoints,dir;
+    PetscReal xref[10],xnat[10];
+
+    npoints = 6;
+    xref[0] = 0.0;
+    xref[1] = 0.2;
+    xref[2] = 0.4;
+    xref[3] = 0.6;
+    xref[4] = 0.8;
+    xref[5] = 1.0;
+
+    xnat[0] = 0.0;
+    xnat[1] = 0.67;
+    xnat[2] = 0.92;
+    xnat[3] = 0.97;
+    xnat[4] = 0.985;
+    xnat[5] = 1.0;
+  
+    dir = 1;
+    ierr = DMDACoordinateRefinementTransferFunction(da,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
+  }
+
+  /* output refined mesh */
+  ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da),"test_dmda_remesh_out.vtk",&vv);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(vv,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)x,"phi");CHKERRQ(ierr);
+  ierr = DMView(da,vv);CHKERRQ(ierr);
+  ierr = VecView(x,vv);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 int main( int argc,char **argv )
 {
   PetscErrorCode ierr;
-  PetscInt mx,my,mz;
+  PetscInt mx,my,mz,test_id = 2;
 
   ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
-
   mx = my = mz = 10;
-  PetscOptionsGetInt(NULL, NULL, "-mx", &mx, 0 );
-  PetscOptionsGetInt(NULL, NULL, "-my", &my, 0 );
-  PetscOptionsGetInt(NULL, NULL, "-mz", &mz, 0 );
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mz",&mz,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-test_id",&test_id,NULL);CHKERRQ(ierr);
 
-//  ierr = test_DMDARemeshSetUniformCoordinatesInPlane_IJ(mx,my,mz);CHKERRQ(ierr);
-
-//  ierr = test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(mx,my,mz);CHKERRQ(ierr);
-
-  ierr = test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(mx,my,mz);CHKERRQ(ierr);
-
+  switch (test_id) {
+    case 0:
+      ierr = test_DMDARemeshSetUniformCoordinatesInPlane_IJ(mx,my,mz);CHKERRQ(ierr);
+      break;
+    case 1:
+      ierr = test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(mx,my,mz);CHKERRQ(ierr);
+      break;
+    case 2:
+      ierr = test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(mx,my,mz);CHKERRQ(ierr);
+      break;
+    case 3:
+      ierr = test_DMDACoordinateRefinementTransferFunction_a(mx,my,mz);CHKERRQ(ierr);
+      break;
+    case 4:
+      ierr = test_DMDACoordinateRefinementTransferFunction_b(mx,my,mz);CHKERRQ(ierr);
+      break;
+    default:
+      break;
+  }
   ierr = pTatinFinalize();CHKERRQ(ierr);
-
   return 0;
 }
