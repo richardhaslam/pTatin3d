@@ -381,7 +381,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
   Mat               A,redA;
   PetscInt          i,j,nc;
   PetscInt          n_, *proc_neighbours_;
-    PetscInt          rank_i_;
+  PetscInt          rank_i_;
   PetscMPIInt       size,  rank_i;
   PetscInt          max_nnz;
   PetscScalar       *vals;
@@ -463,8 +463,8 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 //  if (is_seqaij==PETSC_FALSE) {
 //    ierr = MatGetRedundantMatrix( A, size_, PETSC_COMM_SELF, size_, MAT_INITIAL_MATRIX, &redA );CHKERRQ(ierr);
 //  } else {
-    redA = A;
-    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  redA = A;
+  ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
 //  }
 
   if ((n_new != NULL) && (proc_neighbours_new != NULL)) {
