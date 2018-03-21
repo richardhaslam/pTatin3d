@@ -337,17 +337,17 @@ PetscErrorCode SurfaceQuadratureGetFaceInfo(SurfaceQuadrature q,HexElementFace *
 
 PetscErrorCode SurfaceQuadratureInterpolate3D(SurfaceQuadrature q,QPoint3d *qp3d,PetscInt ndof,PetscReal field[],PetscReal value[])
 {
-    int    k,d;
-    double Ni[27];
+  int    k,d;
+  double Ni[27];
 
-    q->e->basis_NI_3D(qp3d,Ni);
+  q->e->basis_NI_3D(qp3d,Ni);
 
-    for (d=0; d<ndof; d++) {
-        value[d] = 0.0;
-        for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-            value[d] += Ni[k] * field[ndof*k + d];
-        }
+  for (d=0; d<ndof; d++) {
+    value[d] = 0.0;
+    for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+      value[d] += Ni[k] * field[ndof*k + d];
     }
+  }
 
-  PetscFunctionReturn(0);
+PetscFunctionReturn(0);
 }

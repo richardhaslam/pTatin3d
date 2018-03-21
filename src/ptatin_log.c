@@ -37,7 +37,6 @@
 #include "private/ptatin_impl.h"
 
 
-
 PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 {
   PetscBool      stdout = PETSC_FALSE;
@@ -146,7 +145,7 @@ PetscErrorCode pTatinLogBasicKSP(pTatinCtx ctx,const char kspname[],KSP ksp)
 
 PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 {
-    Vec       r;
+  Vec       r;
   PetscReal rnorm;
   PetscInt its,lits,nkspfails,nFevals,nstepfails;
   const char *prefix;
@@ -383,5 +382,3 @@ PetscErrorCode pTatinLogPetscLog(pTatinCtx ctx,const char comment[])
   PetscViewerASCIIPrintf(ctx->log,"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
   PetscFunctionReturn(0);
 }
-
-
