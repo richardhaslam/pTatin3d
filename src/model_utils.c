@@ -306,7 +306,7 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
         printf("ytop1=%1.4e\n",thermalparams->ytop[2]);
         printf("klay=%d\n",klay);
         }
-        */
+  */
 
   return PETSC_TRUE;
 }
