@@ -478,25 +478,24 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
     PetscInt mplayout = 0;
 
     PetscOptionsGetInt(NULL,NULL,"-mp_layout",&mplayout,NULL);
-        switch (mplayout) {
-            case 0:
-                ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
-                break;
-            case 1:
-                ierr = SwarmMPntStd_CoordAssignment_RandomLayout3d(dav,nPerCell,db);CHKERRQ(ierr);
-                break;
-            case 2:
-                ierr = SwarmMPntStd_CoordAssignment_GaussLayout3d(dav,db);CHKERRQ(ierr);
-                break;
-            default:
-                ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
-                break;
-        }
+    switch (mplayout) {
+      case 0:
+        ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
+        break;
+      case 1:
+        ierr = SwarmMPntStd_CoordAssignment_RandomLayout3d(dav,nPerCell,db);CHKERRQ(ierr);
+        break;
+      case 2:
+        ierr = SwarmMPntStd_CoordAssignment_GaussLayout3d(dav,db);CHKERRQ(ierr);
+        break;
+      default:
+        ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
+        break;
+    }
   }
   PetscTime(&t1);
   DataBucketGetSizes(db,&npoints,NULL,NULL);
   PetscPrintf(PETSC_COMM_WORLD,"[[Swarm->coordinate assignment: %d points : %1.4lf (sec)]]\n", npoints,t1-t0);
-
 
   /* create the data exchanger need for parallel particle movement */
   ierr = SwarmDMDA3dDataExchangerCreate(dav,&ex);CHKERRQ(ierr);
@@ -557,9 +556,7 @@ PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
       xp[1] = xp[1] + Ni_p[i] * elcoords[NSD*i+1];
       xp[2] = xp[2] + Ni_p[i] * elcoords[NSD*i+2];
     }
-
     MPntStdSetField_global_coord(material_point,xp);
-
   }
 
   DataFieldRestoreAccess(PField_std);
@@ -614,9 +611,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = PetscNew(&user);CHKERRQ(ierr);
-
 
   /* init */
   user->stokes_ctx = NULL;
@@ -676,7 +671,6 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (user->materialpoint_ex) { /* ierr = DataExView(user->materialpoint_ex);CHKERRQ(ierr); */ ierr = DataExDestroy(user->materialpoint_ex);CHKERRQ(ierr); }
   if (user->materialpoint_db) { DataBucketDestroy(&user->materialpoint_db); }
 
@@ -821,7 +815,6 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   flgname = PETSC_FALSE;
   ierr = PetscOptionsGetString(NULL,NULL,"-ptatin_model",modelname,PETSC_MAX_PATH_LEN-1,&flgname);CHKERRQ(ierr);
   if (flgname) {
@@ -1002,7 +995,6 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
 PetscErrorCode pTatinRestart_Initialize(pTatinCtx ctx,void *data)
 {
   PetscFunctionBegin;
-
   PetscFunctionReturn(0);
 }
 
@@ -1054,7 +1046,6 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
   n = nlevels;
   ierr = PetscOptionsGetIntArray(NULL,((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL);CHKERRQ(ierr);
 
-
   ierr = DMDASetCoarseningFactor(da,refx[nlevels-1],refy[nlevels-1],refz[nlevels-1]);CHKERRQ(ierr);
   ierr = DMDASetRefinementFactor(da,refx[nlevels-1],refy[nlevels-1],refz[nlevels-1]);CHKERRQ(ierr);
   ierr = DMCoarsen(da,PetscObjectComm((PetscObject)da),&dac[0]);CHKERRQ(ierr);
@@ -1099,7 +1090,6 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
  */
 PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],PetscReal dt_trial)
 {
-
   PetscReal dt_current;
 
   PetscFunctionBegin;
@@ -1541,7 +1531,6 @@ PetscErrorCode pTatin3dLoadState_FromFile(pTatinCtx ctx,DM dmstokes,DM dmenergy,
 
 PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
 {
-
   PetscErrorCode  ierr;
   PhysCompStokes  stokes;
   PetscReal       grav[3];
