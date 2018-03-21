@@ -85,6 +85,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
         memset(rbuffer,0,size*len_max);
 
         /* recv length */
+        len_r = -1;
         ierr = MPI_Irecv(&len_r,1,MPI_LONG,r,tagI,comm,&request);CHKERRQ(ierr);
         ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
 
