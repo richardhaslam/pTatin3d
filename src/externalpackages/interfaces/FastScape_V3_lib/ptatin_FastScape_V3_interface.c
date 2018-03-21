@@ -147,8 +147,8 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
     int    k,law,bc,nsteps,nfreq;
     double dt,m,kf,kd;
-        char *outputpath;
-        int slen;
+    char *outputpath;
+    int slen;
 #endif
 
     /* generate regular 2d mesh */
@@ -196,8 +196,8 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
     /* interpolate topo: da_spmsurf0 -> 2d mesh */
     ierr = InterpolateMSurf0ToSPMSurfIKGrid(dm_spmsurf0,(PetscInt)smx,(PetscInt)smy,scoord,sheight);CHKERRQ(ierr);
 
-    PetscTime(&t0);
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
+    PetscTime(&t0);
     /* scale topo */
     for (k=0; k<snx*sny; k++) {
       sheight[k] = sheight[k] * Lstar;
@@ -220,17 +220,17 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
     kd  = (double)_kd; /* not used */
     bc  = (int)_bc;   /* four digit number 0101 */
     law = (int)_law;
-        outputpath = pctx->outputpath;
-        slen = strlen(outputpath);
+    outputpath = pctx->outputpath;
+    slen = strlen(outputpath);
     fastscape_(outputpath,&slen,sheight,&snx,&sny,&dx,&dy,&nsteps,&nfreq,&dt,&law,&m,&kf,&kd,&bc);
 
     /* unscale topo */
     for (k=0; k<snx*sny; k++) {
       sheight[k] = sheight[k] / Lstar;
     }
+    PetscTime(&t1);
     PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Compute time %1.4e (sec)\n",t1-t0);
 #endif
-    PetscTime(&t1);
 
     /* interpolate topo: 2d mesh -> da_spmsurf0  */
     ierr = InterpolateSPMSurfIKGridToMSurf0((PetscInt)smx,(PetscInt)smy,scoord,sheight,dm_spmsurf0);CHKERRQ(ierr);
