@@ -46,8 +46,8 @@
 PSwarm pswarm;
 
 /*
- Coefficients for the energy uses a combination of region-wise (rho,Cp) and material-point-wised defined properties (kappa,H)
- Coefficients for the mechanics defined strictly via users definition of material-point properties
+   Coefficients for the energy uses a combination of region-wise (rho,Cp) and material-point-wised defined properties (kappa,H)
+   Coefficients for the mechanics defined strictly via users definition of material-point properties
 */
 PetscErrorCode ModelInitialize_StaticBoxTM_variant1(pTatinCtx c,void *ctx)
 {
@@ -91,8 +91,8 @@ PetscErrorCode ModelInitialize_StaticBoxTM_variant1(pTatinCtx c,void *ctx)
 }
 
 /*
- Coefficients for the energy prescribed region-wise
- Coefficients for the mechanics defined region-wise
+   Coefficients for the energy prescribed region-wise
+   Coefficients for the mechanics defined region-wise
 */
 PetscErrorCode ModelInitialize_StaticBoxTM_variant2(pTatinCtx c,void *ctx)
 {
@@ -152,7 +152,6 @@ PetscErrorCode ModelInitialize_StaticBoxTM_variant2(pTatinCtx c,void *ctx)
   ierr = MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);CHKERRQ(ierr);
   ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,eta);CHKERRQ(ierr);
   ierr = MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,rho);CHKERRQ(ierr);
-
 
   ierr = PSwarmCreate(PETSC_COMM_WORLD,&pswarm);CHKERRQ(ierr);
   ierr = PSwarmSetOptionsPrefix(pswarm,"passive_");CHKERRQ(ierr);
@@ -315,11 +314,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_StaticBoxTM_variant2(pTatinCtx 
 }
 
 /*
- depth  = 0
- rho0 = 2.0
- depth_interface = 3.0
- rho1 = 5.0
- */
+   depth  = 0
+   rho0 = 2.0
+   depth_interface = 3.0
+   rho1 = 5.0
+*/
 static PetscErrorCode ComputeHydrostaticPressure(PetscReal depth,PetscReal rho0,PetscReal *pressure)
 {
   PetscFunctionBegin;
@@ -328,13 +327,13 @@ static PetscErrorCode ComputeHydrostaticPressure(PetscReal depth,PetscReal rho0,
 }
 
 /*
- Evaluates analytic solution of
+   Evaluates analytic solution of
    0 = k d^T/dt^2 + Q
- or
+   or
    T'' = -gamma, where gamma = Q/k
- over the domain
+   over the domain
    y0=0 <= y <= y1=6
- with Dirichlet conditions
+   with Dirichlet conditions
    T0 = T(y0)
    T1 = T(y1)
 */
@@ -371,17 +370,17 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
 
   /* write paraview files - non-essential */
   /*
-  ierr = PSwarmView(pswarm,PSW_VT_SINGLETON);CHKERRQ(ierr);
-  ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-  ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
-  {
-    PhysCompEnergy energy;
-    Vec            temperature;
+     ierr = PSwarmView(pswarm,PSW_VT_SINGLETON);CHKERRQ(ierr);
+     ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+     ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+     {
+     PhysCompEnergy energy;
+     Vec            temperature;
 
-    ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-    ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
-    ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
-  }
+     ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
+     ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
+     ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
+     }
   */
 
   if (c->step != c->nsteps) { PetscFunctionReturn(0); }
