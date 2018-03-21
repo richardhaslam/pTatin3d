@@ -32,7 +32,7 @@
 
 /*
    Private data structure for Chebychev Iteration
-   */
+ */
 
 typedef struct {
   PetscReal emin,emax;   /* store user provided estimates of extreme eigenvalues */

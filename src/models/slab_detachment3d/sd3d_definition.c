@@ -27,7 +27,6 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-
 #include "petsc.h"
 
 #include "ptatin3d.h"
@@ -67,8 +66,6 @@ typedef struct {
   PetscViewer logviewer;
   PetscReal Lc,tc,vc;
 } SD3DCtx;
-
-
 
 PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
 {
@@ -281,29 +278,27 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SD3D(pTatinCtx ptatinctx,void *mode
 
 PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBucket materialpoint_db,SD3DCtx *modeldata)
 {
-  MPAccess         mpX;
-  MaterialConst_DensityConst      *DensityConst_data;
-  DataField                       PField_DensityConst;
-  PetscReal  slab_length,Ly_slab,Lz_slab,dys,dzs;
-  PetscInt   nyp,nzp,j,k;
-  double         tolerance;
-  int            max_its;
-  PetscBool      use_nonzero_guess,monitor;
-  DM             cda;
-  Vec            gcoords;
-  PetscScalar    *LA_gcoords;
-  const PetscInt *elnidx_u;
-  PetscInt       nel,nen_u;
-  PetscInt       lmx,lmy,lmz;
-
-  PetscErrorCode   ierr;
+  MPAccess                   mpX;
+  MaterialConst_DensityConst *DensityConst_data;
+  DataField                  PField_DensityConst;
+  PetscReal                  slab_length,Ly_slab,Lz_slab,dys,dzs;
+  PetscInt                   nyp,nzp,j,k;
+  double                     tolerance;
+  int                        max_its;
+  PetscBool                  use_nonzero_guess,monitor;
+  DM                         cda;
+  Vec                        gcoords;
+  PetscScalar                *LA_gcoords;
+  const PetscInt             *elnidx_u;
+  PetscInt                   nel,nen_u;
+  PetscInt                   lmx,lmy,lmz;
+  PetscErrorCode             ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
   DataBucketGetDataFieldByName(materialconstants_db,MaterialConst_DensityConst_classname,&PField_DensityConst);
   DensityConst_data      = (MaterialConst_DensityConst*)PField_DensityConst->data;
-
 
   slab_length = modeldata->slab_length;
 
@@ -313,8 +308,7 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
      x = 500.0-40.0
      660.0 - slab_length - 80.0 <= y <= 660.0 - 80.0
      0 <= z <= 250.0
-
-*/
+  */
 
   //dye = ;
   //dze = ;
@@ -364,10 +358,10 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
       mp_std.coor[2] = xslab_pos[2];
 
       InverseMappingDomain_3dQ2(tolerance,max_its,
-          use_nonzero_guess,
-          monitor,
-          (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, (const PetscInt*)elnidx_u,
-          1, &mp_std );
+                                use_nonzero_guess,
+                                monitor,
+                                (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, (const PetscInt*)elnidx_u,
+                                1, &mp_std );
 
       point_on_edge = PETSC_FALSE;
       if (mp_std.wil != -1) {
@@ -405,15 +399,15 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
 
 PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
 {
-  SD3DCtx          *data = (SD3DCtx*)ctx;
-  MPAccess         mpX;
-  int              p,n_mpoints;
-  DataBucket       materialpoint_db;
-  DataBucket       materialconstants;
-  PhysCompStokes   stokes;
-  DM               stokes_pack,dav,dap;
-  PetscErrorCode   ierr;
-  PetscReal        slab_length;
+  SD3DCtx         *data = (SD3DCtx*)ctx;
+  MPAccess        mpX;
+  int             p,n_mpoints;
+  DataBucket      materialpoint_db;
+  DataBucket      materialconstants;
+  PhysCompStokes  stokes;
+  DM              stokes_pack,dav,dap;
+  PetscErrorCode  ierr;
+  PetscReal       slab_length;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -455,7 +449,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         }
       }
     }
-
   }
   ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
@@ -610,10 +603,10 @@ PetscErrorCode SD3D_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,SD3DCtx 
 
 PetscErrorCode ModelApplyBoundaryCondition_SD3D(pTatinCtx ptatinctx,void *modelctx)
 {
-  SD3DCtx          *modeldata = (SD3DCtx*)modelctx;
-  PhysCompStokes   stokes;
-  DM               stokes_pack,dav,dap;
-  PetscErrorCode   ierr;
+  SD3DCtx         *modeldata = (SD3DCtx*)modelctx;
+  PhysCompStokes  stokes;
+  DM              stokes_pack,dav,dap;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* Define velocity boundary conditions */
@@ -628,9 +621,9 @@ PetscErrorCode ModelApplyBoundaryCondition_SD3D(pTatinCtx ptatinctx,void *modelc
 
 PetscErrorCode ModelApplyBoundaryConditionMG_SD3D(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx ptatinctx,void *modelctx)
 {
-  SD3DCtx          *modeldata = (SD3DCtx*)modelctx;
-  PetscInt         n;
-  PetscErrorCode   ierr;
+  SD3DCtx        *modeldata = (SD3DCtx*)modelctx;
+  PetscInt       n;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Define velocity boundary conditions on each level within the MG hierarchy */
@@ -643,7 +636,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_SD3D(PetscInt nl,BCList bclist[],DM
 
 PetscErrorCode SD3DOutput_ComputeDs(DataBucket db,PetscReal *Ds)
 {
-  PetscReal gmin[3],gmax[3];
+  PetscReal      gmin[3],gmax[3];
   PetscErrorCode ierr;
 
   ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,NULL,NULL,SLAB_BASE_IDX,gmin,gmax);CHKERRQ(ierr);
@@ -785,7 +778,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
 
 PetscErrorCode SD3DOutput_ComputeZrange(DM dav,PetscReal range[])
 {
-  PetscReal gmin[3],gmax[3];
+  PetscReal      gmin[3],gmax[3];
   PetscErrorCode ierr;
 
   ierr =  DMDAComputeBoundingBoxBoundaryFace(dav,NORTH_FACE,gmin,gmax);CHKERRQ(ierr);
@@ -798,7 +791,7 @@ PetscErrorCode SD3DOutput_ComputeZrange(DM dav,PetscReal range[])
 
 PetscErrorCode SD3DOutput_ComputeVrms(DM dav,Vec v,PetscReal *volume,PetscReal *vrms)
 {
-  PetscReal v2,vol,VRMS;
+  PetscReal      v2,vol,VRMS;
   PetscErrorCode ierr;
 
   ierr =  StokesComputeVRMS(dav,v,&v2,&vol);CHKERRQ(ierr);
@@ -812,13 +805,13 @@ PetscErrorCode SD3DOutput_ComputeVrms(DM dav,Vec v,PetscReal *volume,PetscReal *
 
 PetscErrorCode SD3DOutput_ComputeViscousDissipation(pTatinCtx ptatinctx,PhysCompStokes stokes,Vec X,PetscReal *_value)
 {
-  DM              stokes_pack,dav,dap;
-  Vec             velocity,pressure;
-  Vec             Uloc,Ploc;
-  PetscScalar     *LA_Uloc,*LA_Ploc;
-  Quadrature      volQ;
-  PetscReal       value[3];
-  PetscErrorCode  ierr;
+  DM             stokes_pack,dav,dap;
+  Vec            velocity,pressure;
+  Vec            Uloc,Ploc;
+  PetscScalar    *LA_Uloc,*LA_Ploc;
+  Quadrature     volQ;
+  PetscReal      value[3];
+  PetscErrorCode ierr;
 
   stokes_pack = stokes->stokes_pack;
   volQ        = stokes->volQ;
@@ -856,12 +849,12 @@ PetscErrorCode SD3DOutput_ComputeViscousDissipation(pTatinCtx ptatinctx,PhysComp
 
 PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],void *modelctx)
 {
-  SD3DCtx          *modeldata = (SD3DCtx*)modelctx;
-  PhysCompStokes   stokes;
-  DM               stokes_pack,dav,dap;
-  Vec              coords,velocity,pressure;
-  DataBucket       materialpoint_db;
-  PetscReal        Ds,Dn,W,Dnx,Wx,Dnz,Wz,range[2],Vrms,Phi,e_bar,volume,x_bar3;
+  SD3DCtx        *modeldata = (SD3DCtx*)modelctx;
+  PhysCompStokes stokes;
+  DM             stokes_pack,dav,dap;
+  Vec            coords,velocity,pressure;
+  DataBucket     materialpoint_db;
+  PetscReal      Ds,Dn,W,Dnx,Wx,Dnz,Wz,range[2],Vrms,Phi,e_bar,volume,x_bar3;
 
   PetscErrorCode   ierr;
 
@@ -954,7 +947,6 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
   ierr = SD3DOutput_ComputeWDn_frontface_minZ(materialpoint_db,&Wz,&Dnz);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"[step %D] slab edge (front face) range: W,Dn %1.4e %1.4e\n",ptatinctx->step,Wz,Dnz);
 
-
   ierr = SD3DOutput_ComputeZrange(dav,range);CHKERRQ(ierr);
 
   ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -971,14 +963,14 @@ Notes:
 - dissipation must be scaled the following scales: characteristic pressure, characteristic strain rate, characteristic volume
 - dissipation isn't normalized by the volume, THUS, to define dissipation in the full domain we need to multiply the result here (half domain) by 2
 
-*/
+  */
   /*
      PetscViewerASCIIPrintf(modeldata->logviewer,"%.6D %1.12e %1.12e %+1.12e %+1.12e %+1.12e %+1.12e %+1.12e %+1.12e %+1.12e %+1.12e\n",
      ptatinctx->step, ptatinctx->time, ptatinctx->time*modeldata->t_bar,
      Ds*modeldata->x_bar,       Dn*modeldata->x_bar,               W*modeldata->x_bar,
      range[0]*modeldata->x_bar, range[1]*modeldata->x_bar,
      Vrms*modeldata->v_bar,     2.0 * Phi*modeldata->p_bar*e_bar*x_bar3, volume*x_bar3);
-     */
+  */
 
   /*
      PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","step");
@@ -1000,7 +992,7 @@ Notes:
      PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Vrms (m/s)");
      PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Phi (W)");
      PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","volume (m^3)");
-     */
+  */
 
   PetscViewerASCIIPrintf(modeldata->logviewer,"%19.6D ",ptatinctx->step);
   PetscViewerASCIIPrintf(modeldata->logviewer,"%8.12e ",ptatinctx->time);

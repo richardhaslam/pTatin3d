@@ -60,84 +60,84 @@
 
 PetscErrorCode MPntGetField_global_element_nInJnKindex(DM da, MPntStd *material_point, PetscInt *nI, PetscInt *nJ, PetscInt *nK)
 {
-    PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk;
-    int         localeid;
-    PetscErrorCode ierr;
+  PetscInt       li, lj, lk,lmx, lmy, lmz, si, sj, sk;
+  int            localeid;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-    MPntStdGetField_local_element_index(material_point,&localeid);
-    ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  MPntStdGetField_local_element_index(material_point,&localeid);
+  ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
-    si = si/2;
-    sj = sj/2;
-    sk = sk/2;
-    //  lmx -= si;
-    //  lmy -= sj;
-    //  lmz -= sk;
-    //global/localrank = mx*my*k + mx*j + i;
-    lk = (PetscInt)localeid/(lmx*lmy);
-    lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
-    li = localeid - lk*(lmx*lmy) - lj*lmx;
+  si = si/2;
+  sj = sj/2;
+  sk = sk/2;
+  //  lmx -= si;
+  //  lmy -= sj;
+  //  lmz -= sk;
+  //global/localrank = mx*my*k + mx*j + i;
+  lk = (PetscInt)localeid/(lmx*lmy);
+  lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
+  li = localeid - lk*(lmx*lmy) - lj*lmx;
 
-    if ( (li < 0) || (li>=lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
-    if ( (lj < 0) || (lj>=lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
-    if ( (lk < 0) || (lk>=lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
-    //printf("li,lj,lk %d %d %d \n", li,lj,lk );
+  if ( (li < 0) || (li>=lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
+  if ( (lj < 0) || (lj>=lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
+  if ( (lk < 0) || (lk>=lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
+  //printf("li,lj,lk %d %d %d \n", li,lj,lk );
 
-    if (nK) { *nK = lk + sk; }
-    if (nJ) { *nJ = lj + sj; }
-    if (nI) { *nI = li + si; }
-    PetscFunctionReturn(0);
+  if (nK) { *nK = lk + sk; }
+  if (nJ) { *nJ = lj + sj; }
+  if (nI) { *nI = li + si; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAConvertLocalElementIndex2GlobalnInJnK(DM da,PetscInt localeid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
 {
-    PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;
-    PetscErrorCode ierr;
+  PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;
+  PetscErrorCode ierr;
 
 
-    PetscFunctionBegin;
-    ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
-    si = si/2;
-    sj = sj/2;
-    sk = sk/2;
+  si = si/2;
+  sj = sj/2;
+  sk = sk/2;
 
-    //global/localrank = mx*my*k + mx*j + i;
-    lk = (PetscInt)localeid/(lmx*lmy);
-    lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
-    li = localeid - lk*(lmx*lmy) - lj*lmx;
+  //global/localrank = mx*my*k + mx*j + i;
+  lk = (PetscInt)localeid/(lmx*lmy);
+  lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
+  li = localeid - lk*(lmx*lmy) - lj*lmx;
 
-    if ( (li < 0) || (li >= lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
-    if ( (lj < 0) || (lj >= lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
-    if ( (lk < 0) || (lk >= lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
-    if (nK) { *nK = lk + sk; }
-    if (nJ) { *nJ = lj + sj; }
-    if (nI) { *nI = li + si; }
+  if ( (li < 0) || (li >= lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
+  if ( (lj < 0) || (lj >= lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
+  if ( (lk < 0) || (lk >= lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
+  if (nK) { *nK = lk + sk; }
+  if (nJ) { *nJ = lj + sj; }
+  if (nI) { *nI = li + si; }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAConvertLocalElementIndex2LocalnInJnK(DM da,PetscInt localeid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
 {
-    PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;
-    PetscErrorCode ierr;
+  PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;
+  PetscErrorCode ierr;
 
 
-    PetscFunctionBegin;
-    ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
-    //global/localrank = mx*my*k + mx*j + i;
-    lk = (PetscInt)localeid/(lmx*lmy);
-    lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
-    li = localeid - lk*(lmx*lmy) - lj*lmx;
+  //global/localrank = mx*my*k + mx*j + i;
+  lk = (PetscInt)localeid/(lmx*lmy);
+  lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
+  li = localeid - lk*(lmx*lmy) - lj*lmx;
 
-    if ( (li < 0) || (li >= lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
-    if ( (lj < 0) || (lj >= lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
-    if ( (lk < 0) || (lk >= lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
-    if (nK) { *nK = lk; }
-    if (nJ) { *nJ = lj; }
-    if (nI) { *nI = li; }
+  if ( (li < 0) || (li >= lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
+  if ( (lj < 0) || (lj >= lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
+  if ( (lk < 0) || (lk >= lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
+  if (nK) { *nK = lk; }
+  if (nJ) { *nJ = lj; }
+  if (nI) { *nI = li; }
 
   PetscFunctionReturn(0);
 }
@@ -168,26 +168,26 @@ PetscErrorCode DMDAConvertLocalNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,Pe
 
 PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
 {
-    PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
-    PetscErrorCode ierr;
+  PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
+  PetscErrorCode ierr;
 
 
-    PetscFunctionBegin;
-    ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
 
-    //global/localrank = mx*my*k + mx*j + i;
-    lk = (PetscInt)localnid/(lnx*lny);
-    lj = (PetscInt)(localnid - lk*(lnx*lny))/lnx;
-    li = localnid - lk*(lnx*lny) - lj*lnx;
+  //global/localrank = mx*my*k + mx*j + i;
+  lk = (PetscInt)localnid/(lnx*lny);
+  lj = (PetscInt)(localnid - lk*(lnx*lny))/lnx;
+  li = localnid - lk*(lnx*lny) - lj*lnx;
 
-    if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
-    if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
-    if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
-    if (nK) { *nK = lk + sk; }
-    if (nJ) { *nJ = lj + sj; }
-    if (nI) { *nI = li + si; }
+  if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
+  if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
+  if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
+  if (nK) { *nK = lk + sk; }
+  if (nJ) { *nJ = lj + sj; }
+  if (nI) { *nI = li + si; }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
@@ -216,17 +216,17 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 PetscReal absolute(PetscReal a)
 {
   if (a < 0) {
-        return(-1.0 * a);
+    return(-1.0 * a);
   } else {
     return(a);
   }
 }
 
 /*
- Remove the linear trend
- Assume a regular spacing and chose an appropriate coordinate system such
- sum x_i = 0
-*/
+   Remove the linear trend
+   Assume a regular spacing and chose an appropriate coordinate system such
+   sum x_i = 0
+   */
 PetscErrorCode detrend(PetscReal array[],PetscInt n)
 {
   PetscReal x,y,a,b;
@@ -279,36 +279,36 @@ PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed)
 
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
-    DMDA_thermalfield_init_params *thermalparams;
-    PetscInt i,klay,nlt;
-    PetscReal y,yldep,dtemp;
+  DMDA_thermalfield_init_params *thermalparams;
+  PetscInt i,klay,nlt;
+  PetscReal y,yldep,dtemp;
 
-    thermalparams = (DMDA_thermalfield_init_params*)ctx;
-    y   = pos[1] * thermalparams->lscale;
-    nlt = thermalparams->nlayers;
-//  Which layer contains the current node?
-    klay = 0;
+  thermalparams = (DMDA_thermalfield_init_params*)ctx;
+  y   = pos[1] * thermalparams->lscale;
+  nlt = thermalparams->nlayers;
+  //  Which layer contains the current node?
+  klay = 0;
 
-    for (i=0; i <= nlt-1; i++) {
-        if (y <= thermalparams->ytop[i] && y >= thermalparams->ytop[i+1]) {
-            klay = i;
-            break;
-        }
+  for (i=0; i <= nlt-1; i++) {
+    if (y <= thermalparams->ytop[i] && y >= thermalparams->ytop[i+1]) {
+      klay = i;
+      break;
     }
-    yldep = thermalparams->ytop[klay] - y;
-    dtemp = thermalparams->hp[klay] * yldep * (thermalparams->thick[klay]-yldep/2.0e0) + thermalparams->qbase[klay]*yldep;
-    dtemp = dtemp / thermalparams->cond[klay];
-    *val  = thermalparams->ttop[klay] + dtemp;
-/*    if (pos[0]==0&&pos[2]==0) {
+  }
+  yldep = thermalparams->ytop[klay] - y;
+  dtemp = thermalparams->hp[klay] * yldep * (thermalparams->thick[klay]-yldep/2.0e0) + thermalparams->qbase[klay]*yldep;
+  dtemp = dtemp / thermalparams->cond[klay];
+  *val  = thermalparams->ttop[klay] + dtemp;
+  /*    if (pos[0]==0&&pos[2]==0) {
         printf("y=%1.4e, T=%1.4e \n",y,*val);
         printf("ytop0=%1.4e\n",thermalparams->ytop[0]);
         printf("ytop1=%1.4e\n",thermalparams->ytop[1]);
         printf("ytop1=%1.4e\n",thermalparams->ytop[2]);
         printf("klay=%d\n",klay);
-    }
- */
+        }
+  */
 
-    return PETSC_TRUE;
+  return PETSC_TRUE;
 }
 
 PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
@@ -501,10 +501,10 @@ PetscErrorCode DMDAComputeQ2LocalBoundingBox(DM dm,PetscReal gmin[],PetscReal gm
 }
 
 /*
- This should only ever be used for debugging.
- We scatter the vector created from a DMDA into the natural i+j*nx+k*nx*ny ordering,
- then we scatter this i,j,k ordered vector onto rank 0 and write the contents out in ascii.
-*/
+   This should only ever be used for debugging.
+   We scatter the vector created from a DMDA into the natural i+j*nx+k*nx*ny ordering,
+   then we scatter this i,j,k ordered vector onto rank 0 and write the contents out in ascii.
+   */
 PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
 {
   PetscErrorCode ierr;
@@ -533,11 +533,11 @@ PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
   ierr = VecDestroy(&natural_field);CHKERRQ(ierr);
 
   /*
-   # DMDAFieldViewAscii:
-   # DMDA Vec (name)
-   # M N P x y z
-   # dofs x
-  */
+# DMDAFieldViewAscii:
+# DMDA Vec (name)
+# M N P x y z
+# dofs x
+*/
   ierr = DMDAGetInfo(dm,0,&M,&N,&P, 0,0,0, &dofs,0, 0,0,0, 0);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)field,&oname);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
@@ -785,11 +785,11 @@ PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint
     ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
 
     //if ( (region_idx == -1) && (region_p != region_idx) ) { continue; }
-        if (region_p != region_idx) {
-            if (region_idx != -1) {
-                continue;
-            }
-        }
+    if (region_p != region_idx) {
+      if (region_idx != -1) {
+        continue;
+      }
+    }
 
     idx = 0;
     range_min = PETSC_MIN_REAL; if (rmin) { range_min = rmin[idx]; }
@@ -838,129 +838,129 @@ PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint
 
 PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal min[],PetscReal max[])
 {
-    DM cda;
-    Vec coords;
-    PetscInt i,j,k,si,sj,sk,ni,nj,nk,M,N,P;
-    DMDACoor3d ***LA_coords;
-    PetscReal gmin[3],gmax[3];
-    PetscErrorCode ierr;
+  DM cda;
+  Vec coords;
+  PetscInt i,j,k,si,sj,sk,ni,nj,nk,M,N,P;
+  DMDACoor3d ***LA_coords;
+  PetscReal gmin[3],gmax[3];
+  PetscErrorCode ierr;
 
-    ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
-    ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-    ierr = DMDAGetCorners(dav,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dav,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
 
-    gmax[0] = gmax[1] = gmax[2] = PETSC_MIN_REAL;
-    gmin[0] = gmin[1] = gmin[2] = PETSC_MAX_REAL;
+  gmax[0] = gmax[1] = gmax[2] = PETSC_MIN_REAL;
+  gmin[0] = gmin[1] = gmin[2] = PETSC_MAX_REAL;
 
-    ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 
-    switch (ft) {
-        case NORTH_FACE:
-            if (sj+nj == N) {
-                j = N-1;
-                for (k=sk; k<sk+nk; k++) {
-                    for (i=si; i<si+ni; i++) {
-                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
-                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
-                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+  switch (ft) {
+    case NORTH_FACE:
+      if (sj+nj == N) {
+        j = N-1;
+        for (k=sk; k<sk+nk; k++) {
+          for (i=si; i<si+ni; i++) {
+            gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+            gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+            gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
 
-                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
-                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
-                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
-                    }
-                }
-            }
-            break;
+            gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+            gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+            gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+          }
+        }
+      }
+      break;
 
-        case SOUTH_FACE:
-            if (sj == 0) {
-                j = 0;
-                for (k=sk; k<sk+nk; k++) {
-                    for (i=si; i<si+ni; i++) {
-                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
-                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
-                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+    case SOUTH_FACE:
+      if (sj == 0) {
+        j = 0;
+        for (k=sk; k<sk+nk; k++) {
+          for (i=si; i<si+ni; i++) {
+            gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+            gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+            gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
 
-                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
-                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
-                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
-                    }
-                }
-            }
-            break;
+            gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+            gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+            gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+          }
+        }
+      }
+      break;
 
-        case EAST_FACE:
-            if (si+ni == N) {
-                i = N-1;
-                for (k=sk; k<sk+nk; k++) {
-                    for (j=sj; j<sj+nj; j++) {
-                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
-                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
-                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+    case EAST_FACE:
+      if (si+ni == N) {
+        i = N-1;
+        for (k=sk; k<sk+nk; k++) {
+          for (j=sj; j<sj+nj; j++) {
+            gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+            gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+            gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
 
-                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
-                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
-                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
-                    }
-                }
-            }
-            break;
+            gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+            gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+            gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+          }
+        }
+      }
+      break;
 
-        case WEST_FACE:
-            if (si == 0) {
-                i = 0;
-                for (k=sk; k<sk+nk; k++) {
-                    for (j=sj; j<sj+nj; j++) {
-                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
-                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
-                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+    case WEST_FACE:
+      if (si == 0) {
+        i = 0;
+        for (k=sk; k<sk+nk; k++) {
+          for (j=sj; j<sj+nj; j++) {
+            gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+            gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+            gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
 
-                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
-                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
-                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
-                    }
-                }
-            }
-            break;
+            gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+            gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+            gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+          }
+        }
+      }
+      break;
 
-        case FRONT_FACE:
-            if (sk+nk == P) {
-                k = P-1;
-                for (j=sj; j<sj+nj; j++) {
-                    for (i=si; i<si+ni; i++) {
-                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
-                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
-                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+    case FRONT_FACE:
+      if (sk+nk == P) {
+        k = P-1;
+        for (j=sj; j<sj+nj; j++) {
+          for (i=si; i<si+ni; i++) {
+            gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+            gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+            gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
 
-                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
-                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
-                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
-                    }
-                }
-            }
-            break;
+            gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+            gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+            gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+          }
+        }
+      }
+      break;
 
-        case BACK_FACE:
-            if (sk == 0) {
-                k = 0;
-                for (j=sj; j<sj+nj; j++) {
-                    for (i=si; i<si+ni; i++) {
-                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
-                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
-                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+    case BACK_FACE:
+      if (sk == 0) {
+        k = 0;
+        for (j=sj; j<sj+nj; j++) {
+          for (i=si; i<si+ni; i++) {
+            gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+            gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+            gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
 
-                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
-                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
-                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
-                    }
-                }
-            }
-            break;
-    }
-    ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+            gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+            gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+            gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+          }
+        }
+      }
+      break;
+  }
+  ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 
-    if (min) { ierr = MPI_Allreduce(gmin,min,3,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr); }
+  if (min) { ierr = MPI_Allreduce(gmin,min,3,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr); }
   if (max) { ierr = MPI_Allreduce(gmax,max,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr); }
 
   PetscFunctionReturn(0);
@@ -968,118 +968,118 @@ PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,Pet
 
 PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal avg[])
 {
-    DM             cda;
-    Vec            coords;
-    PetscInt       i,j,k,si,sj,sk,ni,nj,nk,M,N,P,n_face;
-    DMDACoor3d     ***LA_coords;
-    PetscReal      gavg[3];
-    PetscErrorCode ierr;
+  DM             cda;
+  Vec            coords;
+  PetscInt       i,j,k,si,sj,sk,ni,nj,nk,M,N,P,n_face;
+  DMDACoor3d     ***LA_coords;
+  PetscReal      gavg[3];
+  PetscErrorCode ierr;
 
-    ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
-    ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-    ierr = DMDAGetCorners(dav,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dav,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
 
-    gavg[0] = gavg[1] = gavg[2] = 0.0;
+  gavg[0] = gavg[1] = gavg[2] = 0.0;
 
-    ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 
-    n_face = 0;
-    switch (ft) {
-        case NORTH_FACE:
-            if (sj+nj == N) {
-                j = N-1;
-                for (k=sk; k<sk+nk; k++) {
-                    for (i=si; i<si+ni; i++) {
-                        gavg[0] += LA_coords[k][j][i].x;
-                        gavg[1] += LA_coords[k][j][i].y;
-                        gavg[2] += LA_coords[k][j][i].z;
-                    }
-                }
-            }
-            n_face = M * P;
-            break;
+  n_face = 0;
+  switch (ft) {
+    case NORTH_FACE:
+      if (sj+nj == N) {
+        j = N-1;
+        for (k=sk; k<sk+nk; k++) {
+          for (i=si; i<si+ni; i++) {
+            gavg[0] += LA_coords[k][j][i].x;
+            gavg[1] += LA_coords[k][j][i].y;
+            gavg[2] += LA_coords[k][j][i].z;
+          }
+        }
+      }
+      n_face = M * P;
+      break;
 
-        case SOUTH_FACE:
-            if (sj == 0) {
-                j = 0;
-                for (k=sk; k<sk+nk; k++) {
-                    for (i=si; i<si+ni; i++) {
-                        gavg[0] += LA_coords[k][j][i].x;
-                        gavg[1] += LA_coords[k][j][i].y;
-                        gavg[2] += LA_coords[k][j][i].z;
-                    }
-                }
-            }
-            n_face = M * P;
-            break;
+    case SOUTH_FACE:
+      if (sj == 0) {
+        j = 0;
+        for (k=sk; k<sk+nk; k++) {
+          for (i=si; i<si+ni; i++) {
+            gavg[0] += LA_coords[k][j][i].x;
+            gavg[1] += LA_coords[k][j][i].y;
+            gavg[2] += LA_coords[k][j][i].z;
+          }
+        }
+      }
+      n_face = M * P;
+      break;
 
-        case EAST_FACE:
-            if (si+ni == N) {
-                i = N-1;
-                for (k=sk; k<sk+nk; k++) {
-                    for (j=sj; j<sj+nj; j++) {
-                        gavg[0] += LA_coords[k][j][i].x;
-                        gavg[1] += LA_coords[k][j][i].y;
-                        gavg[2] += LA_coords[k][j][i].z;
-                    }
-                }
-            }
-            n_face = N * P;
-            break;
+    case EAST_FACE:
+      if (si+ni == N) {
+        i = N-1;
+        for (k=sk; k<sk+nk; k++) {
+          for (j=sj; j<sj+nj; j++) {
+            gavg[0] += LA_coords[k][j][i].x;
+            gavg[1] += LA_coords[k][j][i].y;
+            gavg[2] += LA_coords[k][j][i].z;
+          }
+        }
+      }
+      n_face = N * P;
+      break;
 
-        case WEST_FACE:
-            if (si == 0) {
-                i = 0;
-                for (k=sk; k<sk+nk; k++) {
-                    for (j=sj; j<sj+nj; j++) {
-                        gavg[0] += LA_coords[k][j][i].x;
-                        gavg[1] += LA_coords[k][j][i].y;
-                        gavg[2] += LA_coords[k][j][i].z;
-                    }
-                }
-            }
-            n_face = N * P;
-            break;
+    case WEST_FACE:
+      if (si == 0) {
+        i = 0;
+        for (k=sk; k<sk+nk; k++) {
+          for (j=sj; j<sj+nj; j++) {
+            gavg[0] += LA_coords[k][j][i].x;
+            gavg[1] += LA_coords[k][j][i].y;
+            gavg[2] += LA_coords[k][j][i].z;
+          }
+        }
+      }
+      n_face = N * P;
+      break;
 
-        case FRONT_FACE:
-            if (sk+nk == P) {
-                k = P-1;
-                for (j=sj; j<sj+nj; j++) {
-                    for (i=si; i<si+ni; i++) {
-                        gavg[0] += LA_coords[k][j][i].x;
-                        gavg[1] += LA_coords[k][j][i].y;
-                        gavg[2] += LA_coords[k][j][i].z;
-                    }
-                }
-            }
-            n_face = M * N;
-            break;
+    case FRONT_FACE:
+      if (sk+nk == P) {
+        k = P-1;
+        for (j=sj; j<sj+nj; j++) {
+          for (i=si; i<si+ni; i++) {
+            gavg[0] += LA_coords[k][j][i].x;
+            gavg[1] += LA_coords[k][j][i].y;
+            gavg[2] += LA_coords[k][j][i].z;
+          }
+        }
+      }
+      n_face = M * N;
+      break;
 
-        case BACK_FACE:
-            if (sk == 0) {
-                k = 0;
-                for (j=sj; j<sj+nj; j++) {
-                    for (i=si; i<si+ni; i++) {
-                        gavg[0] += LA_coords[k][j][i].x;
-                        gavg[1] += LA_coords[k][j][i].y;
-                        gavg[2] += LA_coords[k][j][i].z;
-                    }
-                }
-            }
-            n_face = M * N;
-            break;
-    }
-    ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+    case BACK_FACE:
+      if (sk == 0) {
+        k = 0;
+        for (j=sj; j<sj+nj; j++) {
+          for (i=si; i<si+ni; i++) {
+            gavg[0] += LA_coords[k][j][i].x;
+            gavg[1] += LA_coords[k][j][i].y;
+            gavg[2] += LA_coords[k][j][i].z;
+          }
+        }
+      }
+      n_face = M * N;
+      break;
+  }
+  ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 
-    if (avg) {
-        ierr = MPI_Allreduce(gavg,avg,3,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
-        avg[0] = avg[0] / ((PetscReal)n_face);
-        avg[1] = avg[1] / ((PetscReal)n_face);
-        avg[2] = avg[2] / ((PetscReal)n_face);
-    }
+  if (avg) {
+    ierr = MPI_Allreduce(gavg,avg,3,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
+    avg[0] = avg[0] / ((PetscReal)n_face);
+    avg[1] = avg[1] / ((PetscReal)n_face);
+    avg[2] = avg[2] / ((PetscReal)n_face);
+  }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *value_vol)
@@ -1094,8 +1094,8 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
   PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
   PetscReal       el_v[3*Q2_NODES_PER_EL_3D];
   PetscReal       _value_vol,_value_vrms,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
-    Vec             v_local;
-    PetscScalar     *LA_v;
+  Vec             v_local;
+  PetscScalar     *LA_v;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1110,10 +1110,10 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
   ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   /* setup local velocity */
-    ierr = DMGetLocalVector(dav,&v_local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dav,v,INSERT_VALUES,v_local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(  dav,v,INSERT_VALUES,v_local);CHKERRQ(ierr);
-    ierr = VecGetArray(v_local,&LA_v);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dav,&v_local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dav,v,INSERT_VALUES,v_local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(  dav,v,INSERT_VALUES,v_local);CHKERRQ(ierr);
+  ierr = VecGetArray(v_local,&LA_v);CHKERRQ(ierr);
 
   ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&elnidx);CHKERRQ(ierr);
 
@@ -1124,9 +1124,9 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
 
     ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
 
-        ierr = DMDAGetVectorElementFieldQ2_3D(el_v,(PetscInt*)&elnidx[nen*e],LA_v);CHKERRQ(ierr);
+    ierr = DMDAGetVectorElementFieldQ2_3D(el_v,(PetscInt*)&elnidx[nen*e],LA_v);CHKERRQ(ierr);
 
-        P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
+    P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
 
     el_vol = 0.0;
     for (p=0; p<nqp; p++) {
@@ -1136,14 +1136,14 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
 
     el_vrms = 0.0;
     for (p=0; p<nqp; p++) {
-            PetscReal vx_q,vy_q,vz_q;
+      PetscReal vx_q,vy_q,vz_q;
 
-            vx_q = vy_q = vz_q = 0.0;
-            for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-                vx_q = vx_q + NI[p][i] * el_v[3*i + 0];
-                vy_q = vy_q + NI[p][i] * el_v[3*i + 1];
-                vz_q = vz_q + NI[p][i] * el_v[3*i + 2];
-            }
+      vx_q = vy_q = vz_q = 0.0;
+      for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+        vx_q = vx_q + NI[p][i] * el_v[3*i + 0];
+        vy_q = vy_q + NI[p][i] * el_v[3*i + 1];
+        vz_q = vz_q + NI[p][i] * el_v[3*i + 2];
+      }
 
       el_vrms = el_vrms + WEIGHT[p] * (vx_q*vx_q + vy_q*vy_q + vz_q*vz_q) * detJ[p];
     }
@@ -1151,21 +1151,21 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
 
   }
   ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-    ierr = VecRestoreArray(v_local,&LA_v);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dav,&v_local);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v_local,&LA_v);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dav,&v_local);CHKERRQ(ierr);
 
-    ierr = MPI_Allreduce(&_value_vol, value_vol, 1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&_value_vrms,value_vrms,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&_value_vol, value_vol, 1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&_value_vrms,value_vrms,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
   //*value_vrms = PetscSqrtReal(*value_vrms);
 
   PetscFunctionReturn(0);
 }
 
 /*
- Viscous dissipiation is defined as
+   Viscous dissipiation is defined as
 
- Phi = 0.5 ( \int (\tau - pI) : \epsilon' dV )
-*/
+   Phi = 0.5 ( \int (\tau - pI) : \epsilon' dV )
+   */
 PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadrature volQ,PetscInt stress_type,PetscReal *value)
 {
   DM              cda;
@@ -1195,29 +1195,29 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
   ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   /* setup local velocity */
-    ierr = DMGetLocalVector(dav,&sv_local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dav,sv,INSERT_VALUES,sv_local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(  dav,sv,INSERT_VALUES,sv_local);CHKERRQ(ierr);
-    ierr = VecGetArray(sv_local,&LA_sv);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dav,&sv_local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dav,sv,INSERT_VALUES,sv_local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(  dav,sv,INSERT_VALUES,sv_local);CHKERRQ(ierr);
+  ierr = VecGetArray(sv_local,&LA_sv);CHKERRQ(ierr);
 
   /* setup local pressure */
-    ierr = DMGetLocalVector(dap,&sp_local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dap,sp,INSERT_VALUES,sp_local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(  dap,sp,INSERT_VALUES,sp_local);CHKERRQ(ierr);
-    ierr = VecGetArray(sp_local,&LA_sp);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dap,&sp_local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dap,sp,INSERT_VALUES,sp_local);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(  dap,sp,INSERT_VALUES,sp_local);CHKERRQ(ierr);
+  ierr = VecGetArray(sp_local,&LA_sp);CHKERRQ(ierr);
 
   ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
   ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&quadraturepoints);CHKERRQ(ierr);
 
-    value_local = 0.0;
+  value_local = 0.0;
   for (e=0; e<nel; e++) {
     PetscReal value_element;
 
     ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
 
-        ierr = DMDAGetVectorElementFieldQ2_3D(el_v,(PetscInt*)&elnidx_u[nen_u*e],LA_sv);CHKERRQ(ierr);
+    ierr = DMDAGetVectorElementFieldQ2_3D(el_v,(PetscInt*)&elnidx_u[nen_u*e],LA_sv);CHKERRQ(ierr);
     for (k=0; k<Q2_NODES_PER_EL_3D; k++ ) {
       ux[k] = el_v[3*k  ];
       uy[k] = el_v[3*k+1];
@@ -1226,20 +1226,20 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
 
     ierr = DMDAGetScalarElementField(el_p,nen_p,(PetscInt*)&elnidx_p[nen_p*e],LA_sp);CHKERRQ(ierr);
 
-        ierr = VolumeQuadratureGetCellData_Stokes(volQ,quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
+    ierr = VolumeQuadratureGetCellData_Stokes(volQ,quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
 
     for (p=0; p<nqp; p++) {
       PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
       ConstructNi_pressure(xip,el_coords,NIp[p]);
     }
 
-        P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI,detJ,dNudx,dNudy,dNudz);
+    P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI,detJ,dNudx,dNudy,dNudz);
 
     value_element = 0.0;
     for (p=0; p<nqp; p++) {
       PetscReal eta_qp,pressure_qp,E_qp[3][3],sigma_qp[3][3],phi_qp;
       /* PetscReal divu_qp */
-            PetscInt ii,jj;
+      PetscInt ii,jj;
 
       /* pressure */
       pressure_qp = 0.0;
@@ -1259,77 +1259,76 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
         E_qp[0][2] += 0.5 * (dNudz[p][k] * ux[k] + dNudx[p][k] * uz[k]);
         E_qp[1][2] += 0.5 * (dNudz[p][k] * uy[k] + dNudy[p][k] * uz[k]);
       }
-            E_qp[1][0] = E_qp[0][1];
-            E_qp[2][0] = E_qp[0][2];
-            E_qp[2][1] = E_qp[1][2];
+      E_qp[1][0] = E_qp[0][1];
+      E_qp[2][0] = E_qp[0][2];
+      E_qp[2][1] = E_qp[1][2];
 
       /* divu_qp = (E_qp[0][0] + E_qp[1][1] + E_qp[2][2]); */
 
       /* constitutive */
       eta_qp = cell_quadraturepoints[p].eta;
 
-            if (stress_type == 0) {
-                /* total stress: 2 eta e_{ij} - p \delta_{ij} */
-                for (ii=0; ii<3; ii++) {
-                    for (jj=0; jj<3; jj++) {
-                        sigma_qp[ii][jj] = 2.0 * eta_qp * E_qp[ii][jj];
-                    }
-                }
-                for (ii=0; ii<3; ii++) {
-                    sigma_qp[ii][ii] = sigma_qp[ii][ii] - pressure_qp;
-                }
-            } else if (stress_type == 1) {
-                /* deviatoric stress: 2 eta e_{ij} */
-                for (ii=0; ii<3; ii++) {
-                    for (jj=0; jj<3; jj++) {
-                        sigma_qp[ii][jj] = 2.0 * eta_qp * E_qp[ii][jj];
-                    }
-                }
-            } else {
-                /* pressure: p \delta_{ij} */
-                for (ii=0; ii<3; ii++) {
-                    for (jj=0; jj<3; jj++) {
-                        sigma_qp[ii][jj] = 0.0;
-                    }
-                }
-                for (ii=0; ii<3; ii++) {
-                    sigma_qp[ii][ii] = sigma_qp[ii][ii] - pressure_qp;
-                }
-            }
+      if (stress_type == 0) {
+        /* total stress: 2 eta e_{ij} - p \delta_{ij} */
+        for (ii=0; ii<3; ii++) {
+          for (jj=0; jj<3; jj++) {
+            sigma_qp[ii][jj] = 2.0 * eta_qp * E_qp[ii][jj];
+          }
+        }
+        for (ii=0; ii<3; ii++) {
+          sigma_qp[ii][ii] = sigma_qp[ii][ii] - pressure_qp;
+        }
+      } else if (stress_type == 1) {
+        /* deviatoric stress: 2 eta e_{ij} */
+        for (ii=0; ii<3; ii++) {
+          for (jj=0; jj<3; jj++) {
+            sigma_qp[ii][jj] = 2.0 * eta_qp * E_qp[ii][jj];
+          }
+        }
+      } else {
+        /* pressure: p \delta_{ij} */
+        for (ii=0; ii<3; ii++) {
+          for (jj=0; jj<3; jj++) {
+            sigma_qp[ii][jj] = 0.0;
+          }
+        }
+        for (ii=0; ii<3; ii++) {
+          sigma_qp[ii][ii] = sigma_qp[ii][ii] - pressure_qp;
+        }
+      }
 
 
-            /* contraction, sigma_{ij}.e_{ij} */
-            phi_qp = 0.0;
+      /* contraction, sigma_{ij}.e_{ij} */
+      phi_qp = 0.0;
       for (ii=0; ii<3; ii++) {
-                for (jj=0; jj<3; jj++) {
-                    phi_qp = phi_qp + sigma_qp[ii][jj] * E_qp[ii][jj];
-                }
-            }
-            value_element = value_element + WEIGHT[p] * (phi_qp) * detJ[p];
+        for (jj=0; jj<3; jj++) {
+          phi_qp = phi_qp + sigma_qp[ii][jj] * E_qp[ii][jj];
+        }
+      }
+      value_element = value_element + WEIGHT[p] * (phi_qp) * detJ[p];
     }
 
-        value_local = value_local + value_element;
+    value_local = value_local + value_element;
   }
-    value_local = 0.5 * value_local;
+  value_local = 0.5 * value_local;
 
   ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-    ierr = VecRestoreArray(sv_local,&LA_sv);CHKERRQ(ierr);
-    ierr = VecRestoreArray(sp_local,&LA_sp);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dav,&sv_local);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dap,&sp_local);CHKERRQ(ierr);
+  ierr = VecRestoreArray(sv_local,&LA_sv);CHKERRQ(ierr);
+  ierr = VecRestoreArray(sp_local,&LA_sp);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dav,&sv_local);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dap,&sp_local);CHKERRQ(ierr);
 
-    ierr = MPI_Allreduce(&value_local, value, 1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
-
+  ierr = MPI_Allreduce(&value_local, value, 1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 /*
- Notes:
-   - This function will identify the material point (index and rank) within "tolerance" distance of coord[].
-   - The user can optionally mask out coordinates of the material point from the distance test.
-   - If multiple material points on a given sub-domain (rank) are within "tolerance" distance of coord[], the point returned will be  the "closest" to the target (coord[]).
-   - If no coordinate is within tol of target (coor[]), the returned values are _pidx = -1, _rank = -1
+Notes:
+- This function will identify the material point (index and rank) within "tolerance" distance of coord[].
+- The user can optionally mask out coordinates of the material point from the distance test.
+- If multiple material points on a given sub-domain (rank) are within "tolerance" distance of coord[], the point returned will be  the "closest" to the target (coord[]).
+- If no coordinate is within tol of target (coor[]), the returned values are _pidx = -1, _rank = -1
 */
 
 struct MPI_PairedValueRank {
@@ -1343,55 +1342,55 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
   int              p,n_mpoints;
   double           *pos_p;
   int              region_p;
-    PetscReal        sep2,tol2,min2;
-    int              p_mine,p_found,rank;
+  PetscReal        sep2,tol2,min2;
+  int              p_mine,p_found,rank;
   struct MPI_PairedValueRank input,output;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
 
-    tol2 = tolerance*tolerance;
-    min2 = PETSC_MAX_REAL;
+  tol2 = tolerance*tolerance;
+  min2 = PETSC_MAX_REAL;
 
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-    p_found  = 0;
-    p_mine   = -1;
+  p_found  = 0;
+  p_mine   = -1;
 
-    DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+  DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
   ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
   for (p=0; p<n_mpoints; p++) {
 
     ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
     ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
 
-        if (region_idx != -1) {
-            if (region_p != region_idx) {
-                continue;
-            }
-        }
+    if (region_idx != -1) {
+      if (region_p != region_idx) {
+        continue;
+      }
+    }
 
-        sep2 = 0.0;
-        if (mask) {
-            if (mask[0]) { sep2 += (pos_p[0]-coord[0])*(pos_p[0]-coord[0]); }
-            if (mask[1]) { sep2 += (pos_p[1]-coord[1])*(pos_p[1]-coord[1]); }
-            if (mask[2]) { sep2 += (pos_p[2]-coord[2])*(pos_p[2]-coord[2]); }
-        } else {
-            sep2 += (pos_p[0]-coord[0])*(pos_p[0]-coord[0]);
-            sep2 += (pos_p[1]-coord[1])*(pos_p[1]-coord[1]);
-            sep2 += (pos_p[2]-coord[2])*(pos_p[2]-coord[2]);
-        }
+    sep2 = 0.0;
+    if (mask) {
+      if (mask[0]) { sep2 += (pos_p[0]-coord[0])*(pos_p[0]-coord[0]); }
+      if (mask[1]) { sep2 += (pos_p[1]-coord[1])*(pos_p[1]-coord[1]); }
+      if (mask[2]) { sep2 += (pos_p[2]-coord[2])*(pos_p[2]-coord[2]); }
+    } else {
+      sep2 += (pos_p[0]-coord[0])*(pos_p[0]-coord[0]);
+      sep2 += (pos_p[1]-coord[1])*(pos_p[1]-coord[1]);
+      sep2 += (pos_p[2]-coord[2])*(pos_p[2]-coord[2]);
+    }
 
-        if (sep2 < min2) {
-            p_mine   = p;
-            p_found++;
-            min2 = sep2;
-        }
+    if (sep2 < min2) {
+      p_mine   = p;
+      p_found++;
+      min2 = sep2;
+    }
   }
   ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
   /*
-   http://mpi-forum.org/docs/mpi-1.1/mpi-11-html/node79.html
+  http://mpi-forum.org/docs/mpi-1.1/mpi-11-html/node79.html
   */
   input.distance = min2;
   input.rank     = rank;
@@ -1418,13 +1417,12 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
     *_rank = (PetscMPIInt)output.rank;
   }
 
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MPntStdCoordinateMinIdentifyPointIndex(DataBucket materialpoint_db,
-                    int region_idx,
-                    int pmin_x[],int pmin_y[],int pmin_z[])
+    int region_idx,
+    int pmin_x[],int pmin_y[],int pmin_z[])
 {
   MPAccess         mpX;
   int              d,p,n_mpoints;
@@ -1494,8 +1492,8 @@ PetscErrorCode MPntStdCoordinateMinIdentifyPointIndex(DataBucket materialpoint_d
 }
 
 PetscErrorCode MPntStdCoordinateMaxIdentifyPointIndex(DataBucket materialpoint_db,
-                                                  int region_idx,
-                                                  int pmax_x[],int pmax_y[],int pmax_z[])
+    int region_idx,
+    int pmax_x[],int pmax_y[],int pmax_z[])
 {
   MPAccess         mpX;
   int              d,p,n_mpoints;

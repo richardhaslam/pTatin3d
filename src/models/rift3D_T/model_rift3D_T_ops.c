@@ -29,7 +29,7 @@
 
 /*
    Developed by Laetitia Le Pourhiet [laetitia.le_pourhiet@upmc.fr]
-   */
+ */
 
 
 #include "petsc.h"
@@ -69,24 +69,21 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 
 PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx);
 
-
-
 PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 {
   ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-  RheologyConstants      *rheology;
-  DataBucket materialconstants;
-  PetscBool nondim;
-  PetscScalar vx,vy,vz,Sx,Sy,Sz;
-  PetscInt regionidx;
-  PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
-  PetscReal   rho_ref,Cp;
+  RheologyConstants       *rheology;
+  DataBucket              materialconstants;
+  PetscBool               nondim;
+  PetscScalar             vx,vy,vz,Sx,Sy,Sz;
+  PetscInt                regionidx;
+  PetscReal               cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
+  PetscReal               rho_ref,Cp;
   DataField               PField;
   EnergyMaterialConstants *matconstants_e;
-  PetscErrorCode ierr;
+  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-
 
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
@@ -159,10 +156,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
   MaterialConstantsSetValues_PlasticMises(materialconstants,0,1.e8,1.e8);
   MaterialConstantsSetValues_SoftLin(materialconstants,0,0.0,0.3);
 
-
-
-
-
   MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 
   MaterialConstantsSetValues_ViscosityFK(materialconstants,1,1.0e27,0.03);
@@ -188,7 +181,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
   EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[2],ENERGYSOURCE_NONE);
   EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_CONSTANT);
 
-
   MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
   MaterialConstantsSetValues_ViscosityFK(materialconstants,3,1.0e30,0.018);
   MaterialConstantsSetValues_DensityBoussinesq(materialconstants,3,3300,2.e-5,3.e-12);
@@ -211,7 +203,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     DataFieldGetEntries(PField_k,(void**)&data_k);
     EnergyConductivityConstSetField_k0(&data_k[regionidx],1.0e-6);
 
-
     DataBucketGetDataFieldByName(materialconstants,EnergySourceConst_classname,&PField_Q);
     DataFieldGetEntries(PField_Q,(void**)&data_Q);
     EnergySourceConstSetField_HeatSource(&data_Q[regionidx],0.0);
@@ -233,7 +224,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_T_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_T_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
   }
-
 
   /* box geometry, m */
   ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_T_Lx",&data->Lx,NULL);CHKERRQ(ierr);
@@ -260,7 +250,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
   ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_T_cx",&data->cx_anom,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_T_cz",&data->cz_anom,NULL);CHKERRQ(ierr);
 
-
   /* Material constant */
   for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
     PetscPrintf(PETSC_COMM_WORLD,"reading options");
@@ -281,7 +270,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
   PetscPrintf(PETSC_COMM_WORLD,"-model_rift3D_T_rho0 [kg/m^3] :%+1.4e \n", data->rho0 );
   PetscPrintf(PETSC_COMM_WORLD,"-model_rift3D_T_Tbot:%+1.4e \t -model_rift3D_T_Ttop:%+1.4e \t -model_rift3D_T_age0:%+1.4e \n",data->Tbottom,data->Ttop,  data->thermal_age0);
   PetscPrintf(PETSC_COMM_WORLD,"ageAnom:%+1.4e \t wx:%+1.4e \t wz:%+1.4e cx:%+1.4e \t cz:%+1.4e \n",data->thermal_age_anom,data->wx_anom,data->wz_anom,data->cx_anom,data->cz_anom);
-
 
   for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
     MaterialConstantsPrintAll(materialconstants,regionidx);
@@ -326,7 +314,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
           data->pressure_bar);
     }
 
-
     /*Reports scaled values*/
 
     PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_T_Ox   :  %+1.4e    -model_rift3D_T_Lx   :  %+1.4e  \n", data->Ox ,data->Lx );
@@ -341,7 +328,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
       MaterialConstantsEnergyPrintAll(materialconstants,regionidx);
     }
   }
-
 
   data->use_semi_eulerian_mesh = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_T_use_semi_eulerian",&data->use_semi_eulerian_mesh,NULL);CHKERRQ(ierr);
@@ -360,12 +346,10 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-
-
 /*
    Returns the parameters and function need to define initial thermal field.
    The function returned can be used to define either the initial condition for T or the boundary condition for T.
-   */
+ */
 PetscErrorCode ModelRift3D_T_GetDescription_InitialThermalField(ModelRift3D_TCtx *data,PetscReal coeffs[],PetscBool (**func)(PetscScalar*,PetscScalar*,void*) )
 {
   PetscFunctionBegin;
@@ -453,7 +437,6 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 
     }
 
-
     /*extension along face of normal x */
     ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,DMDAVecTraverse3d_ROTXZ_X,(void*)coeffs);CHKERRQ(ierr);
     ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,DMDAVecTraverse3d_ROTXZ_X,(void*)coeffs);CHKERRQ(ierr);
@@ -469,8 +452,8 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 {
   ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-  PetscBool active_energy;
-  PetscErrorCode ierr;
+  PetscBool        active_energy;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -479,8 +462,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 
   /* set boundary conditions for temperature */
   ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
-
-
 
   if (active_energy) {
     PetscReal      val_T;
@@ -517,8 +498,8 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D_T(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
   ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-  PetscInt       n;
-  PetscErrorCode ierr;
+  PetscInt         n;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -539,16 +520,16 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T(pTatinCtx c,void *ct
 
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx)
 {
-  PhysCompStokes     stokes;
-  DM                 stokes_pack,dav,dap;
-  PetscInt           Nxp[2];
-  PetscReal          perturb;
-  DataBucket         material_point_db,material_point_face_db;
-  PetscInt           f, n_face_list=2, face_list[] = { 3, 4 }; // ymin, zmax //
-  //  PetscInt           f, n_face_list=1, face_list[] = { 3 }; /* base */
-  int                p,n_mp_points;
-  MPAccess           mpX;
-  PetscErrorCode     ierr;
+  PhysCompStokes  stokes;
+  DM              stokes_pack,dav,dap;
+  PetscInt        Nxp[2];
+  PetscReal       perturb;
+  DataBucket      material_point_db,material_point_face_db;
+  PetscInt        f, n_face_list=2, face_list[] = { 3, 4 }; // ymin, zmax //
+  //  PetscInt        f, n_face_list=1, face_list[] = { 3 }; /* base */
+  int             p,n_mp_points;
+  MPAccess        mpX;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -563,9 +544,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
   stokes_pack = stokes->stokes_pack;
   ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
-
   ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
-
 
   /* create face storage for markers */
   DataBucketDuplicateFields(material_point_db,&material_point_face_db);
@@ -591,7 +570,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
       ierr = MaterialPointSet_phase_index(mpX,p,MATERIAL_POINT_PHASE_UNASSIGNED);CHKERRQ(ierr);
     }
     ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
-
 
     /* insert into volume bucket */
     DataBucketInsertValues(material_point_db,material_point_face_db);
@@ -609,7 +587,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
   }
   ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
 
-
   /* delete */
   DataBucketDestroy(&material_point_face_db);
 
@@ -620,17 +597,16 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTatinCtx c,void *ctx)
 {
-  PhysCompStokes     stokes;
-  DM                 stokes_pack,dav,dap;
-  PetscInt           Nxp[2];
-  PetscReal          perturb;
-  DataBucket         material_point_db,material_point_face_db;
-  PetscInt           f, n_face_list=2, face_list[] = { 3, 4 }; // ymin, zmax //
-  //  PetscInt           f, n_face_list=1, face_list[] = { 3 }; /* base */
-  int                p,n_mp_points;
-  MPAccess           mpX;
-  PetscErrorCode     ierr;
-
+  PhysCompStokes  stokes;
+  DM              stokes_pack,dav,dap;
+  PetscInt        Nxp[2];
+  PetscReal       perturb;
+  DataBucket      material_point_db,material_point_face_db;
+  PetscInt        f, n_face_list=2, face_list[] = { 3, 4 }; // ymin, zmax //
+  //  PetscInt        f, n_face_list=1, face_list[] = { 3 }; /* base */
+  int             p,n_mp_points;
+  MPAccess        mpX;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -666,15 +642,12 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTa
     }
     ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
 
-
     /* insert into volume bucket */
     DataBucketInsertValues(material_point_db,material_point_face_db);
   }
 
   /* Copy ONLY PHASE from nearest markers to newly inserted markers expect (xi,xip,pid) */
   ierr = MaterialPointRegionAssignment_v2(material_point_db,dav);CHKERRQ(ierr);
-
-
 
   /* delete */
   DataBucketDestroy(&material_point_face_db);
@@ -685,7 +658,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTa
 PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 {
   ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -699,30 +672,28 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
   PetscReal gvec[] = { 0.0, -10.0, 0.0 };
   ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
 
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 {
-
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
-  ierr = ModelApplyInitialMaterialGeometry_Notchtest(c,ctx);
-  CHKERRQ(ierr);
+  ierr = ModelApplyInitialMaterialGeometry_Notchtest(c,ctx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 {
-  PetscReal        step;
-  PhysCompStokes   stokes;
-  DM               stokes_pack,dav,dap;
-  Vec              velocity,pressure;
-  PetscErrorCode   ierr;
+  PetscReal       step;
+  PhysCompStokes  stokes;
+  DM              stokes_pack,dav,dap;
+  Vec             velocity,pressure;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -747,11 +718,11 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T(pTatinCtx c,Vec X,void *ctx
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
 {
-  PetscReal        step;
-  PhysCompStokes   stokes;
-  DM               stokes_pack,dav,dap;
-  Vec              velocity,pressure;
-  PetscErrorCode   ierr;
+  PetscReal       step;
+  PhysCompStokes  stokes;
+  DM              stokes_pack,dav,dap;
+  Vec             velocity,pressure;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -773,10 +744,10 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,V
 
 PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-  ModelRift3D_TCtx  *data = (ModelRift3D_TCtx*)ctx;
-  PetscBool         active_energy;
-  DataBucket        materialpoint_db;
-  PetscErrorCode    ierr;
+  ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+  PetscBool        active_energy;
+  DataBucket       materialpoint_db;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -827,7 +798,7 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 PetscErrorCode ModelDestroy_Rift3D_T(pTatinCtx c,void *ctx)
 {
   ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -842,18 +813,17 @@ PetscErrorCode ModelDestroy_Rift3D_T(pTatinCtx c,void *ctx)
 
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D_T(pTatinCtx user,Vec X,void *ctx)
 {
-  DM                stokes_pack,dau,dap;
-  PhysCompStokes    stokes;
-  Vec               Uloc,Ploc;
-  PetscScalar       *LA_Uloc,*LA_Ploc;
-  ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-  DataField                    PField;
-  MaterialConst_MaterialType   *truc;
-  PetscErrorCode    ierr;
-  PetscInt regionidx;
+  DM                         stokes_pack,dau,dap;
+  PhysCompStokes             stokes;
+  Vec                        Uloc,Ploc;
+  PetscScalar                *LA_Uloc,*LA_Ploc;
+  ModelRift3D_TCtx           *data = (ModelRift3D_TCtx*)ctx;
+  DataField                  PField;
+  MaterialConst_MaterialType *truc;
+  PetscInt                   regionidx;
+  PetscErrorCode             ierr;
+
   PetscFunctionBegin;
-
-
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
   if (!data->runmises) {
@@ -898,16 +868,15 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D_T(pTatinCtx user,Ve
 
 PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 {
-  ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-  DM stokes_pack,dau,dap;
-  Vec velocity,pressure;
-  PetscReal vxl,vxr,vzb,vzf,vy;
+  ModelRift3D_TCtx                             *data = (ModelRift3D_TCtx*)ctx;
+  DM                                           stokes_pack,dau,dap;
+  Vec                                          velocity,pressure;
+  PetscReal                                    vxl,vxr,vzb,vzf,vy;
   DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
-  DMDAVecTraverse3d_InterpCtx IntpCtx;
-  PetscReal MeshMin[3],MeshMax[3],domain_height;
-  PetscBool active_energy, scissor;
-
-  PetscErrorCode ierr;
+  DMDAVecTraverse3d_InterpCtx                  IntpCtx;
+  PetscReal                                    MeshMin[3],MeshMax[3],domain_height;
+  PetscBool                                    active_energy, scissor;
+  PetscErrorCode                               ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -934,11 +903,8 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
     ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vzf-vzb)/(data->Lz-data->Oz),vzb,0.0);CHKERRQ(ierr);
     ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
 
-
-
   }else{
     PetscReal    coeffs[5];
-
 
     // set center of rotation x0
     coeffs[0]= 6.0;
@@ -951,13 +917,9 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
     // set x a;gular velocity based on vx at the right back corner
     coeffs[4]=data->vx/(data->Oz-4.0);
 
-
     ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_ROTXZ_X,(void*)coeffs);CHKERRQ(ierr);
 
-
     ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_ROTXZ_Z,(void*)coeffs);CHKERRQ(ierr);
-
-
   }
   vy= data->vy;
   ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,-vy/(data->Ly-data->Oy),0.0,0.0);CHKERRQ(ierr);
@@ -978,9 +940,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
   ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
   ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
-
   ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
-
 
   /* initial condition for temperature */
   ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
@@ -1000,15 +960,14 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
     ierr = DMDAVecTraverse3d(daT,temperature,0,iterator_initial_thermal_field,(void*)coeffs);CHKERRQ(ierr);
   }
 
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinModelRegister_Rift3D_T(void)
 {
   ModelRift3D_TCtx *data;
-  pTatinModel m;
-  PetscErrorCode ierr;
+  pTatinModel      m;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
 
@@ -1049,13 +1008,13 @@ PetscErrorCode pTatinModelRegister_Rift3D_T(void)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx)
 {
   ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-  int                    p,n_mp_points;
-  PetscScalar            y_lab,y_moho,y_midcrust,notch_l,notch_w2,xc,notchspace;
-  DataBucket             db;
-  DataField              PField_std,PField_pls;
-  int                    phase;
-  PetscBool              norandomiseplastic,double_notch;
-  PetscErrorCode         ierr;
+  int              p,n_mp_points;
+  PetscScalar      y_lab,y_moho,y_midcrust,notch_l,notch_w2,xc,notchspace;
+  DataBucket       db;
+  DataField        PField_std,PField_pls;
+  int              phase;
+  PetscBool        norandomiseplastic,double_notch;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -1088,8 +1047,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
   ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_T_norandom",&norandomiseplastic,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_T_DoubleNotch",&double_notch,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_T_notchspace",&notchspace,NULL);CHKERRQ(ierr);
-
-
 
   for (p=0; p<n_mp_points; p++) {
     MPntStd       *material_point;
@@ -1156,7 +1113,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
           pls = ptatin_RandomNumberGetDouble(0.0,0.3);
         }
       }
-
     }
 
     yield = 0;
@@ -1168,7 +1124,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 
   DataFieldRestoreAccess(PField_std);
   DataFieldRestoreAccess(PField_pls);
-
 
   PetscFunctionReturn(0);
 }

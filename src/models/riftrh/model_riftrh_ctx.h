@@ -27,7 +27,6 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-
 #ifndef __ptatin3d_model_riftrh_ctx_h__
 #define __ptatin3d_model_riftrh_ctx_h__
 
@@ -37,7 +36,7 @@ typedef struct {
   PetscReal vx_up,vx_down,rhoc,rhom,rhoa,etac,etam,etaa;
 
   PetscInt  nmaterials;
-    PetscBool runmises;
+  PetscBool runmises;
   PetscBool dimensional;
   PetscReal density_bar;
   PetscReal length_bar;
@@ -50,8 +49,7 @@ typedef struct {
   PetscBool use_semi_eulerian_mesh;
   PetscBool output_markers;
   PetscInt  param1,param2;
-        DMDA_thermalfield_init_params thermalparams;
-
+  DMDA_thermalfield_init_params thermalparams;
 } ModelRiftrhCtx;
 
 #endif
