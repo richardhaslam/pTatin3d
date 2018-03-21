@@ -66,7 +66,7 @@ PetscErrorCode pTatinCreateDirectory(const char dirname[])
   } else if (error_number == ENOSPC) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] The parent directory of the directory being created is on a read-only file system and cannot be modified");
   } else {
-    PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created output directory: %s \n",dirname);
+    PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created output directory: %s\n",dirname);
   }
 
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ PetscErrorCode pTatinWriteOptionsFile(const char filename[])
   ierr = PetscOptionsView(NULL,viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created options file: %s \n",filename);
+  PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created options file: %s\n",filename);
 
   PetscFunctionReturn(0);
 }
@@ -253,7 +253,7 @@ PetscErrorCode pTatinGetRangeMaximumMemoryUsage(PetscReal range[])
     range[0] = (PetscReal)min;
     range[1] = (PetscReal)max;
   } else {
-    PetscPrintf(PETSC_COMM_WORLD,"pTatin3dMaxMemoryUsage = [%1.4e , %1.4e] (MB) \n",min*1.0e-6,max*1.0e-6);
+    PetscPrintf(PETSC_COMM_WORLD,"pTatin3dMaxMemoryUsage = [%1.4e , %1.4e] (MB)\n",min*1.0e-6,max*1.0e-6);
   }
 
   PetscFunctionReturn(0);
@@ -274,7 +274,7 @@ PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[])
     range[0] = (PetscReal)min;
     range[1] = (PetscReal)max;
   } else {
-    PetscPrintf(PETSC_COMM_WORLD,"pTatin3dCurrentMemoryUsage = [%1.4e , %1.4e] (MB) \n",min*1.0e-6,max*1.0e-6);
+    PetscPrintf(PETSC_COMM_WORLD,"pTatin3dCurrentMemoryUsage = [%1.4e , %1.4e] (MB)\n",min*1.0e-6,max*1.0e-6);
   }
 
   PetscFunctionReturn(0);
