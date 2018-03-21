@@ -43,7 +43,6 @@
 #include <element_utils_q2.h>
 #include <output_paraview.h>
 
-
 PetscClassId PSWARM_CLASSID;
 
 const char PSWARM_COMPOSED_STATE_VELPRES[] = "PSWarmStateVector_VP";
@@ -58,159 +57,159 @@ PetscErrorCode _PSwarmFieldUpdate_AdvectLagrangian(PSwarm ps,DM dmv,Vec v);
 
 /*
 
- PSwarmCreate()
- PSwarmSetOptionsPrefix()
- PSwarmSetPtatinCtx()
- PSwarmAttachStateVecVelocityPressure()
- PSwarmAttachStateVecTemperature()
- ..
- PSwarmDestroy()
+   PSwarmCreate()
+   PSwarmSetOptionsPrefix()
+   PSwarmSetPtatinCtx()
+   PSwarmAttachStateVecVelocityPressure()
+   PSwarmAttachStateVecTemperature()
+   ..
+   PSwarmDestroy()
 
- PSwarmCreateFromPtatinCtx()
- PSwarmSetOptionsPrefix()
- PSwarmAttachStateVecVelocityPressure()
- PSwarmAttachStateVecTemperature()
+   PSwarmCreateFromPtatinCtx()
+   PSwarmSetOptionsPrefix()
+   PSwarmAttachStateVecVelocityPressure()
+   PSwarmAttachStateVecTemperature()
 
- PSwarmDestroy()
+   PSwarmDestroy()
 
 
 */
 
 PetscErrorCode PSwarmInitializePackage(void)
 {
-    PetscErrorCode   ierr;
-    static PetscBool pswarm_registered = PETSC_FALSE;
+  PetscErrorCode   ierr;
+  static PetscBool pswarm_registered = PETSC_FALSE;
 
-    PetscFunctionBegin;
-    if (!pswarm_registered) {
-        ierr = PetscClassIdRegister("Particle Swarm Mangement",&PSWARM_CLASSID);CHKERRQ(ierr);
-        pswarm_registered = PETSC_TRUE;
-    }
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  if (!pswarm_registered) {
+    ierr = PetscClassIdRegister("Particle Swarm Mangement",&PSWARM_CLASSID);CHKERRQ(ierr);
+    pswarm_registered = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmSetOptionsPrefix(PSwarm ps,const char prefix[])
 {
-    PetscObjectSetOptionsPrefix((PetscObject)ps,prefix);
-    PetscFunctionReturn(0);
+  PetscObjectSetOptionsPrefix((PetscObject)ps,prefix);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps)
 {
-    PetscErrorCode ierr;
-    PSwarm         p;
+  PetscErrorCode ierr;
+  PSwarm         p;
 
-    PetscFunctionBegin;
-    PetscValidPointer(ps,2);
-    *ps = NULL;
+  PetscFunctionBegin;
+  PetscValidPointer(ps,2);
+  *ps = NULL;
 
-    ierr = PSwarmInitializePackage();CHKERRQ(ierr);
+  ierr = PSwarmInitializePackage();CHKERRQ(ierr);
 
-    ierr = PetscHeaderCreate(p, PSWARM_CLASSID, "PSwarm", "Particle Swarm Manager", "PSwarm", comm, PSwarmDestroy, PSwarmView);CHKERRQ(ierr);
-    ierr = PetscMemzero(p->ops, sizeof(struct _PSwarmOps));CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p, PSWARM_CLASSID, "PSwarm", "Particle Swarm Manager", "PSwarm", comm, PSwarmDestroy, PSwarmView);CHKERRQ(ierr);
+  ierr = PetscMemzero(p->ops, sizeof(struct _PSwarmOps));CHKERRQ(ierr);
 
-    p->state = PSW_TS_UNINIT;
+  p->state = PSW_TS_UNINIT;
 
-    DataBucketCreate(&p->db);
-    DataBucketRegisterField(p->db,MPntStd_classname,sizeof(MPntStd),NULL);
-    DataBucketFinalize(p->db);
+  DataBucketCreate(&p->db);
+  DataBucketRegisterField(p->db,MPntStd_classname,sizeof(MPntStd),NULL);
+  DataBucketFinalize(p->db);
 
-    ierr = PSwarmSetTransportModeType(p,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
+  ierr = PSwarmSetTransportModeType(p,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
 
-    p->setup = PETSC_FALSE;
-    p->db_set_by_user = PETSC_FALSE;
-    p->de_set_by_user = PETSC_FALSE;
-    p->transport_mode = PSWARM_TM_LAGRANGIAN;
-    p->advection_type = PSWARM_ADV_RK1;
-    p->pvdopen = PETSC_FALSE;
+  p->setup = PETSC_FALSE;
+  p->db_set_by_user = PETSC_FALSE;
+  p->de_set_by_user = PETSC_FALSE;
+  p->transport_mode = PSWARM_TM_LAGRANGIAN;
+  p->advection_type = PSWARM_ADV_RK1;
+  p->pvdopen = PETSC_FALSE;
 
-    *ps = p;
-    PetscFunctionReturn(0);
+  *ps = p;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmCreateFromPtatinCtx(pTatinCtx pctx,PSwarm *ps)
 {
-    PetscErrorCode ierr;
-    MPI_Comm       comm;
+  PetscErrorCode ierr;
+  MPI_Comm       comm;
 
-    PetscFunctionBegin;
-    ierr = PetscObjectGetComm((PetscObject)pctx->pack,&comm);CHKERRQ(ierr);
-    ierr = PSwarmCreate(comm,ps);CHKERRQ(ierr);
-    ierr = PSwarmSetPtatinCtx(*ps,pctx);CHKERRQ(ierr);
-    ierr = PSwarmSetDataBucket(*ps,pctx->materialpoint_db);CHKERRQ(ierr);
-    ierr = PSwarmSetDataExchanger(*ps,pctx->materialpoint_ex);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)pctx->pack,&comm);CHKERRQ(ierr);
+  ierr = PSwarmCreate(comm,ps);CHKERRQ(ierr);
+  ierr = PSwarmSetPtatinCtx(*ps,pctx);CHKERRQ(ierr);
+  ierr = PSwarmSetDataBucket(*ps,pctx->materialpoint_db);CHKERRQ(ierr);
+  ierr = PSwarmSetDataExchanger(*ps,pctx->materialpoint_ex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmSetPtatinCtx(PSwarm ps,pTatinCtx pctx)
 {
-    ps->pctx = pctx;
-    PetscFunctionReturn(0);
+  ps->pctx = pctx;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmSetDataBucket(PSwarm ps,DataBucket db)
 {
-    if (ps->db && !ps->db_set_by_user) {
-        DataBucketDestroy(&ps->db);
-    }
-    ps->db = db;
-    ps->db_set_by_user = PETSC_TRUE;
-    PetscFunctionReturn(0);
+  if (ps->db && !ps->db_set_by_user) {
+    DataBucketDestroy(&ps->db);
+  }
+  ps->db = db;
+  ps->db_set_by_user = PETSC_TRUE;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmGetDataBucket(PSwarm ps,DataBucket *db)
 {
-    if (db) { *db = ps->db; }
-    PetscFunctionReturn(0);
+  if (db) { *db = ps->db; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmSetDataExchanger(PSwarm ps,DataEx de)
 {
-    PetscErrorCode ierr;
-    if (ps->de && !ps->de_set_by_user) {
-        ierr = DataExDestroy(ps->de);CHKERRQ(ierr);
-    }
-    ps->de = de;
-    ps->de_set_by_user = PETSC_TRUE;
-    PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+  if (ps->de && !ps->de_set_by_user) {
+    ierr = DataExDestroy(ps->de);CHKERRQ(ierr);
+  }
+  ps->de = de;
+  ps->de_set_by_user = PETSC_TRUE;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmDefineCommTopologyFromDMDA(PSwarm ps,DM dm)
 {
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
-    ierr = SwarmDMDA3dDataExchangerCreate(dm,&ps->de);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = SwarmDMDA3dDataExchangerCreate(dm,&ps->de);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmAttachStateVecVelocityPressure(PSwarm ps,Vec x)
 {
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
-    if (x) {
-        Vec Xtmp;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (x) {
+    Vec Xtmp;
 
-        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&Xtmp);CHKERRQ(ierr);
-        if (Xtmp) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) already attached to PSwarm");
+    ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&Xtmp);CHKERRQ(ierr);
+    if (Xtmp) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) already attached to PSwarm");
 
-        ierr = PetscObjectCompose((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject)x);CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
+    ierr = PetscObjectCompose((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject)x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmAttachStateVecTemperature(PSwarm ps,Vec x)
 {
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
-    if (x) {
-        Vec Xtmp;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (x) {
+    Vec Xtmp;
 
-        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&Xtmp);CHKERRQ(ierr);
-        if (Xtmp) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector T already attached to PSwarm");
+    ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&Xtmp);CHKERRQ(ierr);
+    if (Xtmp) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector T already attached to PSwarm");
 
-        ierr = PetscObjectCompose((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject)x);CHKERRQ(ierr);
-    }
-    PetscFunctionReturn(0);
+    ierr = PetscObjectCompose((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject)x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmViewInfo(PSwarm ps)
@@ -253,44 +252,44 @@ PetscErrorCode PSwarmViewInfo(PSwarm ps)
 
 PetscErrorCode PSwarmDestroy(PSwarm *ps)
 {
-    PetscErrorCode ierr;
-    PSwarm         p;
+  PetscErrorCode ierr;
+  PSwarm         p;
 
-    PetscFunctionBegin;
-    if (!ps) PetscFunctionReturn(0);
-    p = *ps;
-    if (!p) PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  if (!ps) PetscFunctionReturn(0);
+  p = *ps;
+  if (!p) PetscFunctionReturn(0);
 
-    if (!p->db_set_by_user) {
-        if (p->db) { DataBucketDestroy(&p->db); }
-    }
-    if (!p->de_set_by_user) {
-        if (p->de) { ierr = DataExDestroy(p->de);CHKERRQ(ierr); }
-    }
+  if (!p->db_set_by_user) {
+    if (p->db) { DataBucketDestroy(&p->db); }
+  }
+  if (!p->de_set_by_user) {
+    if (p->de) { ierr = DataExDestroy(p->de);CHKERRQ(ierr); }
+  }
 
-    PetscHeaderDestroy(ps);
+  PetscHeaderDestroy(ps);
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmSetTransportModeType(PSwarm ps,PSwarmTransportModeType type)
 {
-    PetscFunctionBegin;
-    ps->transport_mode = type;
-    switch (type) {
-        case PSWARM_TM_EULERIAN:
-            ps->ops->advect = NULL;//_PSwarmFieldUpdate_AdvectEulerian;
-            break;
-        case PSWARM_TM_LAGRANGIAN:
-            ps->ops->advect = _PSwarmFieldUpdate_AdvectLagrangian;
-            break;
+  PetscFunctionBegin;
+  ps->transport_mode = type;
+  switch (type) {
+    case PSWARM_TM_EULERIAN:
+      ps->ops->advect = NULL;//_PSwarmFieldUpdate_AdvectEulerian;
+      break;
+    case PSWARM_TM_LAGRANGIAN:
+      ps->ops->advect = _PSwarmFieldUpdate_AdvectLagrangian;
+      break;
 
-        default:
-            ps->ops->advect = NULL;
-            break;
-    }
+    default:
+      ps->ops->advect = NULL;
+      break;
+  }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /* Pressure update functionality */
@@ -373,232 +372,232 @@ PetscErrorCode PSwarmSetFieldType_Pressure(PSwarm ps)
 
 
 /*
- [1] Register data
- [2] Define any updates for history variables
-*/
+   [1] Register data
+   [2] Define any updates for history variables
+   */
 PetscErrorCode PSwarmSetFieldUpdateType(PSwarm ps,PSwarmFieldUpdateType type)
 {
-    PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-    switch (type) {
-        case PSWARM_FU_NULL:
-            break;
-        case PSWARM_FU_ADVECT:
-            SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"Set transport mode via PSwarmSetTransportModeType()");
-            break;
-        case PSWARM_FU_FINITESTRAIN:
-            ps->ops->field_update_finitestrain = NULL;
-            break;
-        case PSWARM_FU_PTT:
-            ps->ops->field_update_ptt = NULL;
-            break;
-        case PSWARM_FU_Pressure:
-            ierr = PSwarmSetFieldType_Pressure(ps);CHKERRQ(ierr);
-            break;
+  PetscFunctionBegin;
+  switch (type) {
+    case PSWARM_FU_NULL:
+      break;
+    case PSWARM_FU_ADVECT:
+      SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"Set transport mode via PSwarmSetTransportModeType()");
+      break;
+    case PSWARM_FU_FINITESTRAIN:
+      ps->ops->field_update_finitestrain = NULL;
+      break;
+    case PSWARM_FU_PTT:
+      ps->ops->field_update_ptt = NULL;
+      break;
+    case PSWARM_FU_Pressure:
+      ierr = PSwarmSetFieldType_Pressure(ps);CHKERRQ(ierr);
+      break;
 
-        default:
-            break;
-    }
+    default:
+      break;
+  }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode _PSwarmFieldUpdate_AdvectEulerian(PSwarm ps,DM dmv,Vec v)
 {
-    ps->state = PSW_TS_INSYNC;
-    PetscFunctionReturn(0);
+  ps->state = PSW_TS_INSYNC;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode _PSwarmFieldUpdate_AdvectLagrangian(PSwarm ps,DM dmv,Vec v)
 {
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
-    ierr = MaterialPointStd_UpdateGlobalCoordinates(ps->db,dmv,v,ps->pctx->dt);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = MaterialPointStd_UpdateGlobalCoordinates(ps->db,dmv,v,ps->pctx->dt);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmFieldUpdate_Advect(PSwarm ps)
 {
-    PetscErrorCode ierr;
-    PhysCompStokes stokes;
-    DM             dmv,dmstokes;
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  DM             dmv,dmstokes;
 
-    PetscFunctionBegin;
-    ierr = PSwarmSetUp(ps);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PSwarmSetUp(ps);CHKERRQ(ierr);
 
-    ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
 
-    if (ps->state == PSW_TS_STALE) {
-        /* update local coordinates and perform communication */
+  if (ps->state == PSW_TS_STALE) {
+    /* update local coordinates and perform communication */
     ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
-        ps->state = PSW_TS_INSYNC;
-    }
+    ps->state = PSW_TS_INSYNC;
+  }
 
-    if (ps->ops->advect) {
-        Vec X,velocity,pressure;
+  if (ps->ops->advect) {
+    Vec X,velocity,pressure;
 
-        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
-        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+    ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
+    if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
 
-        ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
 
-        ierr = ps->ops->advect(ps,dmv,velocity);CHKERRQ(ierr);
+    ierr = ps->ops->advect(ps,dmv,velocity);CHKERRQ(ierr);
 
-        ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
 
-        /* flag as being stale => local coordinates need updating */
-        ps->state = PSW_TS_STALE;
-    } else {
-        SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"FieldUpdate(Advect) was not activated");
-    }
+    /* flag as being stale => local coordinates need updating */
+    ps->state = PSW_TS_STALE;
+  } else {
+    SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"FieldUpdate(Advect) was not activated");
+  }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmFieldUpdate_FiniteStrain(PSwarm ps)
 {
-    PetscErrorCode ierr;
-    PhysCompStokes stokes;
-    DM             dmv,dmstokes;
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  DM             dmv,dmstokes;
 
-    PetscFunctionBegin;
-    ierr = PSwarmSetUp(ps);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PSwarmSetUp(ps);CHKERRQ(ierr);
 
-    ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
 
-    if (ps->state == PSW_TS_STALE) {
-        /* update local coordinates and perform communication */
+  if (ps->state == PSW_TS_STALE) {
+    /* update local coordinates and perform communication */
     ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
-        ps->state = PSW_TS_INSYNC;
-    }
+    ps->state = PSW_TS_INSYNC;
+  }
 
-    if (ps->ops->field_update_finitestrain) {
-        Vec X,velocity,pressure;
+  if (ps->ops->field_update_finitestrain) {
+    Vec X,velocity,pressure;
 
-        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
-        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+    ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
+    if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
 
     ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
 
-        ierr = ps->ops->field_update_finitestrain(ps,dmv,velocity);CHKERRQ(ierr);
+    ierr = ps->ops->field_update_finitestrain(ps,dmv,velocity);CHKERRQ(ierr);
 
     ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-    } else {
-        SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"FieldUpdate(FiniteStrain) was not activated");
-    }
+  } else {
+    SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"FieldUpdate(FiniteStrain) was not activated");
+  }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmFieldUpdate_PressTempTime(PSwarm ps)
 {
-    PetscErrorCode ierr;
-    PhysCompStokes stokes;
-    PhysCompEnergy energy;
-    DM             dmv,dmp,dmstokes,dmT;
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  PhysCompEnergy energy;
+  DM             dmv,dmp,dmstokes,dmT;
 
-    PetscFunctionBegin;
-    ierr = PSwarmSetUp(ps);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PSwarmSetUp(ps);CHKERRQ(ierr);
 
-    ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
 
-    if (ps->state == PSW_TS_STALE) {
-        /* update local coordinates and perform communication */
+  if (ps->state == PSW_TS_STALE) {
+    /* update local coordinates and perform communication */
     ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
-        ps->state = PSW_TS_INSYNC;
-    }
+    ps->state = PSW_TS_INSYNC;
+  }
 
-    if (ps->ops->field_update_ptt) {
-        Vec X,velocity,pressure,temperature;
+  if (ps->ops->field_update_ptt) {
+    Vec X,velocity,pressure,temperature;
 
     ierr = pTatinGetContext_Energy(ps->pctx,&energy);CHKERRQ(ierr);
     dmT = energy->daT;
-        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
-        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&temperature);CHKERRQ(ierr);
-        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
-        if (!temperature) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector T was not provided. User must call PSwarmAttachStateVecTemperature()");
+    ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&temperature);CHKERRQ(ierr);
+    if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+    if (!temperature) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector T was not provided. User must call PSwarmAttachStateVecTemperature()");
 
     ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
 
-        ierr = ps->ops->field_update_ptt(ps,dmp,dmT,pressure,temperature,ps->pctx->time);CHKERRQ(ierr);
+    ierr = ps->ops->field_update_ptt(ps,dmp,dmT,pressure,temperature,ps->pctx->time);CHKERRQ(ierr);
 
     ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-    } else {
-        SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"FieldUpdate(PressTempTime) was not activated");
-    }
+  } else {
+    SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"FieldUpdate(PressTempTime) was not activated");
+  }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmFieldUpdateAll(PSwarm ps)
 {
-    PetscErrorCode ierr;
-    PhysCompStokes stokes;
-    PhysCompEnergy energy;
-    DM             dmstokes,dmv,dmp,dmT;
-    Vec            X,velocity,pressure,temperature;
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  PhysCompEnergy energy;
+  DM             dmstokes,dmv,dmp,dmT;
+  Vec            X,velocity,pressure,temperature;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
 
-    ierr = PSwarmSetUp(ps);CHKERRQ(ierr);
+  ierr = PSwarmSetUp(ps);CHKERRQ(ierr);
 
-    ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
-    ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
 
-    ierr = pTatinGetContext_Energy(ps->pctx,&energy);CHKERRQ(ierr);
-    temperature = NULL;
-    dmT = NULL;
-    if (energy) {
-        dmT = energy->daT;
-        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&temperature);CHKERRQ(ierr);
-    }
+  ierr = pTatinGetContext_Energy(ps->pctx,&energy);CHKERRQ(ierr);
+  temperature = NULL;
+  dmT = NULL;
+  if (energy) {
+    dmT = energy->daT;
+    ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&temperature);CHKERRQ(ierr);
+  }
 
-    if (ps->state == PSW_TS_STALE) {
-        ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
-        ps->state = PSW_TS_INSYNC;
-    }
+  if (ps->state == PSW_TS_STALE) {
+    ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+    ps->state = PSW_TS_INSYNC;
+  }
 
-    if (ps->ops->field_update_finitestrain) {
-        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
-        ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-        ierr = ps->ops->field_update_finitestrain(ps,dmv,velocity);CHKERRQ(ierr);
-        ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-    }
+  if (ps->ops->field_update_finitestrain) {
+    if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+    ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = ps->ops->field_update_finitestrain(ps,dmv,velocity);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+  }
 
-    if (ps->ops->field_update_ptt) {
-        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
-        ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-        ierr = ps->ops->field_update_ptt(ps,dmp,dmT,pressure,temperature,ps->pctx->time);CHKERRQ(ierr);
-        ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-    }
+  if (ps->ops->field_update_ptt) {
+    if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+    ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = ps->ops->field_update_ptt(ps,dmp,dmT,pressure,temperature,ps->pctx->time);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+  }
 
-    if (ps->ops->field_update_pressure) {
-      if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
-      ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-      ierr = ps->ops->field_update_pressure(ps,dmv,dmp,pressure);CHKERRQ(ierr);
-      ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-    }
+  if (ps->ops->field_update_pressure) {
+    if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+    ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = ps->ops->field_update_pressure(ps,dmv,dmp,pressure);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+  }
 
-    /* position must always be the last state variable to be updated */
-    if (ps->ops->advect) {
-        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
-        ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-        ierr = ps->ops->advect(ps,dmv,velocity);CHKERRQ(ierr);
-        /* flag as being stale => local coordinates need updating */
-        ps->state = PSW_TS_STALE;
-        ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-    }
+  /* position must always be the last state variable to be updated */
+  if (ps->ops->advect) {
+    if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+    ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = ps->ops->advect(ps,dmv,velocity);CHKERRQ(ierr);
+    /* flag as being stale => local coordinates need updating */
+    ps->state = PSW_TS_STALE;
+    ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+  }
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout(DataBucket db,DM da,PetscReal xmin[],PetscReal xmax[],PetscInt Nxp[],PetscReal perturb)
@@ -714,27 +713,26 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout(DataBucket d
   DataBucketSetSizes(db,np_local,-1);
   ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
 
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmSetUpCoords_FillDM(PSwarm ps)
 {
-    PetscErrorCode ierr;
-    PhysCompStokes stokes;
-    DM             dmv;
-    PetscInt       Nxp[] = {1,1,1}; /* change with -lattice_layout_N{x,y,z} */
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  DM             dmv;
+  PetscInt       Nxp[] = {1,1,1}; /* change with -lattice_layout_N{x,y,z} */
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
 
-    ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
 
-    ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dmv,Nxp,0.0,ps->db);CHKERRQ(ierr);
+  ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dmv,Nxp,0.0,ps->db);CHKERRQ(ierr);
 
-    ps->state = PSW_TS_INSYNC;
+  ps->state = PSW_TS_INSYNC;
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
@@ -776,14 +774,14 @@ PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
 }
 
 /*
- There is a possibility that this routine may create duplicate points, e.g.
- two ranks may define a particle with identical coordinates.
- In general, for usage with passive swarms, this is likely to not be a problem.
- When using this method to define a deformation mesh, duplicate points may be
- problematic. As a work around, I explicitly assign ALL points a pid value given
- by i + j*nx + k*nx*ny. In this way, associating a particle coordinate with a
- point in a structured mesh using pid will be safe.
-*/
+   There is a possibility that this routine may create duplicate points, e.g.
+   two ranks may define a particle with identical coordinates.
+   In general, for usage with passive swarms, this is likely to not be a problem.
+   When using this method to define a deformation mesh, duplicate points may be
+   problematic. As a work around, I explicitly assign ALL points a pid value given
+   by i + j*nx + k*nx*ny. In this way, associating a particle coordinate with a
+   point in a structured mesh using pid will be safe.
+   */
 PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
 {
   PetscErrorCode ierr;
@@ -1037,117 +1035,117 @@ PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
 
 PetscErrorCode PSwarmSetUp(PSwarm ps)
 {
-    PetscErrorCode ierr;
-    PhysCompStokes stokes;
-    DM             dmv;
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  DM             dmv;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
 
-    if (ps->setup) PetscFunctionReturn(0);
+  if (ps->setup) PetscFunctionReturn(0);
 
-    if (!ps->pctx) {
-        SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_USER,"Must provide a valid pTatinCtx");
-    }
+  if (!ps->pctx) {
+    SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_USER,"Must provide a valid pTatinCtx");
+  }
 
-    if (!ps->de) {
-        ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
-        ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
-        ierr = PSwarmDefineCommTopologyFromDMDA(ps,dmv);CHKERRQ(ierr);
-    }
+  if (!ps->de) {
+    ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+    ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+    ierr = PSwarmDefineCommTopologyFromDMDA(ps,dmv);CHKERRQ(ierr);
+  }
 
-    ierr = PSwarmSetUpCoords(ps);CHKERRQ(ierr);
+  ierr = PSwarmSetUpCoords(ps);CHKERRQ(ierr);
 
-    {
-        const char *prefix;
-        PetscInt   ridx;
-        PetscBool  isactive;
+  {
+    const char *prefix;
+    PetscInt   ridx;
+    PetscBool  isactive;
 
 
-        ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
-        ridx = 0;
-        isactive = PETSC_FALSE;
-        ierr = PetscOptionsGetInt(NULL,prefix,"-pswarm_region_index",&ridx,&isactive);CHKERRQ(ierr);
-        if (isactive) { ierr = PSwarmSetRegionIndex(ps,ridx);CHKERRQ(ierr); }
-    }
+    ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+    ridx = 0;
+    isactive = PETSC_FALSE;
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pswarm_region_index",&ridx,&isactive);CHKERRQ(ierr);
+    if (isactive) { ierr = PSwarmSetRegionIndex(ps,ridx);CHKERRQ(ierr); }
+  }
 
-    ps->setup = PETSC_TRUE;
+  ps->setup = PETSC_TRUE;
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /* set from options */
 PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
 {
-    PetscErrorCode ierr;
-    PetscBool      isactive;
+  PetscErrorCode ierr;
+  PetscBool      isactive;
 
-    PetscFunctionBegin;
-    ierr = PetscObjectOptionsBegin((PetscObject)ps);CHKERRQ(ierr);
-    ierr = PetscOptionsHead(PetscOptionsObject,"PSwarm options");CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PetscObjectOptionsBegin((PetscObject)ps);CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"PSwarm options");CHKERRQ(ierr);
 
-    isactive = PETSC_FALSE;
-    ierr = PetscOptionsBool("-pswarm_transport_mode_eulerian","Transport mode set to Eulerian","PSwarmSetTransportModeType",isactive,&isactive,0);CHKERRQ(ierr);
-    if (isactive) { ierr = PSwarmSetTransportModeType(ps,PSWARM_TM_EULERIAN);CHKERRQ(ierr); }
+  isactive = PETSC_FALSE;
+  ierr = PetscOptionsBool("-pswarm_transport_mode_eulerian","Transport mode set to Eulerian","PSwarmSetTransportModeType",isactive,&isactive,0);CHKERRQ(ierr);
+  if (isactive) { ierr = PSwarmSetTransportModeType(ps,PSWARM_TM_EULERIAN);CHKERRQ(ierr); }
 
-    isactive = PETSC_FALSE;
-    ierr = PetscOptionsBool("-pswarm_hvar_finite_strain","Activate the tracking of finite strain","PSwarmSetFieldUpdateType",isactive,&isactive,0);CHKERRQ(ierr);
-    if (isactive) { ierr = PSwarmSetFieldUpdateType(ps,PSWARM_FU_FINITESTRAIN);CHKERRQ(ierr); }
+  isactive = PETSC_FALSE;
+  ierr = PetscOptionsBool("-pswarm_hvar_finite_strain","Activate the tracking of finite strain","PSwarmSetFieldUpdateType",isactive,&isactive,0);CHKERRQ(ierr);
+  if (isactive) { ierr = PSwarmSetFieldUpdateType(ps,PSWARM_FU_FINITESTRAIN);CHKERRQ(ierr); }
 
-    isactive = PETSC_FALSE;
-    ierr = PetscOptionsBool("-pswarm_pressure","Activate the tracking of pressure","PSwarmSetFieldUpdateType",isactive,&isactive,0);CHKERRQ(ierr);
-    if (isactive) { ierr = PSwarmSetFieldUpdateType(ps,PSWARM_FU_Pressure);CHKERRQ(ierr); }
+  isactive = PETSC_FALSE;
+  ierr = PetscOptionsBool("-pswarm_pressure","Activate the tracking of pressure","PSwarmSetFieldUpdateType",isactive,&isactive,0);CHKERRQ(ierr);
+  if (isactive) { ierr = PSwarmSetFieldUpdateType(ps,PSWARM_FU_Pressure);CHKERRQ(ierr); }
 
-    isactive = PETSC_FALSE;
-    ierr = PetscOptionsBool("-pswarm_view","View PSwarm info","PSwarmView",isactive,&isactive,0);CHKERRQ(ierr);
-    if (isactive) { ierr = PSwarmViewInfo(ps);CHKERRQ(ierr); }
+  isactive = PETSC_FALSE;
+  ierr = PetscOptionsBool("-pswarm_view","View PSwarm info","PSwarmView",isactive,&isactive,0);CHKERRQ(ierr);
+  if (isactive) { ierr = PSwarmViewInfo(ps);CHKERRQ(ierr); }
 
-    ierr = PetscOptionsTail();CHKERRQ(ierr);
-    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmCreateMultipleInstances(MPI_Comm comm,PSwarm **pslist)
 {
-    PetscErrorCode ierr;
-    PSwarm         *plist;
-    PetscInt       k,nswarms;
-    PetscInt       max = 20;
-    PetscBool      found;
-    char           *namelist[20];
+  PetscErrorCode ierr;
+  PSwarm         *plist;
+  PetscInt       k,nswarms;
+  PetscInt       max = 20;
+  PetscBool      found;
+  char           *namelist[20];
 
-    PetscFunctionBegin;
-    ierr = PetscOptionsGetStringArray(NULL,NULL,"-pswarm_list",namelist,&max,&found);CHKERRQ(ierr);
-    nswarms = max;
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetStringArray(NULL,NULL,"-pswarm_list",namelist,&max,&found);CHKERRQ(ierr);
+  nswarms = max;
 
-    PetscMalloc(sizeof(PSwarm)*(nswarms+1),&plist);
-    PetscMemzero(plist,sizeof(PSwarm)*(nswarms+1));
-    if (!found) {
-      *pslist = plist;
-      PetscFunctionReturn(0);
-    }
-
-    for (k=0; k<nswarms; k++) {
-        char prefix[PETSC_MAX_PATH_LEN];
-
-        ierr = PSwarmCreate(comm,&plist[k]);CHKERRQ(ierr);
-
-        PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN,"%s_",namelist[k]);
-        ierr = PSwarmSetOptionsPrefix(plist[k],prefix);CHKERRQ(ierr);
-
-        //ierr = PSwarmSetPtatinCtx(plist[k],ctx);CHKERRQ(ierr);
-        //if (X) ierr = PSwarmAttachStateVecVelocityPressure(plist[k],X);CHKERRQ(ierr);
-        //if (T) ierr = PSwarmAttachStateVecTemperature(plist[k],T);CHKERRQ(ierr);
-        //ierr = PSwarmSetFromOptions(plist[k]);CHKERRQ(ierr);
-    }
-
+  PetscMalloc(sizeof(PSwarm)*(nswarms+1),&plist);
+  PetscMemzero(plist,sizeof(PSwarm)*(nswarms+1));
+  if (!found) {
     *pslist = plist;
-
-    for (k=0; k<nswarms; k++) {
-        PetscFree(namelist[k]);
-    }
-
     PetscFunctionReturn(0);
+  }
+
+  for (k=0; k<nswarms; k++) {
+    char prefix[PETSC_MAX_PATH_LEN];
+
+    ierr = PSwarmCreate(comm,&plist[k]);CHKERRQ(ierr);
+
+    PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN,"%s_",namelist[k]);
+    ierr = PSwarmSetOptionsPrefix(plist[k],prefix);CHKERRQ(ierr);
+
+    //ierr = PSwarmSetPtatinCtx(plist[k],ctx);CHKERRQ(ierr);
+    //if (X) ierr = PSwarmAttachStateVecVelocityPressure(plist[k],X);CHKERRQ(ierr);
+    //if (T) ierr = PSwarmAttachStateVecTemperature(plist[k],T);CHKERRQ(ierr);
+    //ierr = PSwarmSetFromOptions(plist[k]);CHKERRQ(ierr);
+  }
+
+  *pslist = plist;
+
+  for (k=0; k<nswarms; k++) {
+    PetscFree(namelist[k]);
+  }
+
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmCoordinatesSetSynchronization(PSwarm ps,PetscBool val)
@@ -1643,19 +1641,19 @@ PetscErrorCode PSwarmViewParaview_PVD(PSwarm ps,const char path[],const char ste
 }
 
 /*
- STEPPREFIX = "step00000"
+   STEPPREFIX = "step00000"
 
- filename for .pvd
- OUTPUTPATH/timeseries_PETSCPREFIX_pswarm.pvtu
+   filename for .pvd
+   OUTPUTPATH/timeseries_PETSCPREFIX_pswarm.pvtu
 
- filenames for pvd file references
- STEPPREFIX_PETSCPREFIX_pswarm.pvtu
+   filenames for pvd file references
+   STEPPREFIX_PETSCPREFIX_pswarm.pvtu
 
- filename for .pvtu
- OUTPUTPATH/STEPPREFIX_PETSCPREFIX_pswarm.pvtu
+   filename for .pvtu
+   OUTPUTPATH/STEPPREFIX_PETSCPREFIX_pswarm.pvtu
 
- filenames for .pvtu file references
- STEPPREFIX_PETSCPREFIX_pswarm-subdomainRANK.vtu
+   filenames for .pvtu file references
+   STEPPREFIX_PETSCPREFIX_pswarm-subdomainRANK.vtu
 
 
 */
@@ -1673,15 +1671,15 @@ PetscErrorCode PSwarmView_PerRank(PSwarm ps)
   ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
 
   /*
-   We could update the state here to ensure that particles which have left the
-   sub-domain are not plotted. I'm not sure if this is really crucial or not.
-   */
+     We could update the state here to ensure that particles which have left the
+     sub-domain are not plotted. I'm not sure if this is really crucial or not.
+     */
   /*
-   if (ps->state == PSW_TS_STALE) {
-   ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
-   ps->state = PSW_TS_INSYNC;
-   }
-   */
+     if (ps->state == PSW_TS_STALE) {
+     ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+     ps->state = PSW_TS_INSYNC;
+     }
+     */
 
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&petscprefix);CHKERRQ(ierr);
   PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ps->pctx->step);
@@ -1929,11 +1927,11 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
   if (rank == 0) {
     fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
 
-  #ifdef WORDSIZE_BIGENDIAN
+#ifdef WORDSIZE_BIGENDIAN
     fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
-  #else
+#else
     fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
-  #endif
+#endif
 
     fprintf( vtk_fp, "\t<UnstructuredGrid>\n" );
   }
@@ -2135,6 +2133,3 @@ PetscErrorCode PSwarmView(PSwarm ps,PSwarmViewType type)
 
   PetscFunctionReturn(0);
 }
-
-
-
