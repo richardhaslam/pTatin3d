@@ -48,6 +48,7 @@ PetscErrorCode pTatinCreateDirectory(const char dirname[])
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* Generate a new directory on proc 0 */
+  error_number = 0;
   if (rank == 0) {
     num = mkdir(dirname,S_IRWXU);
     error_number = errno;
