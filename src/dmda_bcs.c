@@ -164,7 +164,7 @@ PetscErrorCode BCListUpdateCache(BCList list)
 
 PetscErrorCode BCListInitGlobal(BCList list)
 {
-    ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog;
   PetscInt i,max,lsize;
   const PetscInt *indices;
   Vec dindices,dindices_g;
@@ -172,7 +172,7 @@ PetscErrorCode BCListInitGlobal(BCList list)
   PetscErrorCode ierr;
 
   ierr = DMGetLocalToGlobalMapping(list->dm, &ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(ltog, &max);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog, &max);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetIndices(ltog, &indices);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(list->dm,&dindices_g);CHKERRQ(ierr);
   ierr = DMGetLocalVector(list->dm,&dindices);CHKERRQ(ierr);
@@ -513,7 +513,7 @@ PetscErrorCode BCListResidualDirichlet(BCList list,const Vec X,Vec F)
   PetscInt m,k,L;
   const PetscInt *idx;
   PetscScalar *LA_S,*LA_F,*LA_phi;
-    const PetscScalar *LA_X;
+  const PetscScalar *LA_X;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -551,10 +551,10 @@ PetscErrorCode BCListResidualDirichlet(BCList list,const Vec X,Vec F)
  */
 PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,const Vec X,Vec F)
 {
-    PetscInt m,k,L;
+  PetscInt m,k,L;
   const PetscInt *idx;
   PetscScalar *LA_S,*LA_F;
-    const PetscScalar *LA_X;
+  const PetscScalar *LA_X;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
