@@ -133,22 +133,22 @@ PetscErrorCode GeometryObjectView(GeometryObject G)
 {
   PetscInt k;
 
-    PetscPrintf(PETSC_COMM_WORLD,"GeometryObject(%s)\n",G->name);
-    PetscPrintf(PETSC_COMM_WORLD,"  type: %s\n",GeomTypeNames[(int)G->type]);
-    PetscPrintf(PETSC_COMM_WORLD,"  ref: %d\n",G->ref_cnt);
-    PetscPrintf(PETSC_COMM_WORLD,"  centroid: ( %+1.4e , %+1.4e , %+1.4e )\n",G->centroid[0],G->centroid[1],G->centroid[2]);
-    PetscPrintf(PETSC_COMM_WORLD,"  num rotations: %d\n",G->n_rotations);
-    if (G->n_rotations > 0) {
-        PetscPrintf(PETSC_COMM_WORLD,"  rotation angle: (\n    ");
-        for (k=0; k<G->n_rotations; k++) {
-            PetscPrintf(PETSC_COMM_WORLD,"%+1.2e , ",G->rotation_angle[k]);
-        } PetscPrintf(PETSC_COMM_WORLD,"\n  )\n");
+  PetscPrintf(PETSC_COMM_WORLD,"GeometryObject(%s)\n",G->name);
+  PetscPrintf(PETSC_COMM_WORLD,"  type: %s\n",GeomTypeNames[(int)G->type]);
+  PetscPrintf(PETSC_COMM_WORLD,"  ref: %d\n",G->ref_cnt);
+  PetscPrintf(PETSC_COMM_WORLD,"  centroid: ( %+1.4e , %+1.4e , %+1.4e )\n",G->centroid[0],G->centroid[1],G->centroid[2]);
+  PetscPrintf(PETSC_COMM_WORLD,"  num rotations: %d\n",G->n_rotations);
+  if (G->n_rotations > 0) {
+    PetscPrintf(PETSC_COMM_WORLD,"  rotation angle: (\n    ");
+    for (k=0; k<G->n_rotations; k++) {
+      PetscPrintf(PETSC_COMM_WORLD,"%+1.2e , ",G->rotation_angle[k]);
+    } PetscPrintf(PETSC_COMM_WORLD,"\n  )\n");
 
-        PetscPrintf(PETSC_COMM_WORLD,"  rotation axis: (\n    ");
-        for (k=0; k<G->n_rotations; k++) {
-            PetscPrintf(PETSC_COMM_WORLD,"%s , ",GeomRotateAxisNames[(int)G->rotation_axis[k]]);
-        } PetscPrintf(PETSC_COMM_WORLD,"\n  )\n");
-    }
+    PetscPrintf(PETSC_COMM_WORLD,"  rotation axis: (\n    ");
+    for (k=0; k<G->n_rotations; k++) {
+      PetscPrintf(PETSC_COMM_WORLD,"%s , ",GeomRotateAxisNames[(int)G->rotation_axis[k]]);
+    } PetscPrintf(PETSC_COMM_WORLD,"\n  )\n");
+  }
 
   PetscFunctionReturn(0);
 }
@@ -721,7 +721,7 @@ PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double x0[],doub
 
   ierr = PetscMalloc(sizeof(struct _p_GeomTypeCylinder),&ctx);CHKERRQ(ierr);
   ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeCylinder));CHKERRQ(ierr);
-    go->centroid[0] = x0[0];
+  go->centroid[0] = x0[0];
   go->centroid[1] = x0[1];
   go->centroid[2] = x0[2];
 
@@ -837,7 +837,7 @@ PetscErrorCode GeometryObjectSetType_EllipticCylinder(GeometryObject go,double x
   ierr = PetscMalloc(sizeof(struct _p_GeomTypeEllipticCylinder),&ctx);CHKERRQ(ierr);
   ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeEllipticCylinder));CHKERRQ(ierr);
 
-    go->centroid[0] = x0[0];
+  go->centroid[0] = x0[0];
   go->centroid[1] = x0[1];
   go->centroid[2] = x0[2];
 
@@ -941,7 +941,7 @@ PetscErrorCode GeometryObjectSetType_InfLayer(GeometryObject go,double x0[],doub
 
   ierr = PetscMalloc(sizeof(struct _p_GeomTypeInfLayer),&ctx);CHKERRQ(ierr);
   ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeInfLayer));CHKERRQ(ierr);
-    go->centroid[0] = x0[0];
+  go->centroid[0] = x0[0];
   go->centroid[1] = x0[1];
   go->centroid[2] = x0[2];
 
@@ -1151,15 +1151,15 @@ PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomSetOpera
   GeomTypeSetOperation ctx;
   PetscErrorCode ierr;
 
-    if (x0) {
-        go->centroid[0] = x0[0];
-        go->centroid[1] = x0[1];
-        go->centroid[2] = x0[2];
-    } else {
-        go->centroid[0] = 0.0;
-        go->centroid[1] = 0.0;
-        go->centroid[2] = 0.0;
-    }
+  if (x0) {
+    go->centroid[0] = x0[0];
+    go->centroid[1] = x0[1];
+    go->centroid[2] = x0[2];
+  } else {
+    go->centroid[0] = 0.0;
+    go->centroid[1] = 0.0;
+    go->centroid[2] = 0.0;
+  }
 
   ierr = PetscMalloc(sizeof(struct _p_GeomTypeSetOperation),&ctx);CHKERRQ(ierr);
   ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeSetOperation));CHKERRQ(ierr);
