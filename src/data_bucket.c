@@ -478,21 +478,21 @@ void DataFieldVerifyAccess( const DataField gfield, const size_t size)
 
 void DataFieldGetAtomicSize(const DataField gfield,size_t *size)
 {
-    if (size) { *size = gfield->atomic_size; }
+  if (size) { *size = gfield->atomic_size; }
 }
 
 void DataFieldGetEntries(const DataField gfield,void **data)
 {
-    if (data) {
-        *data = gfield->data;
-    }
+  if (data) {
+    *data = gfield->data;
+  }
 }
 
 void DataFieldRestoreEntries(const DataField gfield,void **data)
 {
-    if (data) {
-        *data = NULL;
-    }
+  if (data) {
+    *data = NULL;
+  }
 }
 
 /* y = x */
@@ -1290,65 +1290,65 @@ void DataBucketInsertValues(DataBucket db1,DataBucket db2)
 /* helpers for parallel send/recv */
 void DataBucketCreatePackedArray(DataBucket db,size_t *bytes,void **buf)
 {
-    int       f;
-    size_t    sizeof_marker_contents;
-    void      *buffer;
+  int       f;
+  size_t    sizeof_marker_contents;
+  void      *buffer;
 
-    sizeof_marker_contents = 0;
-    for (f=0; f<db->nfields; f++) {
-        DataField df = db->field[f];
+  sizeof_marker_contents = 0;
+  for (f=0; f<db->nfields; f++) {
+    DataField df = db->field[f];
 
-        sizeof_marker_contents += df->atomic_size;
-    }
+    sizeof_marker_contents += df->atomic_size;
+  }
 
-    buffer = malloc(sizeof_marker_contents);
-    memset(buffer,0,sizeof_marker_contents);
+  buffer = malloc(sizeof_marker_contents);
+  memset(buffer,0,sizeof_marker_contents);
 
-    if (bytes) { *bytes = sizeof_marker_contents; }
-    if (buf)   { *buf   = buffer; }
+  if (bytes) { *bytes = sizeof_marker_contents; }
+  if (buf)   { *buf   = buffer; }
 }
 
 void DataBucketDestroyPackedArray(DataBucket db,void **buf)
 {
-    if (buf) {
-        free(*buf);
-        *buf = NULL;
-    }
+  if (buf) {
+    free(*buf);
+    *buf = NULL;
+  }
 }
 
 void DataBucketFillPackedArray(DataBucket db,const int index,void *buf)
 {
-    int    f;
-    void   *data,*data_p;
-    size_t asize,offset;
+  int    f;
+  void   *data,*data_p;
+  size_t asize,offset;
 
-    offset = 0;
-    for (f=0; f<db->nfields; f++) {
-        DataField df = db->field[f];
+  offset = 0;
+  for (f=0; f<db->nfields; f++) {
+    DataField df = db->field[f];
 
-        asize = df->atomic_size;
+    asize = df->atomic_size;
 
-        data = (void*)( df->data );
-        data_p = (void*)( (char*)data + index*asize );
+    data = (void*)( df->data );
+    data_p = (void*)( (char*)data + index*asize );
 
-        memcpy( (void*)((char*)buf + offset),  data_p,  asize);
-        offset = offset + asize;
-    }
+    memcpy( (void*)((char*)buf + offset),  data_p,  asize);
+    offset = offset + asize;
+  }
 }
 
 void DataBucketInsertPackedArray(DataBucket db,const int idx,void *data)
 {
-    int f;
-    void *data_p;
-    size_t offset;
+  int f;
+  void *data_p;
+  size_t offset;
 
-    offset = 0;
-    for (f=0; f<db->nfields; f++) {
-        DataField df = db->field[f];
+  offset = 0;
+  for (f=0; f<db->nfields; f++) {
+    DataField df = db->field[f];
 
-        data_p = (void*)( (char*)data + offset );
+    data_p = (void*)( (char*)data + offset );
 
-        DataFieldInsertPoint(df, idx, (void*)data_p );
-        offset = offset + df->atomic_size;
-    }
+    DataFieldInsertPoint(df, idx, (void*)data_p );
+    offset = offset + df->atomic_size;
+  }
 }
