@@ -2,13 +2,13 @@
 /*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  **
  **   This file is part of pTatin3d.
- ** 
- **   pTatin3d is a C library designed to solve variable viscosity Stokes 
- **   flow problems in three dimensions. The flow problem is discretised  
+ **
+ **   pTatin3d is a C library designed to solve variable viscosity Stokes
+ **   flow problems in three dimensions. The flow problem is discretised
  **   using a mixed finite element (FE) formulation (Q2-P1) whilst Lagrangian
- **   state and history variables are discretised with the material-point 
- **   method (MPM). Unique to this FE-MPM package is that we provide fast, 
- **   parallel scalable matrix-free defintions for the Stokes operators which 
+ **   state and history variables are discretised with the material-point
+ **   method (MPM). Unique to this FE-MPM package is that we provide fast,
+ **   parallel scalable matrix-free defintions for the Stokes operators which
  **   are utilized by a hybrid geometric-algebraic multi-grid preconditioner.
  **
  **
@@ -33,17 +33,17 @@
  **    You should have received a copy of the GNU General Public License
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
- ** 
- **    Contributors:
- **    Jed Brown            [jedbrown@mcs.anl.gov]
- **    Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
- **    Dave A. May          [dave.may@erdw.ethz.ch]
- **    Patrick Sanan        [sananp@usi.ch]
  **
- ** 
+ **    Contributors:
+ **    Jed Brown            [jed.brown@colorado.edu]
+ **    Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
+ **    Dave A. May          [david.may@earth.ox.ac.uk]
+ **    Patrick Sanan        [patrick.sanan@erdw.ethz.ch]
+ **
+ **
  **    Contact:
  **    Dave A. May [dave.may@erdw.ethz.ch]
- ** 
+ **
  **    Institute of Geophysics
  **    ETH Zürich
  **    Sonneggstrasse 5
