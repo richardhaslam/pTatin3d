@@ -27,148 +27,147 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-
 #include "mpi.h"
 #include "petsc.h"
 #include "sub_comm.h"
 
 PetscErrorCode _PetscMPISubCommCreate(PetscMPISubComm *scomm)
 {
-    PetscMPISubComm comm;
+  PetscMPISubComm comm;
 
-    PetscMalloc(sizeof(struct _p_PetscMPISubComm),&comm);
-    PetscMemzero(comm,sizeof(struct _p_PetscMPISubComm));
+  PetscMalloc(sizeof(struct _p_PetscMPISubComm),&comm);
+  PetscMemzero(comm,sizeof(struct _p_PetscMPISubComm));
 
-    *scomm = comm;
+  *scomm = comm;
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMPISubCommDestroy(PetscMPISubComm *scomm)
 {
-    PetscMPISubComm comm;
-    PetscErrorCode  ierr;
+  PetscMPISubComm comm;
+  PetscErrorCode  ierr;
 
-    if (scomm) { comm = *scomm; }
-    else {  PetscFunctionReturn(0); }
+  if (scomm) { comm = *scomm; }
+  else { PetscFunctionReturn(0); }
 
-    if (comm->sub_comm)          { ierr = MPI_Comm_free(&comm->sub_comm);CHKERRQ(ierr); }
-    if (comm->ranks_from_parent) { PetscFree(comm->ranks_from_parent); }
-    PetscFree(comm);
+  if (comm->sub_comm)          { ierr = MPI_Comm_free(&comm->sub_comm);CHKERRQ(ierr); }
+  if (comm->ranks_from_parent) { PetscFree(comm->ranks_from_parent); }
+  PetscFree(comm);
 
-    *scomm = NULL;
-    PetscFunctionReturn(0);
+  *scomm = NULL;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMPISubCommGetActive(PetscMPISubComm sc,PetscBool *a)
 {
-    *a = sc->parent_rank_active_in_subcomm;
-    PetscFunctionReturn(0);
+  *a = sc->parent_rank_active_in_subcomm;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMPISubCommGetParentComm(PetscMPISubComm sc,MPI_Comm *a)
 {
-    *a = sc->parent_comm;
-    PetscFunctionReturn(0);
+  *a = sc->parent_comm;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMPISubCommGetComm(PetscMPISubComm sc,MPI_Comm *a)
 {
-    *a = sc->sub_comm;
-    PetscFunctionReturn(0);
+  *a = sc->sub_comm;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMPISubCommGetNumSubRanks(PetscMPISubComm sc,PetscMPIInt *a)
 {
-    *a = sc->nranks_from_parent;
-    PetscFunctionReturn(0);
+  *a = sc->nranks_from_parent;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMPISubCommGetActiveRanks(PetscMPISubComm sc,PetscMPIInt **a)
 {
-    *a = sc->ranks_from_parent;
-    PetscFunctionReturn(0);
+  *a = sc->ranks_from_parent;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMPISubCommCreate_Stride(MPI_Comm parent_comm,PetscInt parent_reduction_factor,PetscMPISubComm *scomm)
 {
-    PetscMPISubComm comm;
-    MPI_Comm        sub_comm;
-    MPI_Group       parent_group,sub_group;
-    PetscMPIInt     nproc,rank,*subranks,nsubranks,c,i;
-    PetscBool       active;
-    PetscErrorCode  ierr;
+  PetscMPISubComm comm;
+  MPI_Comm        sub_comm;
+  MPI_Group       parent_group,sub_group;
+  PetscMPIInt     nproc,rank,*subranks,nsubranks,c,i;
+  PetscBool       active;
+  PetscErrorCode  ierr;
 
-    if (parent_reduction_factor < 1) {
-        parent_reduction_factor = 1;
-        PetscPrintf(parent_comm,"Warning:PetscMPISubCommCreate: parent_reduction_factor >=1\n");
-    }
+  if (parent_reduction_factor < 1) {
+    parent_reduction_factor = 1;
+    PetscPrintf(parent_comm,"Warning:PetscMPISubCommCreate: parent_reduction_factor >=1\n");
+  }
 
-    ierr = MPI_Comm_size(parent_comm,&nproc);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(parent_comm,&rank);CHKERRQ(ierr);
-    nsubranks = 0;
-    for (i=0; i<nproc; i++) {
-        if (i%parent_reduction_factor == 0) {
-            nsubranks++;
-        }
+  ierr = MPI_Comm_size(parent_comm,&nproc);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(parent_comm,&rank);CHKERRQ(ierr);
+  nsubranks = 0;
+  for (i=0; i<nproc; i++) {
+    if (i%parent_reduction_factor == 0) {
+      nsubranks++;
     }
-    PetscMalloc(sizeof(PetscMPIInt)*nsubranks,&subranks);
-    c = 0;
-    for (i=0; i<nproc; i++) {
-        if (i%parent_reduction_factor == 0) {
-            subranks[c] = i;
-            c++;
-        }
+  }
+  PetscMalloc(sizeof(PetscMPIInt)*nsubranks,&subranks);
+  c = 0;
+  for (i=0; i<nproc; i++) {
+    if (i%parent_reduction_factor == 0) {
+      subranks[c] = i;
+      c++;
     }
-    active = PETSC_FALSE;
-    for (i=0; i<nsubranks; i++) {
-        if (rank == subranks[i]) {
-            active = PETSC_TRUE;
-        }
+  }
+  active = PETSC_FALSE;
+  for (i=0; i<nsubranks; i++) {
+    if (rank == subranks[i]) {
+      active = PETSC_TRUE;
     }
+  }
 
-    ierr = _PetscMPISubCommCreate(&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_group(parent_comm,&parent_group);CHKERRQ(ierr);
-    if (active) {
-        ierr = MPI_Group_incl(parent_group, nsubranks, subranks, &sub_group);CHKERRQ(ierr);
-    } else {
-        ierr = MPI_Group_excl(parent_group, nsubranks, subranks, &sub_group);CHKERRQ(ierr);
-    }
-    ierr = MPI_Comm_create(parent_comm, sub_group, &sub_comm);CHKERRQ(ierr);
+  ierr = _PetscMPISubCommCreate(&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(parent_comm,&parent_group);CHKERRQ(ierr);
+  if (active) {
+    ierr = MPI_Group_incl(parent_group, nsubranks, subranks, &sub_group);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Group_excl(parent_group, nsubranks, subranks, &sub_group);CHKERRQ(ierr);
+  }
+  ierr = MPI_Comm_create(parent_comm, sub_group, &sub_comm);CHKERRQ(ierr);
 
-    /*
+  /*
      {
      int sr,snp;
      ierr = MPI_Comm_size(sub_comm,&snp);
      ierr = MPI_Comm_rank(sub_comm,&sr);
      printf("parent[%d of %d]: sub[%d of %d]: active = %d \n",rank,nproc,sr,snp,active);
      }
-     */
+   */
 
-    comm->parent_comm        = parent_comm;
-    comm->sub_comm           = sub_comm;
-    comm->nranks_from_parent = nsubranks;
-    comm->ranks_from_parent  = subranks;
-    comm->parent_rank_active_in_subcomm = active;
+  comm->parent_comm        = parent_comm;
+  comm->sub_comm           = sub_comm;
+  comm->nranks_from_parent = nsubranks;
+  comm->ranks_from_parent  = subranks;
+  comm->parent_rank_active_in_subcomm = active;
 
-    /* We can safely free group as its been embedded inside the sub_comm */
-    ierr = MPI_Group_free(&sub_group);CHKERRQ(ierr);
-    *scomm = comm;
+  /* We can safely free group as its been embedded inside the sub_comm */
+  ierr = MPI_Group_free(&sub_group);CHKERRQ(ierr);
+  *scomm = comm;
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscMPISubCommCreate(MPI_Comm parent_comm,PetscInt parent_reduction_factor,PetscMPISubComm *scomm)
 {
-    PetscInt       creation_type;
-    PetscErrorCode ierr;
+  PetscInt       creation_type;
+  PetscErrorCode ierr;
 
-    creation_type = 1;
-    PetscOptionsGetInt(NULL,NULL,"-petsc_mpi_subcomm_creation_type",&creation_type,NULL);
-    if (creation_type == 1) {
-        ierr = PetscMPISubCommCreate_Stride(parent_comm,parent_reduction_factor,scomm);CHKERRQ(ierr);
-    } else {
-        SETERRQ(parent_comm,PETSC_ERR_USER,"Invalid creation type specified");
-    }
-    PetscFunctionReturn(0);
+  creation_type = 1;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-petsc_mpi_subcomm_creation_type",&creation_type,NULL);CHKERRQ(ierr);
+  if (creation_type == 1) {
+    ierr = PetscMPISubCommCreate_Stride(parent_comm,parent_reduction_factor,scomm);CHKERRQ(ierr);
+  } else {
+    SETERRQ(parent_comm,PETSC_ERR_USER,"Invalid creation type specified");
+  }
+  PetscFunctionReturn(0);
 }
