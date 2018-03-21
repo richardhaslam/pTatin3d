@@ -40,11 +40,11 @@ typedef struct {
   PetscReal Lx,Ly,Lz,hc,hm,ha,hvbx1,hvbx2;
   PetscReal notch_width,notch_height,notch_base,dxn,dyn,beta,damage,buffer;
   PetscReal vx_up,vx_down,vybottom,rhoc,rhom,rhoa,etac,etam,etaa,eps1,eps2,phi1,phi2,coe1,coe2;
-    PetscInt  vbc_type;
-    PetscReal tmin,tmax;
+  PetscInt  vbc_type;
+  PetscReal tmin,tmax;
 
   PetscInt  nmaterials;
-    PetscBool runmises;
+  PetscBool runmises;
   PetscBool dimensional;
   PetscReal density_bar;
   PetscReal length_bar;
@@ -57,7 +57,7 @@ typedef struct {
   PetscBool use_semi_eulerian_mesh;
   PetscBool output_markers;
   PetscInt  param1,param2,notch_type,isoBorder;
-    DMDA_thermalfield_init_params thermalparams;
+  DMDA_thermalfield_init_params thermalparams;
   PSwarm      pswarm;
 } ModelRift_oblique3dCtx;
 
