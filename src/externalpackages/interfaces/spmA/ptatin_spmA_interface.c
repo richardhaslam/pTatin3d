@@ -28,8 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 #include "ptatin3d.h"
-
-#include "ptatin3d.h"
 #include "private/ptatin_impl.h"
 #include "dmda_redundant.h"
 #include "dmda_remesh.h"
@@ -44,7 +42,6 @@ SEQ
 
 MPI
  special: no decomp in J
-
 
  general:
  Find ranks containing jmax
@@ -61,7 +58,6 @@ PetscErrorCode ptatin3d_DMDAAllGatherCoorJMax(DM dm,PetscMPIInt output_rank,long
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&nproc);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
@@ -135,15 +131,14 @@ PetscErrorCode ptatin3d_DMDAAllGatherCoorJMax(DM dm,PetscMPIInt output_rank,long
   *_y  = y;
   *_z  = z;
 
-
   PetscFunctionReturn(0);
 }
 
 /*
- Copy the chunk each rank requires into temporary array
- Send chunk
- Recieve and insert
-*/
+   Copy the chunk each rank requires into temporary array
+   Send chunk
+   Recieve and insert
+ */
 PetscErrorCode ptatin3d_DMDAAllScatterCoorJMax(PetscMPIInt intput_rank,double ymax[],DM dm)
 {
   PetscFunctionBegin;
@@ -151,10 +146,9 @@ PetscErrorCode ptatin3d_DMDAAllScatterCoorJMax(PetscMPIInt intput_rank,double ym
   PetscFunctionReturn(0);
 }
 
-
 /*
- Interpolate mechanical model surface onto lem grid.
-*/
+   Interpolate mechanical model surface onto lem grid.
+ */
 PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateM2L(DM m_surf,DM l_surf)
 {
   PetscFunctionBegin;
@@ -166,16 +160,13 @@ PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateM2L(DM m_surf,DM l_surf)
 PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateL2M(DM l_surf,DM m_surf)
 {
   PetscFunctionBegin;
-
-
   PetscFunctionReturn(0);
 }
-
 
 /*
  * ----------------------------------------------------------------------------------------------- *
  SPMA specfic functionality is embedded inside this #if statment
-*/
+ */
 #ifdef PTATIN_HAVE_SPMA
 
 int spmA_InitialiseTopo_pTatin3d(SPMAData *spm,int nx,int nz,double x[],double z[],double h[])
@@ -210,7 +201,6 @@ int spmA_InitialiseTopo_pTatin3d(SPMAData *spm,int nx,int nz,double x[],double z
   return 1;
 }
 
-
 PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 {
   PhysCompStokes  stokes;
@@ -226,7 +216,6 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
   double *x,*y,*z;
   PetscErrorCode ierr;
 
-
   PetscFunctionBegin;
 
   ierr = pTatinGetStokesContext(pctx,&stokes);CHKERRQ(ierr);
@@ -240,7 +229,6 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
   ierr= DMDAGetBoundingBox(dau,min,max);CHKERRQ(ierr);
   Lx = (double)( max[0] - min[0] );
   Lz = (double)( max[2] - min[2] );
-
 
   /* fetch the mechincal model surface on the desired core */
   ierr = ptatin3d_DMDAAllGatherCoorJMax(dau,spm_rank,&nx,&nz,&x,&y,&z);CHKERRQ(ierr);
@@ -270,7 +258,6 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
     /* --- ---------------------- --- */
   }
 
-
 #if 0
   /* push update suface value into sequential dmda coordinate vector */
   ierr = DMDAVecGetArray(cda_surf,coor_surf,&LA_coor_surf);CHKERRQ(ierr);
@@ -292,13 +279,11 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
   if (y) { PetscFree(y); }
   if (z) { PetscFree(z); }
 
-
   PetscFunctionReturn(0);
 }
 
 #endif
 /* ----------------------------------------------------------------------------------------------- */
-
 
 PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 {
@@ -316,6 +301,3 @@ PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 
   PetscFunctionReturn(0);
 }
-
-
-
