@@ -25,4 +25,3 @@ pipelines:
             # Run a single test, returning an error code
             - cd tests
             - ./runTests.py -t application.linear.sinker_galerkin_8x8x8 -f
-    next:    *default-step
