@@ -110,7 +110,7 @@ $(libptatin3dmodels) : $(libptatin3dmodels-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3dm
 info:
 	-@echo "—————————————————————————————————————————————————————————————————"
 	-@echo " pTatin3D"
-	-@echo "    git url: https://bitbucket.org/jedbrown/ptatin3d.git"
+	-@echo "    git url: https://bitbucket.org/ptatin/ptatin3d.git"
 	-@echo "    update version information by running \"make releaseinfo\""
 	-@echo "—————————————————————————————————————————————————————————————————"
 
@@ -119,7 +119,7 @@ releaseinfo: $(INCDIRGEN)/.DIR
 	$(shell mv ptatin_git_version_info.h  $(INCDIRGEN)/ptatin_git_version_info.h)
 	-@touch include/ptatin_version_info.h
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
-	-@echo "  Generated the file ptatin_git_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
+	-@echo "  Generated the file ptatin_git_version_info.h from: https://bitbucket.org/ptatin/ptatin3d.git"
 	-@echo "  pTatin3D version info appears in: stdout; ptatin3d log files; generated PETSc summary/options files"
 	-@echo "  Execute 'make all' to propagate the version information into your pTatin3D executables"
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
