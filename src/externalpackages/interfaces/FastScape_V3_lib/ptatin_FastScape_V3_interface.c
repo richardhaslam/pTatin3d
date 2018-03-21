@@ -94,7 +94,9 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
   DM              dm_spmsurf0;
   PetscInt        mx,my,mz,JMAX;
   PetscReal       gmin[3],gmax[3];
+#ifdef PTATIN_HAVE_FASTSCAPE_V3
   PetscLogDouble  t0,t1;
+#endif
   PetscBool       flg;
   PetscErrorCode  ierr;
 
