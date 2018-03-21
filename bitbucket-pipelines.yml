@@ -16,12 +16,11 @@ pipelines:
             - cd ..
             # Clone test harness
             - git clone https://bitbucket.org/dmay/pythontestharness 
-            # Generate test harness default configuration
-            - python tests/runTests.py -d -w ${PETSC_ARCH}/pth.conf
             # Configure pTatin3D
             - ln -s config/machine.linux.gcc.arch makefile.arch
             # Make
             - make -j
             # Run a single test, returning an error code
             - cd tests
-            - ./runTests.py -t application.linear.sinker_galerkin_8x8x8 -f
+            - ./runTests.py -w ../${PETSC_ARCH}/pth.conf -d # default config
+            - ./runTests.py -w ../$PETSC_ARCH/pth.conf -f -t application.linear.sinker_galerkin_8x8x8
