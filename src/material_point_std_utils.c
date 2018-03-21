@@ -52,7 +52,7 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
   DataField      PField;
   long int       np_local, np_global, max_local, max;
   PetscMPIInt    rank;
-    int            p,L;
+  int            p,L;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -91,7 +91,6 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
     marker->pid = max + (np_global-np_local) + (long int)(p-start_pid);
     //printf("assigning %d -> pid = %ld \n", p, marker->pid );
   }
-
 
   DataFieldRestoreAccess(PField);
 
@@ -214,7 +213,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
   np_local = np_per_cell * ncells;
   ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
 
-
   PetscFunctionReturn(0);
 }
 
@@ -222,16 +220,16 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 {
   DataField    PField;
   PetscInt     e;
-    Vec          gcoords;
-    PetscScalar  *LA_coords;
-    PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
+  Vec          gcoords;
+  PetscScalar  *LA_coords;
+  PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
   int          ncells,np_per_cell;
   PetscInt     nel,nen;
   const PetscInt     *elnidx;
   PetscInt     p,q,k;
   long int     np_local;
-    PetscInt     nqp;
-    PetscReal    *q_coor,*q_weight;
+  PetscInt     nqp;
+  PetscReal    *q_coor,*q_weight;
   PetscErrorCode ierr;
 
 
@@ -239,16 +237,16 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 
   ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 
-    QuadratureCreateGauss_3pnt_3D(&nqp,&q_coor,&q_weight);
+  QuadratureCreateGauss_3pnt_3D(&nqp,&q_coor,&q_weight);
 
   // re-size //
   ncells = nel;
   np_per_cell = nqp;
   DataBucketSetSizes(db,np_per_cell*ncells,-1);
 
-    /* setup for coords */
-    ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
-    ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
+  /* setup for coords */
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
   DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
   DataFieldGetAccess(PField);
@@ -260,45 +258,45 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
     ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
 
     for (q=0; q<nqp; q++) {
-            MPntStd *marker;
-            double xip[NSD],xp[NSD],Ni[Q2_NODES_PER_EL_3D];
+      MPntStd *marker;
+      double xip[NSD],xp[NSD],Ni[Q2_NODES_PER_EL_3D];
 
-            xip[0] = q_coor[3*q+0];
-            xip[1] = q_coor[3*q+1];
-            xip[2] = q_coor[3*q+2];
+      xip[0] = q_coor[3*q+0];
+      xip[1] = q_coor[3*q+1];
+      xip[2] = q_coor[3*q+2];
 
-            pTatin_ConstructNi_Q2_3D(xip,Ni);
-            xp[0] = 0.0; xp[1] = 0.0; xp[2] = 0.0;
-            for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-                xp[0] += Ni[k] * el_coords[NSD*k+0];
-                xp[1] += Ni[k] * el_coords[NSD*k+1];
-                xp[2] += Ni[k] * el_coords[NSD*k+2];
-            }
+      pTatin_ConstructNi_Q2_3D(xip,Ni);
+      xp[0] = 0.0; xp[1] = 0.0; xp[2] = 0.0;
+      for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+        xp[0] += Ni[k] * el_coords[NSD*k+0];
+        xp[1] += Ni[k] * el_coords[NSD*k+1];
+        xp[2] += Ni[k] * el_coords[NSD*k+2];
+      }
 
-            DataFieldAccessPoint(PField,p,(void**)&marker);
+      DataFieldAccessPoint(PField,p,(void**)&marker);
 
-            marker->coor[0] = xp[0];
-            marker->coor[1] = xp[1];
-            marker->coor[2] = xp[2];
+      marker->coor[0] = xp[0];
+      marker->coor[1] = xp[1];
+      marker->coor[2] = xp[2];
 
-            marker->xi[0] = xip[0];
-            marker->xi[1] = xip[1];
-            marker->xi[2] = xip[2];
+      marker->xi[0] = xip[0];
+      marker->xi[1] = xip[1];
+      marker->xi[2] = xip[2];
 
-            marker->wil    = e;
-            marker->pid    = 0;
+      marker->wil    = e;
+      marker->pid    = 0;
 
-            p++;
-        }
+      p++;
+    }
   }
   DataFieldRestoreAccess(PField);
-    ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
   np_local = np_per_cell * ncells;
   ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
 
-    PetscFree(q_coor);
-    PetscFree(q_weight);
+  PetscFree(q_coor);
+  PetscFree(q_weight);
 
   PetscFunctionReturn(0);
 }
@@ -458,14 +456,12 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 
   DataBucketSetSizes(db,np_new,-1);
 
-
   if (perturb<0.0) {
     SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
   }
   if (perturb>1.0) {
     SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
   }
-
 
   ierr = DMDAGetSizeElementQ2(da,&MX,&MY,&MZ);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
@@ -478,11 +474,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
   contains_front = PETSC_FALSE; if (sk+lnz == P) { contains_front = PETSC_TRUE; }
   contains_back  = PETSC_FALSE; if (sk == 0)       { contains_back  = PETSC_TRUE; }
 
-
   /* setup for coords */
   ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
-
 
   DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
   DataFieldGetAccess(PField);
@@ -634,9 +628,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 {
   DataField    PField;
   PetscInt     e;
-    Vec          gcoords;
-    PetscScalar  *LA_coords;
-    PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
+  Vec          gcoords;
+  PetscScalar  *LA_coords;
+  PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
   int          ncells,np_per_cell;
   PetscInt     nel,nen,lmx,lmy,lmz,MX,MY,MZ;
   const PetscInt *elnidx;
@@ -649,9 +643,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 
   PetscFunctionBegin;
 
-    if ((!cell_list) && (ncells_list != 0)) {
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A cell list must be provided. Use SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d() if you want to assign points to a face of the domain defined by the DMDA");
-    }
+  if ((!cell_list) && (ncells_list != 0)) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A cell list must be provided. Use SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d() if you want to assign points to a face of the domain defined by the DMDA");
+  }
 
   ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
   ncells = nel;
@@ -661,19 +655,18 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
   np_per_cell = Nxp[0] * Nxp[1];
 
   DataBucketGetSizes(db,&np_current,NULL,NULL);
-    (*start_pidx) = (PetscInt)np_current;
+  (*start_pidx) = (PetscInt)np_current;
 
-    /* define new size of the bucket */
-    //np_new = np_current + ncells_list * np_per_cell;
-    np_new = np_current;
-    for (e=0; e<ncells_list; e++) {
-        if (cell_list[e] >= 0) {
-            np_new = np_new + np_per_cell;
-        }
+  /* define new size of the bucket */
+  //np_new = np_current + ncells_list * np_per_cell;
+  np_new = np_current;
+  for (e=0; e<ncells_list; e++) {
+    if (cell_list[e] >= 0) {
+      np_new = np_new + np_per_cell;
     }
+  }
 
   DataBucketSetSizes(db,np_new,-1);
-
 
   if (perturb < 0.0) {
     SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
@@ -682,15 +675,13 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
     SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
   }
 
-
   ierr = DMDAGetSizeElementQ2(da,&MX,&MY,&MZ);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
 
-    /* setup for coords */
-    ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
-    ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
-
+  /* setup for coords */
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
   DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
   DataFieldGetAccess(PField);
@@ -701,17 +692,17 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 
   p = np_current;
   for (e = 0; e <ncells_list; e++) {
-        PetscInt element_idx;
+    PetscInt element_idx;
 
-        element_idx = cell_list[e];
+    element_idx = cell_list[e];
 
     if (element_idx >= ncells) {
-            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"cell_list[] contains an entry outside local sub-domain");
-        }
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"cell_list[] contains an entry outside local sub-domain");
+    }
         /* skip negative entries */
     if (element_idx < 0) { continue; }
 
-        /* get coords for the element */
+    /* get coords for the element */
     ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*element_idx],LA_coords);CHKERRQ(ierr);
 
     for (pj=0; pj<Nxp[1]; pj++) {
@@ -806,13 +797,13 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 
   }
   DataFieldRestoreAccess(PField);
-    ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
   ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,np_current,np_new);CHKERRQ(ierr);
 
-    /* length of new points added */
+  /* length of new points added */
   DataBucketGetSizes(db,&np_current,NULL,NULL);
-    (*n_pidx) = (PetscInt)np_current - (*start_pidx);
+  (*n_pidx) = (PetscInt)np_current - (*start_pidx);
 
   PetscFunctionReturn(0);
 }
@@ -883,11 +874,9 @@ PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
   fprintf( vtk_fp, "\t\t\t</CellData>\n");
   fprintf( vtk_fp, "\n");
 
-
   DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
   DataFieldGetAccess(PField);
   DataFieldVerifyAccess( PField,sizeof(MPntStd));
-
 
   /* point coordinates */
   fprintf( vtk_fp, "\t\t\t<Points>\n");
@@ -926,7 +915,6 @@ PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
   fprintf( vtk_fp, "\t\t\t</PointData>\n");
   fprintf( vtk_fp, "\n");
   /* point data END */
-
 
   fprintf( vtk_fp, "\t\t</Piece>\n");
   fprintf( vtk_fp, "\t</UnstructuredGrid>\n");
@@ -976,7 +964,6 @@ PetscErrorCode SwarmView_MPntStd_VTKappended_binary(DataBucket db,const char nam
 
   DataBucketGetSizes(db,&npoints,NULL,NULL);
   fprintf( vtk_fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",npoints,npoints );
-
 
   fprintf( vtk_fp, "\n");
   fprintf( vtk_fp, "\t\t\t<Cells>\n");

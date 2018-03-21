@@ -499,7 +499,7 @@ void _compute_J_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[NSD3d][NSD3d]
   PetscReal GNi[NSD3d][Q2_NODES_PER_EL_3D];
 
 
-    for (i=0; i<NSD3d; i++) {
+  for (i=0; i<NSD3d; i++) {
     for (j=0; j<NSD3d; j++) {
       J[i][j] = 0.0;
     }

@@ -130,7 +130,6 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
                                                        density_scale,      // rho
                                                        Cp_scale);          // Cp0
 
-
   type = mdata[region_id].density_type;
   switch (type) {
 
@@ -148,7 +147,6 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
     case ENERGYDENSITY_BOUSSINESQ:
       break;
   }
-
 
   type = mdata[region_id].conductivity_type;
   switch (type) {
@@ -176,7 +174,7 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
       DataBucketGetDataFieldByName(db,EnergyConductivityThreshold_classname,&dfield);
       DataFieldGetEntries(dfield,(void**)&data);
 
-    MaterialConstantsScaleValues_ConductivityThreshold(region_id,data,k_scale,k_scale,1.0,1.0);
+      MaterialConstantsScaleValues_ConductivityThreshold(region_id,data,k_scale,k_scale,1.0,1.0);
     }
       break;
   }
@@ -201,7 +199,6 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
 
         MaterialConstantsScaleValues_SourceConst(region_id,data,H_scale);
       }
-
         break;
 
       case ENERGYSOURCE_SHEAR_HEATING:
@@ -216,7 +213,8 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
 
         /* NOTE: lambda has units of 1/s, so scale by reciprocal */
         MaterialConstantsScaleValues_SourceDecay(region_id,data,H_scale,1.0/time_scale);
-      }        break;
+      }
+        break;
 
       case ENERGYSOURCE_ADIABATIC:
         /* Nothing to scale - all interntal to EnergyEvaluateCoefficients_MaterialPoints */
@@ -231,8 +229,6 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
         /* NOTE: dT/dy has units of K/m scale by 1/m */
         MaterialConstantsScaleValues_SourceAdiabaticAdv(region_id,data,1.0/length_scale);
       }
-
-
         break;
     }
   }

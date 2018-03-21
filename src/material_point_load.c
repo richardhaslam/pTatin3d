@@ -160,7 +160,6 @@ PetscErrorCode MarkerScalarFieldLoadFromFile(const char name[],long int *length,
       break;
   }
 
-
   *length = n_markers;
   data = malloc( datasize*n_markers );
   memset(data,0,datasize*n_markers);
@@ -170,7 +169,6 @@ PetscErrorCode MarkerScalarFieldLoadFromFile(const char name[],long int *length,
   fclose(fp);
 
   *field = (void*)data;
-
 
   PetscFunctionReturn(0);
 }
@@ -233,7 +231,6 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
   max_its           = 10;
   use_nonzero_guess = PETSC_FALSE; //_FALSE;
   monitor           = PETSC_FALSE; //_FALSE;
-
 
   DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
   DataFieldGetAccess(PField_std);
@@ -303,7 +300,6 @@ PetscErrorCode MaterialPointDataBasicLoadIntoListFromFile(DataBucket db,DM da,Pe
   DataBucketGetSizes(db,&n_mp_points,0,0);
   ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,n_mp_points);CHKERRQ(ierr);
 
-
   free(coords_mp);
   free(phase_mp);
 
@@ -371,8 +367,6 @@ PetscErrorCode SwarmDataWriteToPetscVec(DataBucket db,const char suffix[])
   /* ------------------- QPntVolCoefStokes_classname ------------------- */
   /* ------------------- QPntVolCoefEnergy_classname ------------------- */
 
-
-
   ierr = VecDestroy(&point_field_data);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -421,7 +415,6 @@ PetscErrorCode SwarmDataLoadFromPetscVec(DataBucket db,const char suffix[])
   /* ------------------- QPntVolCoefStokes_classname ------------------- */
   /* ------------------- QPntVolCoefEnergy_classname ------------------- */
 
-
   ierr = VecDestroy(&point_field_data);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -434,6 +427,7 @@ PetscScalar _PackLongIntToPetscScalar(long int val)
   pval = (PetscScalar)val + 0.1;
   return pval;
 }
+
 PetscScalar _PackIntToPetscScalar(int val)
 {
   PetscScalar pval;
@@ -441,6 +435,7 @@ PetscScalar _PackIntToPetscScalar(int val)
   pval = (PetscScalar)val + 0.1;
   return pval;
 }
+
 PetscScalar _PackShortToPetscScalar(short val)
 {
   PetscScalar pval;
@@ -448,19 +443,20 @@ PetscScalar _PackShortToPetscScalar(short val)
   pval = (PetscScalar)val + 0.1;
   return pval;
 }
+
 PetscScalar _PackFloatToPetscScalar(float val)
 {
   PetscScalar pval;
   pval = (PetscScalar)val;
   return pval;
 }
+
 PetscScalar _PackDoubleToPetscScalar(double val)
 {
   PetscScalar pval;
   pval = (PetscScalar)val;
   return pval;
 }
-
 
 long int _UnPackPetscScalarToLongInt(PetscScalar pval)
 {
@@ -469,6 +465,7 @@ long int _UnPackPetscScalarToLongInt(PetscScalar pval)
   val = (long int)pval;
   return val;
 }
+
 int _UnPackPetscScalarToInt(PetscScalar pval)
 {
   int val;
@@ -476,6 +473,7 @@ int _UnPackPetscScalarToInt(PetscScalar pval)
   val = (int)pval;
   return val;
 }
+
 short _UnPackPetscScalarToShort(PetscScalar pval)
 {
   short val;
@@ -483,12 +481,14 @@ short _UnPackPetscScalarToShort(PetscScalar pval)
   val = (short)pval;
   return val;
 }
+
 float _UnPackPetscScalarToFloat(PetscScalar pval)
 {
   float val;
   val = (float)pval;
   return val;
 }
+
 double _UnPackPetscScalarToDouble(PetscScalar pval)
 {
   double val;
@@ -687,7 +687,6 @@ PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokes(DataBucket db,const char suf
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         ierr = DMDAWriteVectorToFile(point_field_data,filename,write_to_tgz);CHKERRQ(ierr);
         break;
-
     }
   }
 
@@ -750,7 +749,6 @@ PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokesPl(DataBucket db,const char s
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         ierr = DMDAWriteVectorToFile(point_field_data,filename,write_to_tgz);CHKERRQ(ierr);
         break;
-
     }
   }
 
@@ -813,14 +811,11 @@ PetscErrorCode SwarmDataWriteToPetscVec_MPntPEnergy(DataBucket db,const char suf
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         ierr = DMDAWriteVectorToFile(point_field_data,filename,write_to_tgz);CHKERRQ(ierr);
         break;
-
     }
   }
 
   PetscFunctionReturn(0);
 }
-
-
 
 PetscErrorCode SwarmDataLoadFromPetscVec_MPntStd(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz)
 {
@@ -844,7 +839,6 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntStd(DataBucket db,const char suffix
 
   DataBucketGetDataFieldByName(db,field_classname,&pfield);
   points = pfield->data;
-
 
   for (m=0; m<field_n_members; m++) {
 
@@ -978,7 +972,6 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntStd(DataBucket db,const char suffix
         }
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         break;
-
     }
   }
 
@@ -1007,7 +1000,6 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokes(DataBucket db,const char su
 
   DataBucketGetDataFieldByName(db,field_classname,&pfield);
   points = pfield->data;
-
 
   for (m=0; m<field_n_members; m++) {
 
@@ -1058,7 +1050,6 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokes(DataBucket db,const char su
         }
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         break;
-
     }
   }
 
@@ -1087,7 +1078,6 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokesPl(DataBucket db,const char 
 
   DataBucketGetDataFieldByName(db,field_classname,&pfield);
   points = pfield->data;
-
 
   for (m=0; m<field_n_members; m++) {
 
@@ -1136,7 +1126,6 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokesPl(DataBucket db,const char 
         }
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         break;
-
     }
   }
 
@@ -1165,7 +1154,6 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPEnergy(DataBucket db,const char su
 
   DataBucketGetDataFieldByName(db,field_classname,&pfield);
   points = pfield->data;
-
 
   for (m=0; m<field_n_members; m++) {
 
@@ -1214,10 +1202,8 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPEnergy(DataBucket db,const char su
         }
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         break;
-
     }
   }
 
   PetscFunctionReturn(0);
 }
-
