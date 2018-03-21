@@ -1,0 +1,28 @@
+pipelines:
+  branches:
+    master: &default-step
+      - step:
+          script:
+            # Packages
+            - sudo apt-get --fix-missing -yq --no-install-suggests --no-install-recommends --force-yes install gfortran libblas-dev liblapack-dev python-numpy
+            # PETSc 3.8.3
+            - curl -O http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.8.3.tar.gz
+            - tar zxvf petsc-lite-3.8.3.tar.gz
+            - cd petsc-3.8.3
+            - export PETSC_DIR=$PWD
+            - export PETSC_ARCH=default-arch-gnu-debug
+            - ./configure --with-mpi=0 --with-shared-libraries=0
+            - make all
+            - cd ..
+            # Clone test harness
+            - git clone https://bitbucket.org/dmay/pythontestharness 
+            # Generate test harness default configuration
+            - python tests/runTests.py -d -w ${PETSC_ARCH}/pth.conf
+            # Configure pTatin3D
+            - ln -s config/machine.linux.gcc.arch makefile.arch
+            # Make
+            - make -j
+            # Run a single test, returning an error code
+            - cd tests
+            - ./runTests.py -t application.linear.sinker_galerkin_8x8x8 -f
+    next:    *default-step
