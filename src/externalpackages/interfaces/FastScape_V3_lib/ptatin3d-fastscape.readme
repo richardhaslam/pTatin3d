@@ -33,6 +33,10 @@ INSTALLING FASTSCAPE:
     and uncomment the line
       Makefile.petsc
 
+    The files Makefile.petsc.dbg is compatible with PETSc v3.5
+    The file Makefile.petsc3.8.dbg is compatible with PETSc v3.8
+
+
 LINKING WITH PTATIN3D:
 
 [1] Edit the Makefile at the root of ptatin3d: CONFIG_FASTSCAPE ?= y
@@ -42,7 +46,7 @@ LINKING WITH PTATIN3D:
     to add the following into your
       TATIN_CFLAGS = -fopenmp
     which is located in 
-      ptatin3d/src/makefile.arch
+      ptatin3d/makefile.arch
 
 RUNNING COUPLED MODELS:
 [1] You will have to create the directory
