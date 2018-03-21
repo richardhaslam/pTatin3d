@@ -19,8 +19,9 @@ pipelines:
             - git clone https://bitbucket.org/dmay/pythontestharness 
             # Configure pTatin3D
             - ln -s config/machine.linux.gcc.arch makefile.arch
+            - export PTATIN_DIR=$PWD
             # Make
-            - make
+            - make # make -j gives link error
             # Run a single test, returning an error code
             - cd tests
             - ./runTests.py -w ../${PETSC_ARCH}/pth.conf -d # default config
