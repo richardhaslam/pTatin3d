@@ -222,7 +222,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
   double Lx,Lz;
   int      ie;
   double dt,dt_final;
-  long int nx,ny,nz;
+  long int nx,nz;
   double *x,*y,*z;
   PetscErrorCode ierr;
 
@@ -254,18 +254,18 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
   if (rank == spm_rank) {
     /* --- ---------------------- --- */
     /* --- call spm functionality --- */
-    ie = spmA_New(&spm);
-    ie = spmA_Initialise(spm,(int)2*nx+1,(int)2*nz+1,(double)Lx,(double)Lz,1.0,0.0,0.0,dt,dt_final);
+    ie = spmA_New(&spm);CHKERRQ((PetscErrorCode)ie);
+    ie = spmA_Initialise(spm,(int)2*nx+1,(int)2*nz+1,(double)Lx,(double)Lz,1.0,0.0,0.0,dt,dt_final);CHKERRQ((PetscErrorCode)ie);
 
-    ie = spmA_InitialiseTopo_pTatin3d(spm,nx,nz,x,z,y);
+    ie = spmA_InitialiseTopo_pTatin3d(spm,nx,nz,x,z,y);CHKERRQ((PetscErrorCode)ie);
     //ie = spmA_InitialiseUplift_pTatin3d(spm);
     spm->output_frequency = 100;
 
-    ie = spmA_OutputIC(spm,"pt3d2spma.dat");
+    ie = spmA_OutputIC(spm,"pt3d2spma.dat");CHKERRQ((PetscErrorCode)ie);
     /*
-    ie = spmA_Apply(spm);
-    ie = spmA_Output(spm,"test.dat");
-    ie = spmA_Destroy(&spm);
+    ie = spmA_Apply(spm);CHKERRQ((PetscErrorCode)ie);
+    ie = spmA_Output(spm,"test.dat");CHKERRQ((PetscErrorCode)ie);
+    ie = spmA_Destroy(&spm);CHKERRQ((PetscErrorCode)ie);
     */
     /* --- ---------------------- --- */
   }

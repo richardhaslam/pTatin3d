@@ -6,8 +6,7 @@
 
 
 # Include the petsc defined variables, this includes compilers, linkers and compilation flags
-include ${PETSC_DIR}/conf/variables
-include ${PETSC_DIR}/conf/rules
+include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
 
 # Don't use plain gcc, use the compiler defined via petsc
