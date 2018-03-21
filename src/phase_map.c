@@ -65,7 +65,6 @@ void PhaseMapGetIndex(PhaseMap pm,const int i,const int j, int *index)
   if (i>=pm->mx) { printf("ERROR(%s): i = %d > %d\n", __func__, i, pm->mx ); exit(EXIT_FAILURE); }
   if (j>=pm->my) { printf("ERROR(%s): j = %d > %d\n", __func__, j, pm->my ); exit(EXIT_FAILURE); }
 
-
   *index = i + j * pm->mx;
 }
 
@@ -74,7 +73,6 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
   FILE *fp = NULL;
   PhaseMap phasemap;
   char dummy[1000];
-
   int i,j,phasemap_max;
   int index;
 
@@ -91,13 +89,12 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
   /* read header information, mx,my,x0,y0,x1,y1 */
   //  fscanf(fp,"%s\n",dummy);
   if (!fgets(dummy,sizeof(dummy),fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-    if (fscanf(fp,"%d\n",&phasemap->mx) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
-    if (fscanf(fp,"%d\n",&phasemap->my) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
-    if (fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1) < 4) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+  if (fscanf(fp,"%d\n",&phasemap->mx) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+  if (fscanf(fp,"%d\n",&phasemap->my) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+  if (fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1) < 4) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
   //
   phasemap->dx = (phasemap->x1 - phasemap->x0)/(double)(phasemap->mx);
   phasemap->dy = (phasemap->y1 - phasemap->y0)/(double)(phasemap->my);
-
 
   /* allocate data */
   phasemap->data = malloc( sizeof(int)* phasemap->mx * phasemap->my );
@@ -139,7 +136,6 @@ int PhaseMapLoadFromFile_ASCII_ZIPPED(const char filename[],PhaseMap *map)
 {
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Ascii zipped loading is not supported");
 }
-
 
 void PhaseMapLoadFromFile(const char filename[],PhaseMap *map)
 {
@@ -193,7 +189,6 @@ void PhaseMapGetPhaseIndex(PhaseMap phasemap,double xp[],int *phase)
   PhaseMapGetIndex(phasemap,i,j,&index);
 
   *phase = phasemap->data[index];
-
 }
 
 void PhaseMapCheckValidity(PhaseMap phasemap,int phase,int *is_valid)
@@ -244,7 +239,6 @@ void PhaseMapViewGnuplot(const char filename[],PhaseMap phasemap)
     }fprintf(fp,"\n");
   }
   fclose(fp);
-
 }
 
 void PhaseMapGetMaxPhases(PhaseMap phasemap,int *maxphase)
@@ -256,10 +250,8 @@ PetscErrorCode pTatinCtxAttachPhaseMap(pTatinCtx ctx,PhaseMap map)
 {
   PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-
+  PetscFunctionBegin;
   ierr = pTatinCtxAttachModelData(ctx,"phasemap",(void*)map);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -268,10 +260,9 @@ PetscErrorCode pTatinCtxGetPhaseMap(pTatinCtx ctx,PhaseMap *map)
   void *mymap;
   PetscErrorCode ierr;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
   ierr = pTatinCtxGetModelData(ctx,"phasemap",&mymap);CHKERRQ(ierr);
   *map = (PhaseMap)mymap;
-
   PetscFunctionReturn(0);
 }
 
