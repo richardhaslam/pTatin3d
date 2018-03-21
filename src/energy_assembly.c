@@ -45,37 +45,37 @@
 
 /*
 
- Advection-diffusion implementation for ALE mesh.
+   Advection-diffusion implementation for ALE mesh.
 
- We solve
+   We solve
 
- dS/dt + u.grad(S) = div( kappa grad(S) ) + f
+   dS/dt + u.grad(S) = div( kappa grad(S) ) + f
 
- A stabilized formulation (SUPG) is used to discretise the above equation.
- We adopt a backward Euler time discretisation.
- Backward Euler is adopted as it doesn't oscillate, in contrast with Crank-Nicolson.
+   A stabilized formulation (SUPG) is used to discretise the above equation.
+   We adopt a backward Euler time discretisation.
+   Backward Euler is adopted as it doesn't oscillate, in contrast with Crank-Nicolson.
 
- (1/dt) ( M(x^k+1) T^k+1 - M(x^k) T^k ) + C(x^k+1) = K(x^k+1) T^k+1 + F(x^k+1)
+   (1/dt) ( M(x^k+1) T^k+1 - M(x^k) T^k ) + C(x^k+1) = K(x^k+1) T^k+1 + F(x^k+1)
 
- ( M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) ) T^k+1 = dt F(x^k+1) + M(x^k) T^k
+   ( M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) ) T^k+1 = dt F(x^k+1) + M(x^k) T^k
 
- We indicate the discrete operators are evaluated using particular coordinates
- which are time depenedent.
- x^k+1 are the updated coords, x^k are the previous coordinates.
+   We indicate the discrete operators are evaluated using particular coordinates
+   which are time depenedent.
+   x^k+1 are the updated coords, x^k are the previous coordinates.
 
- In non-linear residual form, we will have
+   In non-linear residual form, we will have
 
- F := ( M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) ) T^k+1 - dt F(x^k+1) - M(x^k) T^k
+F := ( M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) ) T^k+1 - dt F(x^k+1) - M(x^k) T^k
 
 
 
- LLP on SUPG:
- "Well it fucked up everythng like love..., always too fast or too slow never on time...,
- always trying to make tiny correction to make the result better...,
- but the correction are never in the right direction so it creates instabilities."
- - February 14, 2013 (Valentines day)
+LLP on SUPG:
+"Well it fucked up everythng like love..., always too fast or too slow never on time...,
+always trying to make tiny correction to make the result better...,
+but the correction are never in the right direction so it creates instabilities."
+- February 14, 2013 (Valentines day)
 
- */
+*/
 
 #define SUPG_STAB 1
 #define TAU_STAB  2
@@ -90,14 +90,14 @@
  * \bar \xi = coth( \alpha ) - \frac{1}{\alpha} */
 double AdvDiffResidualForceTerm_UpwindXiExact(double pecletNumber)
 {
-    if (fabs(pecletNumber) < 1.0e-8 ) {
-        return 0.33333333333333 * pecletNumber;
-    } else if (pecletNumber < -20.0) {
-        return -1.0 - 1.0/pecletNumber;
-    } else if (pecletNumber > 20.0) {
-        return +1.0 - 1.0/pecletNumber;
-    }
-    return cosh( pecletNumber )/sinh( pecletNumber ) - 1.0/pecletNumber;
+  if (fabs(pecletNumber) < 1.0e-8 ) {
+    return 0.33333333333333 * pecletNumber;
+  } else if (pecletNumber < -20.0) {
+    return -1.0 - 1.0/pecletNumber;
+  } else if (pecletNumber > 20.0) {
+    return +1.0 - 1.0/pecletNumber;
+  }
+  return cosh( pecletNumber )/sinh( pecletNumber ) - 1.0/pecletNumber;
 }
 
 /** AdvectionDiffusion_UpwindXiDoublyAsymptoticAssumption - Brooks, Hughes 1982 equation 3.3.1
@@ -108,13 +108,13 @@ double AdvDiffResidualForceTerm_UpwindXiExact(double pecletNumber)
  *            { +1               for \alpha > +3 */
 double AdvDiffResidualForceTerm_UpwindXiDoublyAsymptoticAssumption(double pecletNumber)
 {
-    if (pecletNumber <= -3.0) {
-        return -1;
-    } else if (pecletNumber <= 3.0) {
-        return 0.33333333333333 * pecletNumber;
-    } else {
-        return 1.0;
-    }
+  if (pecletNumber <= -3.0) {
+    return -1;
+  } else if (pecletNumber <= 3.0) {
+    return 0.33333333333333 * pecletNumber;
+  } else {
+    return 1.0;
+  }
 }
 
 /** AdvectionDiffusion_UpwindXiCriticalAssumption - Brooks, Hughes 1982 equation 3.3.2
@@ -125,13 +125,13 @@ double AdvDiffResidualForceTerm_UpwindXiDoublyAsymptoticAssumption(double peclet
  *            { +1 - \frac{1}{\alpha}   for \alpha > +1             */
 double AdvDiffResidualForceTerm_UpwindXiCriticalAssumption(double pecletNumber)
 {
-    if (pecletNumber <= -1.0) {
-        return -1.0 - 1.0/pecletNumber;
-    } else if (pecletNumber <= 1.0) {
-        return 0.0;
-    } else {
-        return 1.0 - 1.0/pecletNumber;
-    }
+  if (pecletNumber <= -1.0) {
+    return -1.0 - 1.0/pecletNumber;
+  } else if (pecletNumber <= 1.0) {
+    return 0.0;
+  } else {
+    return 1.0 - 1.0/pecletNumber;
+  }
 }
 
 PetscErrorCode AdvDiff3dComputeAverageCellSize(PetscScalar el_coords[],PetscScalar DX[])
@@ -168,13 +168,13 @@ PetscErrorCode AdvDiff3dComputeAverageCellSize(PetscScalar el_coords[],PetscScal
 
 /* Eqn 4.3.7 */
 PetscErrorCode AdvDiff3dComputeElementPecletNumber_qp( PetscScalar el_coords[],PetscScalar u[],
-                                                      PetscScalar kappa_el,
-                                                      PetscScalar *alpha)
+    PetscScalar kappa_el,
+    PetscScalar *alpha)
 {
-  PetscInt    d,k;
-  PetscScalar DX[NSD];
-  PetscScalar u_xi[NSD],one_dxi2[NSD];
-  PetscScalar _alpha,u_norm,dxi[NSD];
+  PetscInt       d,k;
+  PetscScalar    DX[NSD];
+  PetscScalar    u_xi[NSD],one_dxi2[NSD];
+  PetscScalar    _alpha,u_norm,dxi[NSD];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -206,11 +206,11 @@ PetscErrorCode AdvDiff3dComputeElementPecletNumber_qp( PetscScalar el_coords[],P
 
 PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscReal kappa_el,PetscReal *dta,PetscReal *dtd)
 {
-  PetscInt    d,k;
-  PetscScalar DX[NSD];
-  PetscScalar u_xi[NSD],one_dxi2[NSD],dxi[NSD];
-  PetscScalar CrFAC,dt_optimal,alpha;
-  PetscScalar U,H,dt_diffusive;
+  PetscInt       d,k;
+  PetscScalar    DX[NSD];
+  PetscScalar    u_xi[NSD],one_dxi2[NSD],dxi[NSD];
+  PetscScalar    CrFAC,dt_optimal,alpha;
+  PetscScalar    U,H,dt_diffusive;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -264,7 +264,7 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
      printf("Element Pe:              %1.4f \n", alpha );
      printf("        dx/dv:           %1.4f \n", H/(U+1.0e-32) );
      printf("        0.5.dx.dx/kappa: %1.4f \n", 0.5*H*H/(kappa_el+1.0e-32) );
-     */
+   */
 
   //*dta = H/(U+ADV_DIFF_STAB_EPS);
   //*dtd = 0.5*H*H/(kappa_el+ADV_DIFF_STAB_EPS);
@@ -306,12 +306,12 @@ PetscErrorCode AdvDiff3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscS
 }
 
 /*
- Eqns 3.3.11 (transient) + 3.3.4, 3.3.5, 3.3.6
+   Eqns 3.3.11 (transient) + 3.3.4, 3.3.5, 3.3.6
  */
 PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coords[],PetscScalar u[],
-                                                            PetscInt nqp, PetscScalar qp_detJ[], PetscScalar qp_w[],
-                                                            PetscScalar qp_kappa[],
-                                                            PetscScalar *khat)
+    PetscInt nqp, PetscScalar qp_detJ[], PetscScalar qp_w[],
+    PetscScalar qp_kappa[],
+    PetscScalar *khat)
 {
   PetscInt p,k,d;
   PetscScalar DX[NSD];
@@ -387,16 +387,16 @@ void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni
 }
 
 PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
-                                            PetscScalar gp_kappa[],
-                                            PetscScalar el_V[],
-                                            PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
+    PetscScalar gp_kappa[],
+    PetscScalar el_V[],
+    PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
 {
-  PetscInt    p,i,j;
-  PetscReal   Ni_p[NODES_PER_EL_Q1_3D],Ni_supg_p[NODES_PER_EL_Q1_3D];
-  PetscReal   GNi_p[NSD][NODES_PER_EL_Q1_3D],GNx_p[NSD][NODES_PER_EL_Q1_3D],gp_detJ[27];
-  PetscScalar J_p,fac;
-  PetscScalar kappa_p,v_p[NSD];
-  PetscScalar kappa_hat;
+  PetscInt       p,i,j;
+  PetscReal      Ni_p[NODES_PER_EL_Q1_3D],Ni_supg_p[NODES_PER_EL_Q1_3D];
+  PetscReal      GNi_p[NSD][NODES_PER_EL_Q1_3D],GNx_p[NSD][NODES_PER_EL_Q1_3D],gp_detJ[27];
+  PetscScalar    J_p,fac;
+  PetscScalar    kappa_p,v_p[NSD];
+  PetscScalar    kappa_hat;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -449,42 +449,41 @@ PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,Petsc
      printf("%lf ", Re[j+i*NODES_PER_EL_Q1_3D]);
      }printf("\n");
      }
-     */
+   */
 
   PetscFunctionReturn(0);
 }
 
 /*
- Computes M + dt.(L + A)
+   Computes M + dt.(L + A)
  */
 PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat B,void *ctx)
 {
-  pTatinCtx      ptatin = (pTatinCtx)ctx;
-  PhysCompEnergy data;
-  PetscInt          nqp;
-  PetscScalar       *qp_xi,*qp_weight;
-  Quadrature        volQ;
-  QPntVolCoefEnergy *all_quadpoints,*cell_quadpoints;
-  PetscScalar       qp_kappa[27];
-  DM            da,cda;
-  Vec           gcoords;
-  PetscScalar   *LA_gcoords;
-  PetscScalar   ADe[NODES_PER_EL_Q1_3D*NODES_PER_EL_Q1_3D];
-  PetscScalar   el_coords[NSD*NODES_PER_EL_Q1_3D];
-  PetscScalar   el_V[NSD*NODES_PER_EL_Q1_3D];
+  pTatinCtx              ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy         data;
+  PetscInt               nqp;
+  PetscScalar            *qp_xi,*qp_weight;
+  Quadrature             volQ;
+  QPntVolCoefEnergy      *all_quadpoints,*cell_quadpoints;
+  PetscScalar            qp_kappa[27];
+  DM                     da,cda;
+  Vec                    gcoords;
+  PetscScalar            *LA_gcoords;
+  PetscScalar            ADe[NODES_PER_EL_Q1_3D*NODES_PER_EL_Q1_3D];
+  PetscScalar            el_coords[NSD*NODES_PER_EL_Q1_3D];
+  PetscScalar            el_V[NSD*NODES_PER_EL_Q1_3D];
   /**/
-  PetscInt       nel,nen,e,n,ii;
-  const PetscInt *elnidx;
-  BCList         bclist;
+  PetscInt               nel,nen,e,n,ii;
+  const PetscInt         *elnidx;
+  BCList                 bclist;
   ISLocalToGlobalMapping ltog;
-  PetscInt       NUM_GINDICES,T_el_lidx[Q1_NODES_PER_EL_3D],ge_eqnums[Q1_NODES_PER_EL_3D];
-  const PetscInt *GINDICES;
-  Vec            V;
-  Vec            local_V,local_X;
-  PetscScalar    *LA_V,*LA_X;
-  PetscBool      mat_mffd;
-  PetscErrorCode ierr;
-
+  PetscInt               NUM_GINDICES,T_el_lidx[Q1_NODES_PER_EL_3D],ge_eqnums[Q1_NODES_PER_EL_3D];
+  const PetscInt         *GINDICES;
+  Vec                    V;
+  Vec                    local_V,local_X;
+  PetscScalar            *LA_V,*LA_X;
+  PetscBool              mat_mffd;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   ierr = pTatinGetContext_Energy(ptatin,&data);CHKERRQ(ierr);
@@ -492,7 +491,6 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
   V      = data->u_minus_V;
   bclist = data->T_bclist;
   volQ   = data->volQ;
-
 
   /* setup for coords */
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
@@ -531,8 +529,6 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 
   if (B == NULL) { PetscFunctionReturn(0); }
 
-
-
   /* quadrature */
   volQ      = data->volQ;
   nqp       = volQ->npoints;
@@ -540,7 +536,6 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
   qp_weight = volQ->q_weight;
 
   ierr = VolumeQuadratureGetAllCellData_Energy(volQ,&all_quadpoints);CHKERRQ(ierr);
-
 
   /* stuff for eqnums */
   ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
@@ -648,13 +643,13 @@ PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 }
 
 PetscErrorCode AElement_FormFunction_T_supg(
-                                            PetscScalar Re[],
-                                            PetscReal dt,
-                                            PetscScalar el_coords[],PetscScalar el_coords_old[],
-                                            PetscScalar el_V[],
-                                            PetscScalar el_phi[],PetscScalar el_phi_last[],
-                                            PetscScalar gp_kappa[],PetscScalar gp_Q[],
-                                            PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
+    PetscScalar Re[],
+    PetscReal dt,
+    PetscScalar el_coords[],PetscScalar el_coords_old[],
+    PetscScalar el_V[],
+    PetscScalar el_phi[],PetscScalar el_phi_last[],
+    PetscScalar gp_kappa[],PetscScalar gp_Q[],
+    PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
 {
   PetscInt    p,i,j;
   PetscScalar Ni_p[NODES_PER_EL_Q1_3D],Ni_supg_p[NODES_PER_EL_Q1_3D];
@@ -762,33 +757,33 @@ PetscErrorCode AElement_FormFunction_T_supg(
 }
 
 PetscErrorCode FormFunctionLocal_T(
-                                   PhysCompEnergy data,
-                                   PetscReal dt,
-                                   DM da,
-                                   PetscScalar *LA_V,
-                                   PetscScalar *LA_phi,
-                                   PetscScalar *LA_philast,
-                                   PetscScalar *LA_R)
+    PhysCompEnergy data,
+    PetscReal dt,
+    DM da,
+    PetscScalar *LA_V,
+    PetscScalar *LA_phi,
+    PetscScalar *LA_philast,
+    PetscScalar *LA_R)
 {
-  DM                     cda;
-  Vec                    gcoords,gcoords_old;
-  PetscScalar            *LA_gcoords, *LA_gcoords_old;
-  PetscScalar            Re[NODES_PER_EL_Q1_3D];
-  PetscScalar            el_coords[NSD*NODES_PER_EL_Q1_3D];
-  PetscScalar            el_coords_old[NSD*NODES_PER_EL_Q1_3D];
-  PetscScalar            el_V[NSD*NODES_PER_EL_Q1_3D];
-  PetscScalar            el_phi[NODES_PER_EL_Q1_3D];
-  PetscScalar            el_philast[NODES_PER_EL_Q1_3D];
+  DM                cda;
+  Vec               gcoords,gcoords_old;
+  PetscScalar       *LA_gcoords, *LA_gcoords_old;
+  PetscScalar       Re[NODES_PER_EL_Q1_3D];
+  PetscScalar       el_coords[NSD*NODES_PER_EL_Q1_3D];
+  PetscScalar       el_coords_old[NSD*NODES_PER_EL_Q1_3D];
+  PetscScalar       el_V[NSD*NODES_PER_EL_Q1_3D];
+  PetscScalar       el_phi[NODES_PER_EL_Q1_3D];
+  PetscScalar       el_philast[NODES_PER_EL_Q1_3D];
 
-  PetscInt       nel,nen,e,n;
-  const PetscInt *elnidx;
-  PetscInt       ge_eqnums[NODES_PER_EL_Q1_3D];
+  PetscInt          nel,nen,e,n;
+  const PetscInt    *elnidx;
+  PetscInt          ge_eqnums[NODES_PER_EL_Q1_3D];
   PetscInt          nqp;
   PetscScalar       *qp_xi,*qp_weight;
   Quadrature        volQ;
   QPntVolCoefEnergy *all_quadpoints,*cell_quadpoints;
   PetscScalar       qp_kappa[27],qp_Q[27];
-  PetscErrorCode   ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   //da     = data->daT;
@@ -887,7 +882,7 @@ PetscErrorCode FormFunctionLocal_T(
        fac = qp_weight[p]*J_p;
        c = c + phi_p * fac;
        }
-       */
+     */
   }
   //ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
   //PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );
@@ -904,34 +899,33 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
 {
   pTatinCtx      ptatin = (pTatinCtx)ctx;
   PhysCompEnergy data;
-    DM             da,cda;
+  DM             da,cda;
   Vec            philoc, philastloc, Fphiloc;
   Vec            Vloc;
   PetscScalar    *LA_philoc, *LA_philastloc, *LA_Fphiloc;
   PetscScalar    *LA_V;
-    PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
+  PetscFunctionBegin;
 
   ierr = pTatinGetContext_Energy(ptatin,&data);CHKERRQ(ierr);
   da = data->daT;
 
-
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
 
-    ierr = DMGetLocalVector(da,&philoc);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(da,&philastloc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&philoc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&philastloc);CHKERRQ(ierr);
 
-    ierr = DMGetLocalVector(da,&Fphiloc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&Fphiloc);CHKERRQ(ierr);
 
   /* get local solution and time derivative */
   ierr = VecZeroEntries(philoc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,philoc);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,philoc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,philoc);CHKERRQ(ierr);
 
   ierr = VecZeroEntries(philastloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(da,data->Told,INSERT_VALUES,philastloc);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd  (da,data->Told,INSERT_VALUES,philastloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (da,data->Told,INSERT_VALUES,philastloc);CHKERRQ(ierr);
 
   /* insert boundary conditions into local vectors */
   ierr = BCListInsertLocal(data->T_bclist,philoc);CHKERRQ(ierr);
@@ -944,12 +938,12 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
   ierr = VecGetArray(philastloc,&LA_philastloc);CHKERRQ(ierr);
   ierr = VecGetArray(Fphiloc,   &LA_Fphiloc);CHKERRQ(ierr);
 
-    /* get access to the vector V */
-    ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(cda,&Vloc);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(  cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
-    ierr = VecGetArray(Vloc,&LA_V);CHKERRQ(ierr);
+  /* get access to the vector V */
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(cda,&Vloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(  cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
+  ierr = VecGetArray(Vloc,&LA_V);CHKERRQ(ierr);
 
   /* ===================== */
   /* Evaluate coefficients */
@@ -959,30 +953,29 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
   /* FORM_FUNCTION */
   ierr = FormFunctionLocal_T(data,dt,da,LA_V, LA_philoc,LA_philastloc,LA_Fphiloc);CHKERRQ(ierr);
 
-    ierr = VecRestoreArray(Vloc,&LA_V);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Vloc,&LA_V);CHKERRQ(ierr);
 
-    ierr = DMRestoreLocalVector(cda,&Vloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(cda,&Vloc);CHKERRQ(ierr);
   /* ============= */
 
   ierr = VecRestoreArray(Fphiloc,   &LA_Fphiloc);CHKERRQ(ierr);
   ierr = VecRestoreArray(philastloc,&LA_philastloc);CHKERRQ(ierr);
   ierr = VecRestoreArray(philoc,    &LA_philoc);CHKERRQ(ierr);
 
-
   /* do global fem summation */
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
 
-    ierr = DMLocalToGlobalBegin(da,Fphiloc,ADD_VALUES,F);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalEnd  (da,Fphiloc,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,Fphiloc,ADD_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd  (da,Fphiloc,ADD_VALUES,F);CHKERRQ(ierr);
 
-    ierr = DMRestoreLocalVector(da,&Fphiloc);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(da,&philoc);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(da,&philastloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&Fphiloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&philoc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&philastloc);CHKERRQ(ierr);
 
   /* modify F for the boundary conditions, F_k = scale_k(x_k - phi_k) */
   ierr = BCListResidualDirichlet(data->T_bclist,X,F);CHKERRQ(ierr);
 
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx)
@@ -999,9 +992,8 @@ PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx)
 }
 
 /*
- Stabilized adv-diff written in terms of tau
-
- */
+   Stabilized adv-diff written in terms of tau
+*/
 
 /* compute tau */
 PetscErrorCode AdvDiffComputeTau_BrooksHughes(PetscScalar el_coords[],PetscScalar el_vel[],PetscScalar kappa_el,PetscScalar *tau)
@@ -1109,40 +1101,40 @@ PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscSc
 
 /*
 
- Alternative implementation of SUPG in terms of stabilization parameter
+   Alternative implementation of SUPG in terms of stabilization parameter
 
- R(S) = dS/dt + div[ u , grad(S) ] - div( kappa grad(S) ) - f
+   R(S) = dS/dt + div[ u , grad(S) ] - div( kappa grad(S) ) - f
 
- \int R(S) ( W + \tau div[ u, grad(S)) ] = 0
+   \int R(S) ( W + \tau div[ u, grad(S)) ] = 0
 
- M'(S,W) = \int S ( W + \tau div[ u, grad(S) ] )
- G(S,W)  = \int ( div[u,grad(S)] ) W
- K'(S,W) = \int grad(S) . ( I + \tau u \cross u ) . grad(W)
- F(S,W)    = \int ( W + \tau div[ u, grad(S) ] ) f
+   M'(S,W) = \int S ( W + \tau div[ u, grad(S) ] )
+   G(S,W)  = \int ( div[u,grad(S)] ) W
+   K'(S,W) = \int grad(S) . ( I + \tau u \cross u ) . grad(W)
+   F(S,W)    = \int ( W + \tau div[ u, grad(S) ] ) f
 
- R(S,W) := M'(S,W) ( dS/dt ) + (G(S,W) + K'(S,W) )S - F(S,W)
+   R(S,W) := M'(S,W) ( dS/dt ) + (G(S,W) + K'(S,W) )S - F(S,W)
 
- R'(S) := M'(x^k+1) S^k+1 - M'(x^k) S^k + dt.G(x^k+1)S^k+1 + dt.K'(x^k+1)S^k+1 - dt.F(x^k+1)
- = [ M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) ] S^k+1 - M'(x^k) S^k - dt.F(x^k+1)
+   R'(S) := M'(x^k+1) S^k+1 - M'(x^k) S^k + dt.G(x^k+1)S^k+1 + dt.K'(x^k+1)S^k+1 - dt.F(x^k+1)
+   = [ M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) ] S^k+1 - M'(x^k) S^k - dt.F(x^k+1)
 
 
- */
+*/
 
 
 /*
 
- R'(S) := [ M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) ] S^k+1 - M'(x^k) S^k - dt.F(x^k+1)
- J := M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1)
+   R'(S) := [ M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) ] S^k+1 - M'(x^k) S^k - dt.F(x^k+1)
+J := M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1)
 
- */
+*/
 PetscErrorCode AElement_FormJacobian_T_tau(
-                                           PetscScalar Re[],
-                                           PetscReal dt,
-                                           PetscScalar tau,
-                                           PetscScalar el_coords[],
-                                           PetscScalar gp_kappa[],
-                                           PetscScalar el_V[],
-                                           PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
+    PetscScalar Re[],
+    PetscReal dt,
+    PetscScalar tau,
+    PetscScalar el_coords[],
+    PetscScalar gp_kappa[],
+    PetscScalar el_V[],
+    PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
 {
   PetscInt    p,i,j,di,dj;
   PetscReal   Ni_p[NODES_PER_EL_Q1_3D];
@@ -1178,7 +1170,6 @@ PetscErrorCode AElement_FormJacobian_T_tau(
         u_cross_u[di][dj] = v_p[di] * v_p[dj];
       }
     }
-
 
     kappa_3[0][0] = kappa_p + tau * u_cross_u[0][0];
     kappa_3[0][1] =           tau * u_cross_u[0][1];
@@ -1227,7 +1218,7 @@ PetscErrorCode AElement_FormJacobian_T_tau(
            + dt * ( v_p[0]*GNx_p[0][i] + v_p[1]*GNx_p[1][i] + v_p[2]*GNx_p[2][i] ) * Ni_p[j]
            + dt * d_dx_kappa_d_dx
            );
-           */
+         */
 
       }
     }
@@ -1240,21 +1231,21 @@ PetscErrorCode AElement_FormJacobian_T_tau(
      printf("%lf ", Re[j+i*NODES_PER_EL_Q1_3D]);
      }printf("\n");
      }
-     */
+   */
 
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode AElement_FormFunction_T_tau(
-                                           PetscScalar Re[],
-                                           PetscReal dt,
-                                           PetscReal tau,
-                                           PetscScalar el_coords[],
-                                           PetscScalar el_coords_old[],
-                                           PetscScalar el_V[],
-                                           PetscScalar el_phi[],PetscScalar el_phi_old[],
-                                           PetscScalar gp_kappa[],PetscScalar gp_Q[],
-                                           PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
+    PetscScalar Re[],
+    PetscReal dt,
+    PetscReal tau,
+    PetscScalar el_coords[],
+    PetscScalar el_coords_old[],
+    PetscScalar el_V[],
+    PetscScalar el_phi[],PetscScalar el_phi_old[],
+    PetscScalar gp_kappa[],PetscScalar gp_Q[],
+    PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
 {
   PetscInt    p,i,j,di,dj;
   PetscScalar Ni_p[NODES_PER_EL_Q1_3D],Ni_tau_p[NODES_PER_EL_Q1_3D];
@@ -1369,7 +1360,7 @@ PetscErrorCode AElement_FormFunction_T_tau(
          + Ni_p[i] * phi_p_tau
          - Ni_p[i] * phi_p_old_tau
          );
-         */
+       */
     }
   }
 
