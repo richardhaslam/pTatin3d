@@ -156,12 +156,11 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
       }
       ierr = VecDestroy(&vec);CHKERRQ(ierr);
     }
-
   }
   PetscFunctionReturn(0);
 }
 
-  EXTERN_C_BEGIN
+EXTERN_C_BEGIN
 PetscErrorCode  KSPChebychevSetEigenvalues_ChebychevRN(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_ChebychevRN *chebychevP = (KSP_ChebychevRN*)ksp->data;
@@ -175,7 +174,7 @@ PetscErrorCode  KSPChebychevSetEigenvalues_ChebychevRN(KSP ksp,PetscReal emax,Pe
 }
 EXTERN_C_END
 
-  EXTERN_C_BEGIN
+EXTERN_C_BEGIN
 PetscErrorCode  KSPChebychevSetEstimateEigenvalues_ChebychevRN(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
   KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -355,14 +354,11 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
 
     /* calculate residual norm if requested */
     if (ksp->lagnorm) {
-
       if ((i==0) || (i%ksp->chknorm == 0)) {
-
         if (ksp->normtype != KSP_NORM_NONE) {
           if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
             ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
-          }
-          else {
+          } else {
             ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
           }
           ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
@@ -384,9 +380,7 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
         ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
         if (ksp->reason) break;
       }
-
     } else {
-
       if (ksp->normtype != KSP_NORM_NONE) {
         if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
           ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
@@ -405,8 +399,6 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
       }
     }
 
-
-
     /* y^{k+1} = omega(y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
     ierr = VecScale(p[kp1],omega*Gamma*scale);CHKERRQ(ierr);
     ierr = VecAXPY(p[kp1],1.0-omega,p[km1]);CHKERRQ(ierr);
@@ -417,7 +409,6 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
     k    = kp1;
     kp1  = ktmp;
   }
-
 
   if (!ksp->reason) {
     if (ksp->normtype != KSP_NORM_NONE) {
@@ -445,8 +436,6 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
         ksp->reason = KSP_CONVERGED_ITS;
       }
     }
-
-
   }
 
   /* make sure solution is in vector x */
@@ -560,9 +549,6 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
       if (ksp->reason) break;
     }
 
-
-
-
     /* y^{k+1} = omega(y^{k} - y^{k-1} + Gamma*r^{k}) + y^{k-1} */
     ierr = VecScale(p[kp1],omega*Gamma*scale);CHKERRQ(ierr);
     ierr = VecAXPY(p[kp1],1.0-omega,p[km1]);CHKERRQ(ierr);
@@ -573,7 +559,6 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
     k    = kp1;
     kp1  = ktmp;
   }
-
 
   if (!ksp->reason) {
     if (ksp->normtype != KSP_NORM_NONE) {
@@ -609,8 +594,6 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
         ksp->reason = KSP_CONVERGED_ITS;
       }
     }
-
-
   }
 
   /* make sure solution is in vector x */
@@ -720,8 +703,7 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
         ierr = VecCopy(r,residual);CHKERRQ(ierr);
         //ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
-      }
-      else {
+      } else {
         ierr = VecCopy(p[kp1],residual);CHKERRQ(ierr);
         //ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
@@ -741,7 +723,6 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
     kp1  = ktmp;
   }
 
-
   if (VecNormBegin_started) {
     VecNormBegin_started = PETSC_FALSE;
 
@@ -755,7 +736,6 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
     ierr = KSPMonitor(ksp,valid_for_iteration,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,valid_for_iteration,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   }
-
 
   if (!ksp->reason) {
     if (ksp->normtype != KSP_NORM_NONE) {
@@ -783,7 +763,6 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
         ksp->reason = KSP_CONVERGED_ITS;
       }
     }
-
   }
 
   /* make sure solution is in vector x */
@@ -823,7 +802,6 @@ PetscErrorCode KSPSolve_ChebychevRN(KSP ksp)
       break;
   }
 
-
   PetscFunctionReturn(0);
 }
 
@@ -848,7 +826,6 @@ PetscErrorCode KSPView_ChebychevRN(KSP ksp,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"  Redundant VecNorm: First (color=0) of %D processor subsets follows\n",cheb->nsubcomm);CHKERRQ(ierr);
     }
-
   } else {
     SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
   }
