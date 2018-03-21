@@ -53,15 +53,14 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
   DMDACoor3d ***coors;
   PetscInt i,j,k,mstart,nstart,pstart,m,n,p;
   DM cda;
-    ISLocalToGlobalMapping ltog;
+  ISLocalToGlobalMapping ltog;
   PetscInt NUM_GINDICES;
   const PetscInt *GINDICES;
 
 
-
-    ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&tmp);CHKERRQ(ierr);
@@ -84,7 +83,7 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
         ierr = VecSetValue(x,GIDX,f,INSERT_VALUES);CHKERRQ(ierr);
       }}}
   ierr = DMDAVecRestoreArray(cda,tmp,&coors);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
@@ -109,7 +108,6 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 
 
   PetscFunctionBegin;
-
   PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", PETSC_FUNCTION_NAME,user->mx,user->my,user->mz );
 
   /* create the mf operators */
@@ -129,8 +127,6 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 
   ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx2x2x2,&Auu2x2x2);CHKERRQ(ierr);
 
-
-
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
 
@@ -148,7 +144,6 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
   ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
-
   /* matrix free 2x2x2 */
   PetscTime(&t0);
   ierr = MatMult(Auu2x2x2,x,y);CHKERRQ(ierr);
@@ -157,7 +152,6 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
   ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"MatMultA11_2x2x2(MF): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
-
 
   /* assembled */
   ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
@@ -202,8 +196,6 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = VecDestroy(&y2);CHKERRQ(ierr);
-
-
 
   ierr = MatA11MFDestroy(&A11Ctx2x2x2);CHKERRQ(ierr);
   ierr = MatStokesMFDestroy(&StkCtx2x2x2);CHKERRQ(ierr);
@@ -266,7 +258,6 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
   /* boundary conditions */
   ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
 
-
   /* update markers = >> gauss points */
   {
     int               npoints;
@@ -284,7 +275,6 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 
     ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,user->stokes_ctx->dav,user->stokes_ctx->volQ);CHKERRQ(ierr);
   }
-
 
   {
     PetscInt ncells;
@@ -312,15 +302,12 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
     ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,user->stokes_ctx->dav,volQ_2x2x2);CHKERRQ(ierr);
   }
 
-
-
   /* perform tests */
   PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
 
   ierr = compare_mf_A11(user->stokes_ctx,volQ_2x2x2);CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
-
 
   ierr = pTatin3dDestroyContext(&user);
 

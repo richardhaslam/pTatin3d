@@ -948,9 +948,9 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     /* update marker time dependent terms */
     /* e.g. e_plastic^1 = e_plastic^0 + dt * [ strain_rate_inv(u^0) ] */
     /*
-NOTE: for a consistent forward difference time integration we evaluate u^0 at x^0
-- thus this update is performed BEFORE we advect the markers
-*/
+       NOTE: for a consistent forward difference time integration we evaluate u^0 at x^0
+       - thus this update is performed BEFORE we advect the markers
+    */
     ierr = pTatin_UpdateCoefficientTemporalDependence_Stokes(user,X);CHKERRQ(ierr);
 
     /* update marker positions */
@@ -1050,7 +1050,7 @@ int main(int argc,char **argv)
   /*
      This requires a model to be specified.
      It performs a single solve, then continuously advects material points
-     */
+  */
   if (model_vel_field) {
     ierr = test_mp_advection(argc,argv);CHKERRQ(ierr);
   } else {

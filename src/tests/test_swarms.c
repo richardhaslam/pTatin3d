@@ -42,7 +42,7 @@
 
    /Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/bin/mpicc -O0 -g -c data_bucket.c -I. -I/Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/include
    /Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/bin/mpicc -O0 -g -o test_swarms test_swarms.c data_bucket.o -I. -I/Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/include -L/Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/lib -lmpi
-   */
+*/
 
 
 #include <data_bucket.h>
@@ -236,7 +236,7 @@ int SwarmTest_AccessPatterns2(void)
      Get access to complete array of all entries (rather than accessing them one by one).
      Less safe, recommended if you are sure you know what you are doing.
      Calls to DataFieldGetEntries() must be paired with calls to DataFieldRestoreEntries().
-     */
+  */
   DataFieldGetEntries(dbField,(void**)&mp_list);
   for (k=0; k<L; k++) {
     printf("  [%.2d] pid = %ld ; viscosity = %1.4e\n",k,mp_list[k].pid,mp_list[k].viscosity);
@@ -381,8 +381,8 @@ int SwarmTest_LengthManipulations1(void)
      int new_size : Set a new size of the list
      int buffer : Indicate a new buffer size - or keep old buffer size by passing in -1
 
-Note: New entries are placed at the end of the list
-*/
+     Note: New entries are placed at the end of the list
+  */
   DataBucketSetSizes(db,10,20);
   DataBucketGetSizes(db,&Lnew,NULL,NULL);
 
@@ -415,9 +415,9 @@ Note: New entries are placed at the end of the list
      void DataBucketRemovePointAtIndex(DataBucket db,int idx)
      int idx : Index of entry which will be removed
 
-Note: When an entry is removed, it is replaced by the entry at the end of the array
-and the total size of the list is decreased by one
-*/
+     Note: When an entry is removed, it is replaced by the entry at the end of the array
+     and the total size of the list is decreased by one
+  */
   DataBucketRemovePointAtIndex(db,2);
   DataBucketRemovePointAtIndex(db,4);
   DataBucketRemovePointAtIndex(db,7);

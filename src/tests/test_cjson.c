@@ -146,13 +146,12 @@ PetscErrorCode render(void)
   root = cJSON_CreateObject();
 
   parent = cJSON_CreateObject();
-    item = cJSON_CreateNumber(64);  cJSON_AddItemToObject(parent,"mx",item);
-    item = cJSON_CreateNumber(32);  cJSON_AddItemToObject(parent,"my",item);
-    item = cJSON_CreateNumber(64);  cJSON_AddItemToObject(parent,"mz",item);
+  item = cJSON_CreateNumber(64);  cJSON_AddItemToObject(parent,"mx",item);
+  item = cJSON_CreateNumber(32);  cJSON_AddItemToObject(parent,"my",item);
+  item = cJSON_CreateNumber(64);  cJSON_AddItemToObject(parent,"mz",item);
   cJSON_AddItemToObject(root,"StokesDMDA",parent);
 
   item = cJSON_CreateString("rift3D");  cJSON_AddItemToObject(root,"ptatinModel",item);
-
 
   j = cJSON_Print(root);
   printf("[ptatin state]\n");
@@ -196,7 +195,6 @@ PetscErrorCode render_units(void)
   cJSON_AddItemToArray(array,parent);
 
   cJSON_AddItemToObject(root,"ptatinScales",array);
-
 
   j = cJSON_Print(root);
   printf("[ptatin units]\n");
@@ -245,7 +243,7 @@ int main(int argc,char **argv)
     default:
       SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Undefined test id %d\n",test_id);
       break;
-    }
+  }
 
   ierr = pTatinFinalize();CHKERRQ(ierr);
   return 0;

@@ -44,7 +44,7 @@
    /Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/bin/mpicc -O0 -g -c data_bucket.c -I. -I/Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/include -I/Users/dmay/software/petsc-3.5.1/include
    /Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/bin/mpicc -O0 -g -c data_exchanger.c -I. -I/Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/include -I/Users/dmay/software/petsc-3.5.1/include
    /Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/bin/mpicc -O0 -g -o test_swarms_exchanger test_swarms_exchanger.c data_bucket.o data_exchanger.o -I. -I/Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/include -I/Users/dmay/software/petsc-3.5.1/include -L/Users/dmay/software/petsc-3.5.1/arch-darwin-c-mpi-debug/lib -lpetsc
-   */
+*/
 
 #include <data_bucket.h>
 #include <data_exchanger.h>
@@ -153,7 +153,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
      DataEx DataExCreate(MPI_Comm comm,const PetscInt count)
      const PetscInt count : Index assigned to data exchange, this is used to generate unique message tags
      if multiple data exchangers are to be used simulataneously.
-     */
+  */
   data_exchanger = DataExCreate(comm,0);
 
   /*
@@ -165,7 +165,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
      PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id)
      const PetscMPIInt proc_id : The index of a process in communicator used when DataEx was created which is
      to labelled as a "neighour" of the current processor.
-     */
+  */
   ierr = DataExTopologyInitialize(data_exchanger);CHKERRQ(ierr);
 
   /* Configure exchange such that rank0 will send data to rank1 (and vice-versa) */
@@ -183,7 +183,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
      (b) Pack all data to be sent (order is not important)
      (c) Send data
      (d) Get the buffer containing the data recieved
-     */
+  */
 
   /*
      Phase a) Establish send counts
@@ -191,7 +191,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
      PetscErrorCode DataExInitializeSendCount(DataEx de)
      PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const PetscInt count)
      PetscErrorCode DataExFinalizeSendCount(DataEx de)
-     */
+  */
   /* Initialze all counters, flush all memory buffers */
   ierr = DataExInitializeSendCount(data_exchanger);CHKERRQ(ierr);
   if (rank == 0) { /* send three items form rank 0 to rank 1 */
@@ -209,7 +209,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
      PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
      PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *data)
      PetscErrorCode DataExPackFinalize(DataEx de)
-     */
+  */
   /* Flush buffers and indicate what the atomic size is of each item to be sent */
   ierr = DataExPackInitialize(data_exchanger,sizeof(MaterialPoint));CHKERRQ(ierr);
 
@@ -238,7 +238,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
      that the material point has physically moved from one part of the domain to another, and thus
      "ownership" of the material point has changed - hence we should remove the material points which
      are being sent.
-     */
+  */
   if (rank == 0) {
     /* I remove them in reverse order for convienence */
     DataBucketRemovePointAtIndex(db,6);
@@ -257,7 +257,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
 
      PetscErrorCode DataExBegin(DataEx de)
      PetscErrorCode DataExEnd(DataEx de)
-     */
+  */
   ierr = DataExBegin(data_exchanger);CHKERRQ(ierr);
   ierr = DataExEnd(data_exchanger);CHKERRQ(ierr);
 
@@ -265,7 +265,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
      Phase d) Fetch the recv buffer and do something with it
 
      PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv)
-     */
+  */
   ierr = DataExGetRecvData(data_exchanger,&num_items_recv,(void**)&mp_list_recv);CHKERRQ(ierr);
 
   /*
@@ -273,7 +273,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
 
      The newly received data needs to be inserted into the users data structure.
      We will insert new material points at the end of the array within our data bucket
-     */
+  */
   DataBucketGetSizes(db,&L_local,NULL,NULL);
   DataBucketSetSizes(db,L_local + num_items_recv,-1);
   DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
@@ -317,7 +317,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
    (ii)  Pack,send,unpack the individual fields
    (iii) This requires us to tag points which are to be removed and this
    requires we send/add received entries BEFORE removing points from the data bucket
-   */
+*/
 PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
 {
   PetscErrorCode ierr;
@@ -515,7 +515,7 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
      that the material point has physically moved from one part of the domain to another, and thus
      "ownership" of the material point has changed - hence we should remove the material points which
      are being sent.
-     */
+  */
   DataBucketGetSizes(db,&L_local,NULL,NULL);
   DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
   DataFieldGetEntries(dbField,(void**)&mp);
@@ -560,7 +560,7 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
 /*
    Communication example when data bucket contains two different data types.
    Strategy adopted is packs/sends/unpacks all entries in the data bucket at once.
-   */
+*/
 PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
 {
   PetscErrorCode ierr;
@@ -710,7 +710,7 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
   /*
      [DATASTRUCTURE - APPLICATION SPECIFIC] NOTE
      Rempove points who were sent
-     */
+  */
   if (rank == 0) {
     /* I remove them in reverse order for convienence */
     DataBucketRemovePointAtIndex(db,6);
