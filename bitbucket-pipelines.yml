@@ -6,7 +6,7 @@ pipelines:
             # Packages
             - sudo apt-get update
             - sudo apt-get --fix-missing -yq --no-install-suggests --no-install-recommends --force-yes install gfortran libblas-dev liblapack-dev python-numpy
-            # PETSc 3.8.3
+            # PETSc 3.8.3 (Note that these steps could be avoided by caching, as supported by Bitbucket pipelines)
             - curl -O http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.8.3.tar.gz
             - tar zxvf petsc-lite-3.8.3.tar.gz
             - cd petsc-3.8.3
