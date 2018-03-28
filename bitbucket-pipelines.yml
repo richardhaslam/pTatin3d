@@ -13,8 +13,9 @@ pipelines:
             - cd petsc-3.8.3
             - export PETSC_DIR=$PWD
             - export PETSC_ARCH=default-arch-gnu-debug
-            - ./configure --with-mpi=0 --with-shared-libraries=0
-            - make all
+            - if [ ! -f "configure.log" ]; then ./configure --with-mpi=0 --with-shared-libraries=0; fi
+            - if [ ! -f "make.log" ]; then make all; fi
+            - make test
             - cd ..
             # Clone test harness
             - git clone https://bitbucket.org/dmay/pythontestharness 
@@ -26,7 +27,7 @@ pipelines:
             # Run a single test, returning an error code
             - cd tests
             - ./runTests.py -w ../${PETSC_ARCH}/pth.conf -d # default config
-            - ./runTests.py -w ../$PETSC_ARCH/pth.conf -f -t application.linear.sinker_galerkin_8x8x8
+            - ./runTests.py -w ../$PETSC_ARCH/pth.conf -f -t `./getTestGroup.py --skip=avx_cuda,opencl,cuda`
 definitions:
    caches:
       petsc-3-8-3: petsc-3.8.3
