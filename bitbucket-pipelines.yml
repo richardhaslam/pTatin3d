@@ -5,29 +5,36 @@ pipelines:
           caches:
             - petsc-3-8-3
           script:
-            # Packages
+            # --- Packages ---------------------------------------------------- #
             - sudo apt-get update
             - sudo apt-get --fix-missing -yq --no-install-suggests --no-install-recommends --force-yes install gfortran libblas-dev liblapack-dev python-numpy
-            # PETSc 3.8.3 (Note that we use a cache to avoid rebuilding, checking if configure.log exists)
-            - if [ ! -f "petsc-3.8.3/configure.log" ]; then curl -O http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.8.3.tar.gz && tar zxvf petsc-lite-3.8.3.tar.gz; fi
+            # --- PETSc 3.8.3 ------------------------------------------------- #
+            # (Note that we use a cache to avoid rebuilding, checking if configure.log exists)
+            - if [ ! -f "petsc-3.8.3/configure.log" ]; then curl -O ftp://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.8.3.tar.gz ; fi
+            - if [ ! -f "petsc-3.8.3/configure.log" ]; then tar zxvf petsc-lite-3.8.3.tar.gz                                                  ; fi
             - cd petsc-3.8.3
             - export PETSC_DIR=$PWD
             - export PETSC_ARCH=default-arch-gnu-debug
-            - if [ ! -f "configure.log" ]; then ./configure --with-mpi=0 --with-shared-libraries=0; fi
-            - if [ ! -f "make.log" ]; then make all; fi
+            - if [ ! -f "configure.log" ]; then ./configure --download-mpich --with-shared-libraries=0; fi
+            - if [ ! -f "make.log"      ]; then make all                                              ; fi
             - make test
             - cd ..
-            # Clone test harness
-            - git clone https://bitbucket.org/dmay/pythontestharness 
-            # Configure pTatin3D
+
+            # --- Configure pTatin3D ------------------------------------------ #
             - ln -s config/machine.linux.gcc.arch makefile.arch
             - export PTATIN_DIR=$PWD
-            # Make
-            - make # make -j gives link error
-            # Run a single test, returning an error code
+
+            # --- Make pTatin3D ----------------------------------------------- #
+            # (make -j gives a linking error)
+            - make
+
+            # --- Test pTatin3D ----------------------------------------------- #
+            - git clone https://bitbucket.org/dmay/pythontestharness
             - cd tests
-            - ./runTests.py -w ../${PETSC_ARCH}/pth.conf -d # default config
+            - ./runTests.py -w ../$PETSC_ARCH/pth.conf -d # default config
+            - sed -i "s?mpiLaunch=none?mpiLaunch=$PETSC_DIR/$PETSC_ARCH/bin/mpiexec -n <ranks>?" ../$PETSC_ARCH/pth.conf
             - ./runTests.py -w ../$PETSC_ARCH/pth.conf -f -t `./getTestGroup.py --skip=avx_cuda,opencl,cuda`
+
 definitions:
    caches:
       petsc-3-8-3: petsc-3.8.3
