@@ -1728,8 +1728,8 @@ PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscReal xmin[],PetscReal d
   fprintf(vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 
-  fprintf(vtk_fp,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
-  fprintf(vtk_fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
+  PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"  <StructuredGrid WholeExtent=\"%D %D %D %D %D %D\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
+  PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"    <Piece Extent=\"%D %D %D %D %D %D\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
 
   /* VTS COORD DATA */
   fprintf(vtk_fp,"    <Points>\n");

@@ -585,7 +585,7 @@ PetscErrorCode CartGridViewMetaData(CartGrid map)
   fprintf(fp,"%s\n",CartGridDataTypeNames[(int)map->data_type]);
   fprintf(fp,"%s\n",map->datafile_name);
 
-  fprintf(fp,"%d\n",map->dim);
+  fprintf(fp,"%d\n",(int)map->dim);
   if (map->dim == 2) {
     fprintf(fp,"%d %d\n",(int)map->mx,(int)map->my);
     fprintf(fp,"%1.4e %1.4e %1.4e %1.4e\n",

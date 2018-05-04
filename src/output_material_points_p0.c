@@ -58,7 +58,8 @@
 PetscErrorCode MarkerCellFieldsP0_ProjectIntegerField(DataBucket db,MaterialPointVariable variable,Vec scalar)
 {
   PetscScalar *LA_scalar,var;
-  int         e,ncells,*nearestpoint_list;
+  int         e,*nearestpoint_list;
+  PetscInt    ncells;
   int         p,n_mp;
   MPAccess    X;
   PetscReal   *sep_list;
@@ -129,8 +130,8 @@ PetscErrorCode MarkerCellFieldsP0_ProjectIntegerField(DataBucket db,MaterialPoin
   }
   ierr = VecRestoreArray(scalar,&LA_scalar);CHKERRQ(ierr);
   ierr = MaterialPointRestoreAccess(db,&X);CHKERRQ(ierr);
-  PetscFree(sep_list);
-  PetscFree(nearestpoint_list);
+  ierr = PetscFree(sep_list);CHKERRQ(ierr);
+  ierr = PetscFree(nearestpoint_list);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

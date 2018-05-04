@@ -1234,7 +1234,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
   ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
-  PetscInt               p,n_mp_points;
+  int                    p,n_mp_points;
   PetscInt               notch_type;
   PetscInt         isoBorder;
   DataBucket             db;

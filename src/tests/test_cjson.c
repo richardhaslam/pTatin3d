@@ -104,7 +104,7 @@ PetscErrorCode test_GeometryObjectParse2_cJSON(void)
   for (k=0; k<ngo; k++) {
 
     fprintf(fp,"{\n");
-    fprintf(fp,"    \"name\":     \"Ucrust-%d\",\n",k+1);
+    fprintf(fp,"    \"name\":     \"Ucrust-%d\",\n",(int)(k+1));
     fprintf(fp,"    \"type\":     \"GeomType_EllipticCylinder\",\n");
     fprintf(fp,"    \"centroid\": [1.5, 1.2, 1.3],\n");
     fprintf(fp,"    \"length\":   1.0,\n");
