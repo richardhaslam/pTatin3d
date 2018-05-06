@@ -66,50 +66,50 @@ PetscErrorCode pTatinWritePreamble(void)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  PetscPrintf(PETSC_COMM_WORLD,"** ======================================================================================\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**             ___________                          _______\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**     _______/          /_____ ________ __ _   ___/       \\ ____\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**    /      /___    ___/      /__   __/  /  \\ /  /\\__ _   /     \\\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /\n");
-  PetscPrintf(PETSC_COMM_WORLD,"** /__/       /___/  /__//__/  /__/ /__/__/ \\__//_______/______/\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**\n");
-  PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (david.may@earth.ox.ac.uk)\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**           Jed Brown            (jed.brown@colorado.edu)\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**           Patrick Sanan        (patrick.sanan@erdw.ethz.ch)\n");
-  PetscPrintf(PETSC_COMM_WORLD,"**\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** ======================================================================================\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**             ___________                          _______\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**     _______/          /_____ ________ __ _   ___/       \\ ____\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**    /      /___    ___/      /__   __/  /  \\ /  /\\__ _   /     \\\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** /__/       /___/  /__//__/  /__/ /__/__/ \\__//_______/______/\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (david.may@earth.ox.ac.uk)\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**           Jed Brown            (jed.brown@colorado.edu)\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**           Patrick Sanan        (patrick.sanan@erdw.ethz.ch)\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**\n");CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_VERSION_CNTR_REPO);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_VERSION_CNTR_REPO);CHKERRQ(ierr);
 #ifdef PTATIN_DEVELOPMENT_VERSION
-  PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_VERSION_CNTR_REVISION);
-  PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_VERSION_CNTR_LOG);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_VERSION_CNTR_REVISION);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_VERSION_CNTR_LOG);CHKERRQ(ierr);
   #ifdef PTATIN_GIT_REPO_STATUS
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_GIT_REPO_STATUS);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_GIT_REPO_STATUS);CHKERRQ(ierr);
   #endif
 #endif
 #ifdef PTATIN_RELEASE
-  PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_VERSION_CNTR_REVISION);
-  PetscPrintf(PETSC_COMM_WORLD,"** Release v%d.%d-p%d\n", PTATIN_VERSION_MAJOR,PTATIN_VERSION_MINOR,PTATIN_VERSION_PATCH);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** %s\n", PTATIN_VERSION_CNTR_REVISION);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** Release v%d.%d-p%d\n", PTATIN_VERSION_MAJOR,PTATIN_VERSION_MINOR,PTATIN_VERSION_PATCH);CHKERRQ(ierr);
 #endif
 
 #ifdef COMPFLAGS
   #define STR_ARG_NAME STRINGIFY_ARG(COMPFLAGS)
-  PetscPrintf(PETSC_COMM_WORLD,"**\n");
-  PetscPrintf(PETSC_COMM_WORLD,"** TATIN_CFLAGS = %s\n",STR_ARG_NAME);
-  PetscPrintf(PETSC_COMM_WORLD,"**\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** TATIN_CFLAGS = %s\n",STR_ARG_NAME);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"**\n");CHKERRQ(ierr);
   ierr = pTatinCheckCompilationFlags(STR_ARG_NAME);CHKERRQ(ierr);
   #undef STR_ARG_NAME
 #endif
 #if defined(__AVX__)
-  PetscPrintf(PETSC_COMM_WORLD,"** AVX detected - optimized kernels will be used\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** AVX detected - optimized kernels will be used\n");CHKERRQ(ierr);
 #else
-  PetscPrintf(PETSC_COMM_WORLD,"** AVX not detected - optimized kernels will not be used.\n");
-  PetscPrintf(PETSC_COMM_WORLD,"** If your system supports AVX, consider adding options,\n");
-  PetscPrintf(PETSC_COMM_WORLD,"** e.g. -march=native, to TATIN_CFLAGS in makefile.arch\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** AVX not detected - optimized kernels will not be used.\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** If your system supports AVX, consider adding options,\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** e.g. -march=native, to TATIN_CFLAGS in makefile.arch\n");CHKERRQ(ierr);
 #endif
-  PetscPrintf(PETSC_COMM_WORLD,"** ======================================================================================\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** ======================================================================================\n");CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
