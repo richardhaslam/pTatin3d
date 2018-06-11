@@ -385,6 +385,8 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 
   _npe = (order + 1)*(order + 1)*(order + 1);
   if (!da->e) {
+    PetscInt corners[8];
+
     ierr = DMDAGetCornersElementQ2(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe+1),&idx);CHKERRQ(ierr);
     ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
@@ -457,13 +459,26 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
       }
     }
 
-    da->e  = idx;
-    da->ne = elcnt;
+    da->e   = idx;
+    da->ne  = elcnt;
+    da->nen = _npe;
+
+    /* the new DMDAGetElements (from 3.9) computes also the corners of the subdomains
+       in block ordering as an extra information used by BDDC */
+    corners[0] = esi-gsi        + (esj-gsj       )*X + (esk-gsk       )*X*Y;
+    corners[1] = esi-gsi + 2*mx + (esj-gsj       )*X + (esk-gsk       )*X*Y;
+    corners[2] = esi-gsi        + (esj-gsj + 2*my)*X + (esk-gsk       )*X*Y;
+    corners[3] = esi-gsi + 2*mx + (esj-gsj + 2*my)*X + (esk-gsk       )*X*Y;
+    corners[4] = esi-gsi        + (esj-gsj       )*X + (esk-gsk + 2*mz)*X*Y;
+    corners[5] = esi-gsi + 2*mx + (esj-gsj       )*X + (esk-gsk + 2*mz)*X*Y;
+    corners[6] = esi-gsi        + (esj-gsj + 2*my)*X + (esk-gsk + 2*mz)*X*Y;
+    corners[7] = esi-gsi + 2*mx + (esj-gsj + 2*my)*X + (esk-gsk + 2*mz)*X*Y;
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,8,corners,PETSC_COPY_VALUES,&da->ecorners);CHKERRQ(ierr);
   }
 
-  if (eidx) { *eidx = da->e; }
-  if (npe)  {  *npe = _npe; }
-  if (nel)  {  *nel = da->ne; }
+  if (eidx) { *eidx = da->e;   }
+  if (npe)  {  *npe = da->nen; }
+  if (nel)  {  *nel = da->ne;  }
 
   PetscFunctionReturn(0);
 }
@@ -534,8 +549,10 @@ PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,cons
       }
     }
 
-    da->e  = idx;
-    da->ne = elcnt;
+    da->e   = idx;
+    da->ne  = elcnt;
+    /* SZ: this is an inconsistency with the general case, when we always return the blocked size */
+    da->nen = _npe;
   }
 
   *eidx = da->e;
@@ -579,8 +596,7 @@ PetscErrorCode DMDAGetElements_pTatinQ2P1(DM dm,PetscInt *nel,PetscInt *nen,cons
   } else {
     ierr = DMDAGetElements(dm,nel,nen,e);CHKERRQ(ierr);
   }
-
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode  DMDASetElementType_Q2(DM da)
