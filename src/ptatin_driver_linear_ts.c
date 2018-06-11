@@ -58,7 +58,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "element_utils_q2.h"
 #include "quadrature.h"
 
-typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN, OP_TYPE_MFGALERKIN } OperatorType;
+typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN, OP_TYPE_MFGALERKIN, OP_TYPE_REDISC_MATIS } OperatorType;
 
 PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature volQ_fine,DM dav_coarse,Mat Ac)
 {
@@ -637,6 +637,20 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 
     switch ((OperatorType)level_type[k]) {
 
+      case OP_TYPE_REDISC_MATIS:
+        {
+          PetscInt       nel,nen_v;
+          const PetscInt *elnidx_v;
+          DM_DA          *da = (DM_DA*)dav_hierarchy[k]->data;
+
+          /* Just to be sure: recompute element list (needed by MATIS)
+             MATIS constructor uses the l2g map generated from da->e */
+          ierr = PetscFree(da->e);CHKERRQ(ierr);
+          ierr = ISDestroy(&da->ecorners);CHKERRQ(ierr);
+          ierr = DMDAGetElements_pTatinQ2P1(dav_hierarchy[k],&nel,&nen_v,&elnidx_v);CHKERRQ(ierr);
+          ierr = DMSetMatType(dav_hierarchy[k],MATIS);CHKERRQ(ierr);
+        }
+        /* no break here, we can reuse the code for ASM */
       case OP_TYPE_REDISC_ASM:
         {
           Mat Auu;
@@ -938,6 +952,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   dap           = user->stokes_ctx->dap;
 
   /* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
+  /* SZ: you can remove these two lines when tracking v3.9.3, I have fixed it in maint */
   {
     ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
