@@ -664,7 +664,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   if (is_nest) {
     Mat Auu;
 
-    ierr = MatCreateSubMatrix(A,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+    ierr = MatNestGetSubMat(A,0,0,&Auu);CHKERRQ(ierr);
 
     is_shell = PETSC_FALSE;
     ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -672,8 +672,6 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
       ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
       ierr = MatAssemble_StokesA_AUU(Auu,dau,user->stokes_ctx->u_bclist,user->stokes_ctx->volQ);CHKERRQ(ierr);
     }
-
-    ierr = MatDestroy(&Auu);CHKERRQ(ierr);
   }
   /* If shell, do nothing */
   /* If mffd,  do nothing */

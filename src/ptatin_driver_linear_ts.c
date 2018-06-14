@@ -421,7 +421,7 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   if (is_nest) {
     Mat Auu;
 
-    ierr = MatCreateSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+    ierr = MatNestGetSubMat(A,0,0,&Auu);CHKERRQ(ierr);
 
     is_shell = PETSC_FALSE;
     ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -429,8 +429,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
       ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
       ierr = MatAssemble_StokesA_AUU(Auu,dau,user->stokes_ctx->u_bclist,user->stokes_ctx->volQ);CHKERRQ(ierr);
     }
-
-    ierr = MatDestroy(&Auu);CHKERRQ(ierr);
   }
   /* If shell, do nothing */
   /* If mffd,  do nothing */
@@ -442,8 +440,8 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   {
     Mat Buu,Bpp;
 
-    ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+    ierr = MatNestGetSubMat(B,0,0,&Buu);CHKERRQ(ierr);
+    ierr = MatNestGetSubMat(B,1,1,&Bpp);CHKERRQ(ierr);
 
     is_shell = PETSC_FALSE;
     ierr = PetscObjectTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -458,9 +456,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
       ierr = MatZeroEntries(Bpp);CHKERRQ(ierr);
       ierr = MatAssemble_StokesPC_ScaledMassMatrix(Bpp,dau,dap,user->stokes_ctx->p_bclist,user->stokes_ctx->volQ);CHKERRQ(ierr);
     }
-
-    ierr = MatDestroy(&Buu);CHKERRQ(ierr);
-    ierr = MatDestroy(&Bpp);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
