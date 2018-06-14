@@ -657,12 +657,14 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
           PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
           Vec X;
           MatNullSpace nullsp;
+          MatType mtype;
 
           /* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
-          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
           ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
           ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
           ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
+          ierr = MatGetType(Auu,&mtype);CHKERRQ(ierr);
+          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator [mat%s]\n", k,(const char*)mtype);
           ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
           ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
           ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
@@ -728,8 +730,8 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
           Mat Auu;
           Vec X;
           MatNullSpace nullsp;
+          MatType mtype_P,mtype_Ac;
 
-          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembled operator \n", k);
           if (k==nlevels-1) {
             SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
           }
@@ -763,6 +765,9 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
             ierr = MatPtAP(A_kp1,interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
             ierr = MatDestroy(&A_kp1);CHKERRQ(ierr);
           }
+          ierr = MatGetType(interpolation_v[k+1],&mtype_P);CHKERRQ(ierr);
+          ierr = MatGetType(Auu,&mtype_Ac);CHKERRQ(ierr);
+          if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin P [mat%s] :: assembled operator [mat%s]\n", k,(const char*)mtype_P,(const char*)mtype_Ac);
 
           operatorA11[k] = Auu;
           operatorB11[k] = Auu;
