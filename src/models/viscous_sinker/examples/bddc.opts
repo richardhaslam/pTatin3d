@@ -1,0 +1,31 @@
+-stokes_ksp_monitor_up 0
+-ptatin_driver_write_icbc
+-A11_operator_type 4
+-dau_nlevels 1
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_monitor_singular_value
+-fieldsplit_u_ksp_rtol 1.0e-8
+-fieldsplit_u_ksp_type cg
+-fieldsplit_u_ksp_norm_type natural
+-fieldsplit_u_pc_type bddc
+-fieldsplit_u_pc_bddc_monolithic
+-fieldsplit_u_pc_bddc_use_local_mat_graph 0
+-ksp_converged_reason
+-ksp_rtol 1.0e-3
+-ksp_type fgmres
+-ksp_monitor_short
+-model_viscous_sinker_eta0 1.0e-3
+-mx 8
+-my 8
+-mz 8
+-nsteps 0
+-output_path pt3dout
+-pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-ptatin_model viscous_sinker
+-snes_type ksponly
+#-snes_view
+-stk_velocity_dm_mat_type aij
+-lattice_layout_perturb 0.0
