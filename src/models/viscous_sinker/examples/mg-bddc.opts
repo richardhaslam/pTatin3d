@@ -18,21 +18,21 @@
 -dau_nlevels 3
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
--fieldsplit_u_ksp_monitor_singular_value
 -fieldsplit_u_ksp_rtol 1.0e-8
 -fieldsplit_u_ksp_type gcr
-#-fieldsplit_u_ksp_norm_type natural
+#-fieldsplit_u_ksp_monitor_short
 -fieldsplit_u_pc_type mg
 -fieldsplit_u_pc_mg_levels 3
   -fieldsplit_u_mg_levels_ksp_type chebyshev
   -fieldsplit_u_mg_levels_ksp_chebyshev_esteig 0.2,1.1
   -fieldsplit_u_mg_levels_ksp_max_it 4
   -fieldsplit_u_mg_levels_pc_type jacobi
-  -fieldsplit_u_mg_coarse_ksp_type gcr
+  -fieldsplit_u_mg_coarse_ksp_type cg
+    -fieldsplit_u_mg_coarse_ksp_atol 1.0e-10
     -fieldsplit_u_mg_coarse_ksp_rtol 1.0e-10
     -fieldsplit_u_mg_coarse_ksp_max_it 300
-    -fieldsplit_u_mg_coarse_ksp_monitor_true_residual
-    -fieldsplit_u_mg_coarse_ksp_converged_reason
+    #-fieldsplit_u_mg_coarse_ksp_monitor_true_residual
+    #-fieldsplit_u_mg_coarse_ksp_converged_reason
     -fieldsplit_u_mg_coarse_pc_type bddc
     -fieldsplit_u_mg_coarse_pc_bddc_monolithic
     -fieldsplit_u_mg_coarse_pc_bddc_use_local_mat_graph 0
