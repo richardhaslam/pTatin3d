@@ -61,6 +61,7 @@ struct _p_BCList {
 
 PetscErrorCode BCListIsDirichlet(PetscInt value,PetscBool *flg);
 PetscErrorCode BCListInitialize(BCList list);
+PetscErrorCode BCListReset(BCList list);
 PetscErrorCode BCListCreate(BCList *list);
 PetscErrorCode BCListDestroy(BCList *list);
 PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_local);

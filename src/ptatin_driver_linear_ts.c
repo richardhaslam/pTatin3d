@@ -1228,6 +1228,11 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 
     ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
 
+    /* insert boundary condition */
+    ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = BCListInsert(user->stokes_ctx->u_bclist,velocity);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    
     /* e) solve */
     PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
     PetscTime(&time[0]);

@@ -130,6 +130,62 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
+PetscBool BCEvaluator_SpinXZ_u(PetscScalar coor[],PetscScalar *value,void *ctx)
+{
+  ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
+  PetscBool             impose_dirichlet = PETSC_TRUE;
+  PetscReal             vx,vz;
+  
+  vx =   coor[2] - 0.5 * data->Lx;
+  vz = -(coor[0] - 0.5 * data->Lz);
+  vx = vx * 0.5 * (1.0 - PetscCosReal(2.0 * PETSC_PI * coor[0]/data->Lx));
+  vz = vz * 0.5 * (1.0 - PetscCosReal(2.0 * PETSC_PI * coor[2]/data->Lz));
+  *value = vx;
+  return impose_dirichlet;
+}
+
+PetscBool BCEvaluator_SpinXZ_w(PetscScalar coor[],PetscScalar *value,void *ctx)
+{
+  ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
+  PetscBool             impose_dirichlet = PETSC_TRUE;
+  PetscReal             vx,vz;
+  
+  vx =   coor[2] - 0.5 * data->Lx;
+  vz = -(coor[0] - 0.5 * data->Lz);
+  vx = vx * 0.5 * (1.0 - PetscCosReal(2.0 * PETSC_PI * coor[0]/data->Lx));
+  vz = vz * 0.5 * (1.0 - PetscCosReal(2.0 * PETSC_PI * coor[2]/data->Lz));
+  *value = vz;
+  return impose_dirichlet;
+}
+
+PetscBool BCEvaluator_SpinYZ_v(PetscScalar coor[],PetscScalar *value,void *ctx)
+{
+  ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
+  PetscBool             impose_dirichlet = PETSC_TRUE;
+  PetscReal             vy,vz;
+  
+  vy =   coor[2] - 0.5 * data->Ly;
+  vz = -(coor[1] - 0.5 * data->Lz);
+  vy = vy * 0.5 * (1.0 - PetscCosReal(2.0 * PETSC_PI * coor[1]/data->Ly));
+  vz = vz * 0.5 * (1.0 - PetscCosReal(2.0 * PETSC_PI * coor[2]/data->Lz));
+  *value = vy;
+  return impose_dirichlet;
+}
+
+PetscBool BCEvaluator_SpinYZ_w(PetscScalar coor[],PetscScalar *value,void *ctx)
+{
+  ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
+  PetscBool             impose_dirichlet = PETSC_TRUE;
+  PetscReal             vy,vz;
+  
+  vy =   coor[2] - 0.5 * data->Ly;
+  vz = -(coor[1] - 0.5 * data->Lz);
+  vy = vy * 0.5 * (1.0 - PetscCosReal(2.0 * PETSC_PI * coor[1]/data->Ly));
+  vz = vz * 0.5 * (1.0 - PetscCosReal(2.0 * PETSC_PI * coor[2]/data->Lz));
+  *value = vz;
+  return impose_dirichlet;
+}
+
 PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ctx)
 {
   ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
@@ -211,6 +267,38 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 
       break;
 
+    case VSBC_TimeDependent:
+    {
+      BCList bclist_u;
+      DM     dm_u;
+      
+      dm_u     = user->stokes_ctx->dav;
+      bclist_u = user->stokes_ctx->u_bclist;
+      ierr = BCListReset(bclist_u);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+
+      ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+      
+      ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+
+      if (user->step < 20) {
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,0,BCEvaluator_SpinXZ_u,(void*)data);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,2,BCEvaluator_SpinXZ_w,(void*)data);CHKERRQ(ierr);
+
+      } else {
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,1,BCEvaluator_SpinYZ_v,(void*)data);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,2,BCEvaluator_SpinYZ_w,(void*)data);CHKERRQ(ierr);
+      }
+    }
+    break;
+    
     case VSBC_Test:
       {
         PhysCompStokes stokes;
@@ -458,6 +546,52 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bc
         ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
         break;
+
+      case VSBC_TimeDependent:
+      {
+        BCList bclist_u;
+        DM     dm_u;
+        
+        dm_u     = dav[n];
+        bclist_u = bclist[n];
+        ierr = BCListReset(bclist_u);CHKERRQ(ierr);
+        /*
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,0,BCEvaluator_SpinXZ_u,(void*)data);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,2,BCEvaluator_SpinXZ_w,(void*)data);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        */
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        if (user->step < 20) {
+          ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+          
+          ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,0,BCEvaluator_SpinXZ_u,(void*)data);CHKERRQ(ierr);
+          ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+          ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,2,BCEvaluator_SpinXZ_w,(void*)data);CHKERRQ(ierr);
+          
+        } else {
+          ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+          
+          ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+          ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,1,BCEvaluator_SpinYZ_v,(void*)data);CHKERRQ(ierr);
+          ierr = DMDABCListTraverse3d(bclist_u,dm_u,DMDABCList_IMAX_LOC,2,BCEvaluator_SpinYZ_w,(void*)data);CHKERRQ(ierr);
+        }
+        
+      }
+      break;
 
       case VSBC_Test:
         /* free slip */
@@ -990,6 +1124,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 {
+  ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
   Vec velocity,pressure;
   DM stokes_pack,dav,dap;
   PetscErrorCode ierr;
@@ -1001,8 +1136,10 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void
   ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
-  //ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,c->dt);CHKERRQ(ierr);
-  ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,c->dt);CHKERRQ(ierr);
+  if (data->boundary_conditon_type != (PetscInt)VSBC_TimeDependent) {
+    //ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,c->dt);CHKERRQ(ierr);
+    ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,c->dt);CHKERRQ(ierr);
+  }
 
   // [test c] remesh interp
   //ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,NULL,c->dt);CHKERRQ(ierr);

@@ -1550,6 +1550,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
       PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
 
+      /* insert boundary conditions into solution vector */
+      ierr = BCListInsert(energy->T_bclist,T);CHKERRQ(ierr);
+      
       PetscTime(&time[0]);
       ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
       PetscTime(&time[1]);
@@ -1613,6 +1616,11 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
     /* configure uu split for galerkin multi-grid */
     ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
 
+    /* insert boundary conditions into solution vector */
+    ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = BCListInsert(stokes->u_bclist,velocity);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    
     /* e) solve mechanical model */
     PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
     PetscTime(&time[0]);
@@ -2326,6 +2334,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 
       PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
 
+      /* insert boundary conditions into solution vector */
+      ierr = BCListInsert(energy->T_bclist,T);CHKERRQ(ierr);
+
       PetscTime(&time[0]);
       ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
       PetscTime(&time[1]);
@@ -2383,6 +2394,11 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 
     /* configure uu split for galerkin multi-grid */
     ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
+
+    /* insert boundary conditions into solution vector */
+    ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = BCListInsert(stokes->u_bclist,velocity);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
     /* e) solve mechanical model */
     PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
@@ -2966,6 +2982,10 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
       ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 
       PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
+
+      /* insert boundary conditions into solution vector */
+      ierr = BCListInsert(energy->T_bclist,T);CHKERRQ(ierr);
+
       ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
       ierr = pTatinLogBasicSNES(user,"Energy",snesT);CHKERRQ(ierr);
       ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
@@ -3017,6 +3037,11 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
     /* configure uu split for galerkin multi-grid */
     ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
 
+    /* insert boundary conditions into solution vector */
+    ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = BCListInsert(stokes->u_bclist,velocity);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    
     /* e) solve mechanical model */
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes);CHKERRQ(ierr);
@@ -3057,6 +3082,11 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
     /* configure uu split for galerkin multi-grid */
     ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
 
+    /* insert boundary conditions into solution vector */
+    ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = BCListInsert(stokes->u_bclist,velocity);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    
     /* e) solve mechanical model */
     ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes);CHKERRQ(ierr);
