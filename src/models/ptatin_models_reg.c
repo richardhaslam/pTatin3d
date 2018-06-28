@@ -34,6 +34,7 @@ extern PetscErrorCode pTatinModelRegister_ViscousSinker(void);
 extern PetscErrorCode pTatinModelRegister_Gene3D(void);
 extern PetscErrorCode pTatinModelRegister_Indentor(void);
 extern PetscErrorCode pTatinModelRegister_Rift3D_T(void);
+extern PetscErrorCode pTatinModelRegister_Rift3D_I(void);
 extern PetscErrorCode pTatinModelRegister_AdvDiffExample(void);
 extern PetscErrorCode pTatinModelRegister_Delamination(void);
 extern PetscErrorCode pTatinModelRegister_Riftrh(void);
@@ -64,6 +65,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
   ierr = pTatinModelRegister_Gene3D();CHKERRQ(ierr);
   ierr = pTatinModelRegister_Indentor();CHKERRQ(ierr);
   ierr = pTatinModelRegister_Rift3D_T();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Rift3D_I();CHKERRQ(ierr);
   ierr = pTatinModelRegister_AdvDiffExample();CHKERRQ(ierr);
   ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
   ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
