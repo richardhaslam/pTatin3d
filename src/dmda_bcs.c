@@ -626,14 +626,14 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,const Vec X,Vec F)
  */
 PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc doflocation,PetscInt dof_idx,PetscBool (*eval)(PetscScalar*,PetscScalar*,void*),void *ctx)
 {
-  PetscInt i,j,k,si,sj,sk,m,n,p,M,N,P,ndof;
-  DM cda;
-  Vec coords;
-  DMDACoor3d ***LA_coords;
-  PetscInt L,*idx;
-  PetscScalar pos[3];
-  PetscScalar *vals,bc_val;
-  PetscBool impose_dirichlet;
+  PetscInt       i,j,k,si,sj,sk,m,n,p,M,N,P,ndof;
+  DM             cda;
+  Vec            coords;
+  DMDACoor3d     ***LA_coords;
+  PetscInt       L,*idx;
+  PetscScalar    pos[3];
+  PetscScalar    *vals,bc_val;
+  PetscBool      impose_dirichlet;
   PetscErrorCode ierr;
 
   ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -674,7 +674,7 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 
     /* i=0 plane (left) */
     case DMDABCList_IMIN_LOC:
-      if (si==0) {
+      if (si == 0) {
         i = 0;
         for (k=sk; k<sk+p; k++) {
           for (j=sj; j<sj+n; j++) {
@@ -696,7 +696,7 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
       break;
     /* i=si+m == M plane (right) */
     case DMDABCList_IMAX_LOC:
-      if (si+m==M) {
+      if ((si+m) == M) {
         i = si+m-1;
         for (k=sk; k<sk+p; k++) {
           for (j=sj; j<sj+n; j++) {
@@ -719,7 +719,7 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 
     /* j=0 plane (bottom) */
     case DMDABCList_JMIN_LOC:
-      if (sj==0) {
+      if (sj == 0) {
         j = 0;
         for (k=sk; k<sk+p; k++) {
           for (i=si; i<si+m; i++) {
@@ -742,7 +742,7 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
       break;
     /* j=sj+n == N plane (top) */
     case DMDABCList_JMAX_LOC:
-      if (sj+n==N) {
+      if ((sj+n) == N) {
         j = sj+n-1;
         for (k=sk; k<sk+p; k++) {
           for (i=si; i<si+m; i++) {
@@ -765,7 +765,7 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 
     /* k=0 plane (back) */
     case DMDABCList_KMIN_LOC:
-      if (sk==0) {
+      if (sk == 0) {
         k = 0;
         for (j=sj; j<sj+n; j++) {
           for (i=si; i<si+m; i++) {
@@ -787,7 +787,7 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
       break;
     /* k=sk+p == P plane (front) */
     case DMDABCList_KMAX_LOC:
-      if (sk+p==P) {
+      if ((sk+p) == P) {
         k = sk+p-1;
         for (j=sj; j<sj+n; j++) {
           for (i=si; i<si+m; i++) {
@@ -823,18 +823,16 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 {
   PetscErrorCode ierr;
-  BCList F;
-  PetscMPIInt nproc;
-  PetscInt count,k;
-  PetscReal mem_usage = 0.0;
+  BCList         F;
+  PetscMPIInt    commsize;
+  PetscInt       count,k;
+  PetscReal      mem_usage = 0.0;
 
   PetscFunctionBegin;
-
   ierr = BCListCreate(&F);CHKERRQ(ierr);
   F->dm = std->dm;
   ierr = PetscObjectReference((PetscObject)F->dm);CHKERRQ(ierr);
   F->blocksize = std->blocksize;
-
 
   /* two pass */
 
@@ -846,9 +844,9 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
     }
   }
 
-  ierr = PetscMalloc( sizeof(PetscInt)*count,&F->dofidx_global );CHKERRQ(ierr);     mem_usage += (PetscReal)(sizeof(PetscInt)*count);
-  ierr = PetscMalloc( sizeof(PetscScalar)*count,&F->vals_global );CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
-  ierr = PetscMalloc( sizeof(PetscScalar)*count,&F->scale_global );CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
+  ierr = PetscMalloc(sizeof(PetscInt)*count,&F->dofidx_global);CHKERRQ(ierr);     mem_usage += (PetscReal)(sizeof(PetscInt)*count);
+  ierr = PetscMalloc(sizeof(PetscScalar)*count,&F->vals_global);CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
+  ierr = PetscMalloc(sizeof(PetscScalar)*count,&F->scale_global);CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
   count = 0;
   for (k=0; k<std->L; k++) {
     if (std->dofidx_global[k] == BCList_DIRICHLET) {
@@ -861,8 +859,8 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
   }
   F->L = count;
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)std->dm),&nproc);CHKERRQ(ierr);
-  if (nproc==1) {
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)std->dm),&commsize);CHKERRQ(ierr);
+  if (commsize == 1) {
     F->vals_local   = F->vals_global;
     F->dofidx_local = F->dofidx_global;
     F->L_local      = F->L;
@@ -876,8 +874,8 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
       }
     }
 
-    ierr = PetscMalloc( sizeof(PetscInt)*count,&F->dofidx_local );CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscInt)*count);
-    ierr = PetscMalloc( sizeof(PetscScalar)*count,&F->vals_local );CHKERRQ(ierr);   mem_usage += (PetscScalar)(sizeof(PetscInt)*count);
+    ierr = PetscMalloc(sizeof(PetscInt)*count,&F->dofidx_local);CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscInt)*count);
+    ierr = PetscMalloc(sizeof(PetscScalar)*count,&F->vals_local);CHKERRQ(ierr);   mem_usage += (PetscScalar)(sizeof(PetscInt)*count);
 
     count = 0;
     for (k=0; k<std->L; k++) {
