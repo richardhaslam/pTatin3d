@@ -305,9 +305,9 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
   PetscInt       si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz;
   PetscErrorCode ierr;
 
-  ierr = DMDAGetInfo(da,0, 0,0,0, 0,0,0, &bs,0, 0,0,0, 0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da, 0,0,0, &m,&n,&p);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(da, 0,0,0, &mg,&ng,&pg);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,NULL, NULL,NULL,NULL, NULL,NULL,NULL, &bs,NULL, NULL,NULL,NULL, NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da, NULL,NULL,NULL, &m,&n,&p);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(da, NULL,NULL,NULL, &mg,&ng,&pg);CHKERRQ(ierr);
   N = m;
   if (n != 0) N = N * n; /* 2d */
   if (p != 0) N = N * p; /* 3d */
@@ -324,7 +324,7 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
   ierr = DMDAGetGhostCorners(da,&gsi,&gsj,&gsk,&gnx,&gny,&gnz);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim, NULL,NULL,NULL, NULL,NULL,NULL, &ndof,NULL, NULL,NULL,NULL, NULL);CHKERRQ(ierr);
 
   ierr = BCListInitGlobal(ll);CHKERRQ(ierr);
   ierr = BCListGlobalToLocal(ll);CHKERRQ(ierr);
@@ -636,7 +636,7 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
   PetscBool      impose_dirichlet;
   PetscErrorCode ierr;
 
-  ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,NULL, &M,&N,&P, NULL,NULL,NULL, &ndof,NULL, NULL,NULL,NULL, NULL);CHKERRQ(ierr);
   if (dof_idx >= ndof) { SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
 
   ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
@@ -647,7 +647,6 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 
   ierr = BCListGetGlobalIndices(list,&L,&idx);
   ierr = BCListGetGlobalValues(list,&L,&vals);
-
 
   switch (doflocation) {
     /* volume */
@@ -844,9 +843,9 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
     }
   }
 
-  ierr = PetscMalloc(sizeof(PetscInt)*count,&F->dofidx_global);CHKERRQ(ierr);     mem_usage += (PetscReal)(sizeof(PetscInt)*count);
-  ierr = PetscMalloc(sizeof(PetscScalar)*count,&F->vals_global);CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
-  ierr = PetscMalloc(sizeof(PetscScalar)*count,&F->scale_global);CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
+  ierr = PetscMalloc1(count,&F->dofidx_global);CHKERRQ(ierr);  mem_usage += (PetscReal)(sizeof(PetscInt)*count);
+  ierr = PetscMalloc1(count,&F->vals_global);CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
+  ierr = PetscMalloc1(count,&F->scale_global);CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
   count = 0;
   for (k=0; k<std->L; k++) {
     if (std->dofidx_global[k] == BCList_DIRICHLET) {
@@ -874,8 +873,8 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
       }
     }
 
-    ierr = PetscMalloc(sizeof(PetscInt)*count,&F->dofidx_local);CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscInt)*count);
-    ierr = PetscMalloc(sizeof(PetscScalar)*count,&F->vals_local);CHKERRQ(ierr);   mem_usage += (PetscScalar)(sizeof(PetscInt)*count);
+    ierr = PetscMalloc1(count,&F->dofidx_local);CHKERRQ(ierr); mem_usage += (PetscReal)(sizeof(PetscInt)*count);
+    ierr = PetscMalloc1(count,&F->vals_local);CHKERRQ(ierr);   mem_usage += (PetscScalar)(sizeof(PetscInt)*count);
 
     count = 0;
     for (k=0; k<std->L; k++) {
