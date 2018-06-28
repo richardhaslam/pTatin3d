@@ -37,6 +37,7 @@ PetscErrorCode BCListIsDirichlet(PetscInt value,PetscBool *flg)
   else                         { *flg = PETSC_FALSE; }
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode BCListInitialize(BCList list)
 {
   PetscInt       n;
@@ -47,12 +48,35 @@ PetscErrorCode BCListInitialize(BCList list)
   }
 
   for (n=0; n<list->L_local; n++) {
-    list->dofidx_local[n] = 0.0;
+    list->dofidx_local[n] = 0;
     list->vals_local[n]   = 0.0;
   }
 
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode BCListReset(BCList list)
+{
+  PetscInt       n;
+  PetscErrorCode ierr;
+  
+  for (n=0; n<list->L; n++) {
+    list->scale_global[n]  = 1.0;
+    list->vals_global[n]   = 0.0;
+    list->dofidx_global[n] = 0;
+  }
+  
+  for (n=0; n<list->L_local; n++) {
+    list->vals_local[n]   = 0.0;
+    list->dofidx_local[n] = 0;
+  }
+
+  ierr = BCListInitGlobal(list);CHKERRQ(ierr);
+  ierr = BCListGlobalToLocal(list);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode BCListCreate(BCList *list)
 {
   BCList ll;
