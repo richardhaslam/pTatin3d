@@ -31,7 +31,7 @@
 #ifndef __ptatinmodel_viscous_sinker_ctx_h__
 #define __ptatinmodel_viscous_sinker_ctx_h__
 
-typedef enum { VSBC_FreeSlip=0, VSBC_NoSlip, VSBC_FreeSlipFreeSurface, VSBC_NoSlipFreeSurface, VSBC_Test } ViscousSinkerBC;
+typedef enum { VSBC_FreeSlip=0, VSBC_NoSlip, VSBC_FreeSlipFreeSurface, VSBC_NoSlipFreeSurface, VSBC_TimeDependent, VSBC_Test } ViscousSinkerBC;
 
 typedef struct {
   PetscInt  nmaterials;
