@@ -1488,6 +1488,8 @@ PetscErrorCode MPntPStokesComputeMemberOffsets(size_t property_offsets[])
   property_offsets[0] = s;
   ierr = _compute_memory_offsets(&stokes,&stokes.rho,&s); CHKERRQ(ierr);
   property_offsets[1] = s;
+  ierr = _compute_memory_offsets(&stokes,&stokes.e_viscous,&s); CHKERRQ(ierr);
+  property_offsets[2] = s;
 
   if (!been_here) {
     for (i=0; i<N; i++) {
@@ -3098,6 +3100,30 @@ PetscErrorCode MaterialPointSet_density(MPAccess X,const int p,double var)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MaterialPointGet_viscous_strain(MPAccess X,const int p,float *var)
+{
+  MPntPStokes    *point;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  ierr = _get_field_MPntPStokes(X,p,&point);CHKERRQ(ierr);
+  MPntPStokesGetField_viscous_strain(point,var);
+
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MaterialPointSet_viscous_strain(MPAccess X,const int p,float var)
+{
+  MPntPStokes    *point;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+
+  ierr = _get_field_MPntPStokes(X,p,&point);CHKERRQ(ierr);
+  MPntPStokesSetField_viscous_strain(point,var);
+
+  PetscFunctionReturn(0);
+}
+
 /* stokespl */
 PetscErrorCode MaterialPointGet_plastic_strain(MPAccess X,const int p,float *var)
 {
@@ -3297,6 +3323,24 @@ PetscErrorCode MaterialPointScale_density(MPAccess X,double var)
     field = field * var;
 
     ierr = MaterialPointSet_density(X,p,field);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MaterialPointScale_viscous_strain(MPAccess X,double var)
+{
+  int np,p;
+  PetscErrorCode ierr;
+
+  DataBucketGetSizes(X->db,&np,NULL,NULL);
+  for (p=0; p<np; p++) {
+    float field;
+
+    ierr = MaterialPointGet_viscous_strain(X,p,&field);CHKERRQ(ierr);
+
+    field = field * var;
+
+    ierr = MaterialPointSet_viscous_strain(X,p,field);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
