@@ -903,6 +903,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_I_semi_eulerian(pTatin
   DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
   ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
   for (p=0; p<n_mp_points; p++) {
+    ierr = MaterialPointSet_viscous_strain(mpX,p,0.0);CHKERRQ(ierr);
     ierr = MaterialPointSet_plastic_strain(mpX,p,0.0);CHKERRQ(ierr);
     ierr = MaterialPointSet_yield_indicator(mpX,p,0);CHKERRQ(ierr);
   }
@@ -1112,9 +1113,9 @@ PetscErrorCode ModelOutput_Rift3D_I(pTatinCtx c,Vec X,const char prefix[],void *
   }
 
   {
-    const int                   nf = 4;
-    const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain };
-
+    const int                   nf = 5;
+    const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_viscosity, MPV_density, MPV_viscous_strain, MPV_plastic_strain };
+	
     ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
   }
 
