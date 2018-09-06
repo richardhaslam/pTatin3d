@@ -56,6 +56,7 @@ const char *MaterialPointVariableName[] =  {
   "region",
   "viscosity",
   "density",
+  "viscous_strain",
   "plastic_strain",
   "yield_indicator",
   "diffusivity",
@@ -67,6 +68,7 @@ const char *MaterialPointVariableParaviewDataType[] =  {
   "Int32",
   "Float64",
   "Float64",
+  "Float32",
   "Float32",
   "Int16",
   "Float64",
@@ -357,6 +359,9 @@ PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable va
       case MPV_region:
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_region is not of type \"double\"");
         break;
+	  case MPV_viscous_strain:
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_viscous_strain is not of type \"double\"");
+        break;
       case MPV_plastic_strain:
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_plastic_strain is not of type \"double\"");
         break;
@@ -433,6 +438,9 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
     switch (variable) {
       case MPV_plastic_strain:
         ierr = MaterialPointGet_plastic_strain(X,p,&var);CHKERRQ(ierr);
+        break;
+	  case MPV_viscous_strain:
+        ierr = MaterialPointGet_viscous_strain(X,p,&var);CHKERRQ(ierr);
         break;
 
       case MPV_viscosity:
@@ -1089,6 +1097,16 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 
           ierr = PetscFree(d_LA_cell);CHKERRQ(ierr);
           break;
+		  
+		case MPV_viscous_strain:
+          ierr = PetscMalloc(sizeof(float)*2*mx*2*my*2*mz,&f_LA_cell);CHKERRQ(ierr);
+          ierr = PetscMemzero(f_LA_cell,sizeof(float)*2*mx*2*my*2*mz);CHKERRQ(ierr);
+
+          ierr = _compute_cell_value_float(material_points,MPV_viscous_strain,2*mx,2*my,2*mz,f_LA_cell);CHKERRQ(ierr);
+          ierr = _write_float(vtk_fp,2*mx,2*my,2*mz,f_LA_cell);CHKERRQ(ierr);
+
+          ierr = PetscFree(f_LA_cell);CHKERRQ(ierr);
+          break;
 
         case MPV_plastic_strain:
           ierr = PetscMalloc(sizeof(float)*2*mx*2*my*2*mz,&f_LA_cell);CHKERRQ(ierr);
@@ -1193,6 +1211,16 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
           ierr = _write_double(vtk_fp,2*mx,2*my,2*mz,d_LA_cell);CHKERRQ(ierr);
 
           ierr = PetscFree(d_LA_cell);CHKERRQ(ierr);
+          break;
+		  
+		case MPV_viscous_strain:
+          ierr = PetscMalloc(sizeof(float)*2*mx*2*my*2*mz,&f_LA_cell);CHKERRQ(ierr);
+          ierr = PetscMemzero(f_LA_cell,sizeof(float)*2*mx*2*my*2*mz);CHKERRQ(ierr);
+
+          ierr = _compute_cell_value_float(material_points,MPV_viscous_strain,2*mx,2*my,2*mz,f_LA_cell);CHKERRQ(ierr);
+          ierr = _write_float(vtk_fp,2*mx,2*my,2*mz,f_LA_cell);CHKERRQ(ierr);
+
+          ierr = PetscFree(f_LA_cell);CHKERRQ(ierr);
           break;
 
         case MPV_plastic_strain:

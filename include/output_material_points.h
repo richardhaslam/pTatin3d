@@ -34,6 +34,7 @@ typedef enum {
   MPV_region=0,
   MPV_viscosity,
   MPV_density,
+  MPV_viscous_strain,
   MPV_plastic_strain,
   MPV_yield_indicator,
   MPV_diffusivity,
