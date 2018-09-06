@@ -871,7 +871,7 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
   PetscScalar    *LA_gcoords;
   int            pidx,n_mp_points;
   DataBucket     db;
-  DataField      PField_std,PField;
+  DataField      PField_std,PField,PField_stokes;
   float          strain_mp;
   PetscInt       nel,nen_u,k;
   const PetscInt *elnidx_u;
@@ -898,6 +898,8 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
   DataFieldGetAccess(PField_std);
   DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField);
   DataFieldGetAccess(PField);
+  DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
+  DataFieldGetAccess(PField_stokes);
 
   DataBucketGetSizes(db,&n_mp_points,0,0);
 
@@ -913,48 +915,55 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
   for (pidx=0; pidx<n_mp_points; pidx++) {
     MPntStd       *mpprop_std;
     MPntPStokesPl *mpprop;
+	MPntPStokes   *mpprop_stokes;
 
-    DataFieldAccessPoint(PField_std, pidx,(void**)&mpprop_std);
-    DataFieldAccessPoint(PField,     pidx,(void**)&mpprop);
+    DataFieldAccessPoint(PField_std,    pidx,(void**)&mpprop_std);
+    DataFieldAccessPoint(PField,        pidx,(void**)&mpprop);
+	DataFieldAccessPoint(PField_stokes, pidx,(void**)&mpprop_stokes);
 
+    
+    eidx_mp = mpprop_std->wil;
 
-    MPntPStokesPlGetField_yield_indicator(mpprop,&yield_type);
-    if (yield_type > 0) {
-      eidx_mp = mpprop_std->wil;
-
-      /* Get element coordinates */
-      ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx_mp],LA_gcoords);CHKERRQ(ierr);
-      /* Get element velocity */
-      ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx_mp],ufield);CHKERRQ(ierr);
-      /* get velocity components */
-      for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+    /* Get element coordinates */
+    ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx_mp],LA_gcoords);CHKERRQ(ierr);
+    /* Get element velocity */
+    ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx_mp],ufield);CHKERRQ(ierr);
+	/* get velocity components */
+    for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
         ux[k] = elu[3*k  ];
         uy[k] = elu[3*k+1];
         uz[k] = elu[3*k+2];
-      }
+    }
 
-      /* Get local coordinate of marker */
-      xi_mp = mpprop_std->xi;
+    /* Get local coordinate of marker */
+    xi_mp = mpprop_std->xi;
 
-      /* Prepare basis functions */
-      /* grad.Ni */
-      P3D_ConstructGNi_Q2_3D(xi_mp,GNI);
-      /* Get shape function derivatives */
-      P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
+    /* Prepare basis functions */
+    /* grad.Ni */
+    P3D_ConstructGNi_Q2_3D(xi_mp,GNI);
+    /* Get shape function derivatives */
+    P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
 
-      /* strain rate */
-      ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-      /* second inv stress */
-      ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+    /* strain rate */
+    ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+    /* second inv stress */
+    ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
 
+	MPntPStokesPlGetField_yield_indicator(mpprop,&yield_type);
+    if (yield_type > 0) {
       MPntPStokesPlGetField_plastic_strain(mpprop,&strain_mp);
       strain_mp = strain_mp + dt * inv2_D_mp;
       MPntPStokesPlSetField_plastic_strain(mpprop,strain_mp);
-    }
+    } else {
+	  MPntPStokesGetField_viscous_strain(mpprop_stokes,&strain_mp);
+      strain_mp = strain_mp + dt * inv2_D_mp;
+      MPntPStokesSetField_viscous_strain(mpprop_stokes,strain_mp);
+	}
   }
 
   DataFieldRestoreAccess(PField_std);
   DataFieldRestoreAccess(PField);
+  DataFieldRestoreAccess(PField_stokes);
   ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
