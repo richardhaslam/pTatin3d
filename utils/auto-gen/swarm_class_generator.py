@@ -785,10 +785,10 @@ def Generate_pTatin3d_MaterialPointStandard():
 def Generate_pTatin_MaterialPointStokesData():
 	ParticleClass      = 'MPntPStokes'
 	ParticleClassShort = 'MPPStk'
-	variable_name_list = [ 'eta',      'rho'    ]
-	variable_type_list = [ 'double',   'double' ]
-	variable_extend_list        = [ 1, 1 ]
-	variable_textural_name_list = [ 'eta_effective', 'density' ]
+	variable_name_list = [ 'eta',      'rho',      'e_viscous'    ]
+	variable_type_list = [ 'double',   'double',   'float' ]
+	variable_extend_list        = [ 1, 1, 1 ]
+	variable_textural_name_list = [ 'eta_effective', 'density', 'viscous_strain' ]
 
 
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
