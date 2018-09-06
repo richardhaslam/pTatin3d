@@ -543,6 +543,9 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
 
   hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_density",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_density; nvars++; }
+  
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_viscous_strain",&hasfield,NULL);
+  if (hasfield) { varlist[nvars] = MPV_viscous_strain; nvars++; }
 
   hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_plastic_strain",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_plastic_strain; nvars++; }
@@ -561,6 +564,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
                 "  -markercellp0_region\n"
                 "  -markercellp0_viscosity\n"
                 "  -markercellp0_density\n"
+				"  -markercellp0_viscous_strain\n"
                 "  -markercellp0_plastic_strain\n"
                 "  -markercellp0_yield_indicator\n"
                 "  -markercellp0_diffusivity\n"
