@@ -687,6 +687,21 @@ PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokes(DataBucket db,const char suf
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         ierr = DMDAWriteVectorToFile(point_field_data,filename,write_to_tgz);CHKERRQ(ierr);
         break;
+		
+	  case MPPStk_viscous_strain:
+
+        ierr = VecGetArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
+        for (p=0; p<n_points; p++) {
+          float val;
+          PetscScalar pval;
+
+          MPntPStokesGetField_viscous_strain(&points[p],&val);
+          pval = _PackFloatToPetscScalar(val);
+          LA_point_field_data[p] = pval;
+        }
+        ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
+        ierr = DMDAWriteVectorToFile(point_field_data,filename,write_to_tgz);CHKERRQ(ierr);
+        break;
     }
   }
 
@@ -1047,6 +1062,24 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokes(DataBucket db,const char su
           val = _UnPackPetscScalarToDouble(pval);
           MPntPStokesSetField_density(&points[p],val);
           //printf("[%d] <rho> %1.4e \n",p,val);
+        }
+        ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
+        break;
+		
+	  case MPPStk_viscous_strain:
+
+        ierr = VecLoadFromFile(point_field_data,filename);CHKERRQ(ierr);
+        ierr = VecGetLocalSize(point_field_data,&n_points);CHKERRQ(ierr);
+        DataBucketSetSizes(db,(int)n_points,-1);
+
+        ierr = VecGetArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
+        for (p=0; p<n_points; p++) {
+          double      val;
+          PetscScalar pval;
+
+          pval = LA_point_field_data[p];
+          val = _UnPackPetscScalarToDouble(pval);
+          MPntPStokesSetField_viscous_strain(&points[p],val);
         }
         ierr = VecRestoreArray(point_field_data,&LA_point_field_data);CHKERRQ(ierr);
         break;
