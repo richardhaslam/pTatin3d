@@ -1,0 +1,147 @@
+
+##  Using driver     : ./ptatin3d/src/ptatin_driver_nonlinear_ts.app
+## Options file for :
+##  L. Le Pourhiet, D. May, L. Huille, L. Watremez, and S. Leroy, "A genetic link between transform and hyper-extended margins", EPSL, 2017
+## PHYSICS PARAMETER for model POLC 100 km described in the paper.
+## For models with spacing of 200 300 and 400 km
+##  change -model_rift3D_I_notchspace accordingly in meter (2.e5 3.e5 4.e5)
+## FOR model REG
+##  change -model_rift3D_Itheta_1 0.030 to -model_rift3D_Itheta_1 0.025
+## ===============================================================
+-nonlinear_driver_v1
+-ptatin_model rift3D_I
+-log_summary
+-options_left 1
+-output_path ./EPSL_POLC_100
+-checkpoint_every_nsteps 250
+########## BASIC NUMERICS ##############
+-mx 256
+-my 64
+-mz 128
+-nsteps 1000001
+-dt_max 1e-3
+-dt_min 1e-8
+-output_frequency 25
+-model_rift3D_I_use_semi_eulerian
+-dt_max_surface_displacement 2.0e-4
+-use_quasi_newton_coordinate_update
+########### Box Geometry ################
+-model_rift3D_I_Lx 12.0e+5
+-model_rift3D_I_Ly 0.0e+5
+-model_rift3D_I_Lz 6.0e+5
+-model_rift3D_I_Ox 0.0e+5
+-model_rift3D_I_Oy -2.5e+5
+-model_rift3D_I_Oz 0.0e+5
+################PHYSICS##################
+-model_rift3D_I_DoubleNotch
+-model_rift3D_I_notchspace 2.0e5
+-model_rift3D_I_vz 0.00e-11
+-model_rift3D_I_vz_I 0.00e-11
+-model_rift3D_I_vx 1.58e-10
+-model_rift3D_I_vx_I 1.58e-10
+-model_rift3D_I_time_pause_start 20
+-model_rift3D_I_time_pause 25
+-model_rift3D_I_time_invert_start 26
+-model_rift3D_I_time_invert 31
+############ Phases Parameters #############
+-model_rift3D_I_phi 30
+-model_rift3D_I_phi_inf 5
+-model_rift3D_I_eps_min 0.0
+-model_rift3D_I_eps_max 0.3
+#### Lower crust ####
+#-model_rift3D_I_preexpA_lc 13.4637
+#-model_rift3D_I_Ascale_lc 1.e+6
+#-model_rift3D_I_entaply_lc 345.e+3
+#-model_rift3D_I_Vmol_lc 38.e-6
+#-model_rift3D_I_nexp_lc 3
+################ SOLVERS ################
+###### MG
+-A11_operator_type 0,1,1
+-dau_nlevels 3
+-stk_velocity_dm_mat_type aij
+#-stk_velocity_da_refine_hierarchy_x 2,2
+#-stk_velocity_da_refine_hierarchy_y 2,1
+#-stk_velocity_da_refine_hierarchy_z 2,2
+-stk_velocity_da_refine_hierarchy_x 4,2
+-stk_velocity_da_refine_hierarchy_y 2,1
+-stk_velocity_da_refine_hierarchy_z 4,2
+#### SNES
+-newton_its 0
+-snes_atol 1e-2
+-snes_max_it 10
+-snes_rtol 1e-4
+-snes_max_linear_solve_fail 10
+-snes_monitor
+-snes_converged_reason
+-snes_linesearch_type basic
+## Test snes options from guillaume's options file ###
+#-snes_ksp_ew
+#-snes_ksp_ew_rtol0 0.001
+#-snes_ksp_ew_rtolmax 0.001
+#-snes_ksp_ew_version 2
+#-snes_linesearch_type l2
+#-snes_type newtonls
+#-a11_op avx
+#####  KSP LAETITIA
+-ksp_max_it 50
+-ksp_rtol 1.0e-3
+-ksp_type fgmres
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_max_it 2
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_pc_type mg
+-fieldsplit_u_pc_mg_levels 3
+-fieldsplit_u_mg_levels_ksp_type gmres
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+#### KSP COARSE
+-fieldsplit_u_pc_mg_log
+-fieldsplit_u_mg_coarse_dmdarepart_pc_mg_log
+-fieldsplit_u_mg_coarse_ksp_type preonly
+-fieldsplit_u_mg_coarse_pc_type dmdarepart
+-fieldsplit_u_mg_coarse_pc_dmdarepart_factor 8
+# -----------------
+# 64 x 16 x 32
+# 32 x  8 x 16
+# 16 x  4 x  8
+# -----------------
+    -fieldsplit_u_mg_coarse_dmdarepart_ksp_type preonly
+    -fieldsplit_u_mg_coarse_dmdarepart_pc_type mg
+    -fieldsplit_u_mg_coarse_dmdarepart_pc_mg_galerkin
+    -fieldsplit_u_mg_coarse_dmdarepart_pc_mg_levels 3
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_type gmres
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_norm_type NONE
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_pc_type jacobi
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_max_it 6
+# -----------------
+# 16 x 4 x 8
+#  8 x 2 x 4
+# -----------------
+  -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_ksp_type preonly
+  -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_pc_type dmdarepart
+  -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_pc_dmdarepart_factor 64
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_ksp_type preonly
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_pc_type mg
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_pc_mg_galerkin
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_pc_mg_levels 2
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_type gmres
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_norm_type NONE
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_pc_type bjacobi
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_max_it 6
+
+
+#### THERMAL SOLVER
+-T_ksp_atol 1.0e-4
+-T_ksp_monitor
+-T_ksp_rtol 1.0e-10
+-T_ksp_type fgmres
+-T_pc_type bjacobi
+-T_ksp_max_it 150
+-T_snes_type ksponly
