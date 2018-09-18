@@ -184,7 +184,7 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
   DataFieldGetEntries(PField_k,(void**)&data_k);
 
   rho_ref = 1.0;
-  Cp  = 1000.0;
+  Cp  = 1.0;
   /* Constant parameters for all phases */
   Tref        = 273.0;
   phi         = 30.0;
@@ -242,8 +242,8 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
 
   /* ENERGY */
   source_type[0] = ENERGYSOURCE_USE_MATERIALPOINT_VALUE;
-  ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_uc,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
-  EnergyConductivityConstSetField_k0(&data_k[region_idx],2.7);
+  ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
+  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-6);
 //  EnergySourceConstSetField_HeatSource(&data_Q[region_idx],data->h_prod);
 
   // -------------------- //
@@ -278,8 +278,8 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
   MaterialConstantsSetValues_SoftLin(materialconstants,region_idx,eps_min,eps_max);
 
 /* ENERGY */
-  ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_lc,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
-  EnergyConductivityConstSetField_k0(&data_k[region_idx],2.8);
+  ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
+  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-6);
 
   // -------------------------- //
   /* MANTLE LITHOSPHERE PHASE 2 */
@@ -313,8 +313,8 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
   MaterialConstantsSetValues_SoftLin(materialconstants,region_idx,eps_min,eps_max);
 
 /* ENERGY */
-  ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ml,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
-  EnergyConductivityConstSetField_k0(&data_k[region_idx],3.3);
+  ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
+  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-6);
 
   // ---------------------------- //
   /* MANTLE ASTHENOSPHERE PHASE 3 */
@@ -348,8 +348,8 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
   MaterialConstantsSetValues_SoftLin(materialconstants,region_idx,eps_min,eps_max);
 
 /* ENERGY */
-  ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ma,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
-  EnergyConductivityConstSetField_k0(&data_k[region_idx],3.3);
+  ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
+  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-6);
   
   /* Read the options */
   /*cutoff */
