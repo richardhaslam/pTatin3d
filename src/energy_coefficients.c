@@ -265,7 +265,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
     H_mp = H_mp / (rho_mp * Cp);
 
     MPntPEnergySetField_diffusivity(mpp_energy,diffusivity_mp);
-    //MPntPEnergySetField_heat_source(mpp_energy,H_mp);
+    MPntPEnergySetField_heat_source(mpp_energy,H_mp);
   }
 
   DataFieldRestoreAccess(PField_std);
