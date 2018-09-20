@@ -44,6 +44,7 @@ typedef struct {
   PetscReal velocity_bar;
   PetscReal h_prod_bar;
   PetscReal k_bar;
+  PetscReal Cp_bar;
   PetscReal time_bar;
   PetscReal pressure_bar;
   PetscBool use_semi_eulerian_mesh;
