@@ -183,6 +183,9 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
   DataBucketGetDataFieldByName(materialconstants,EnergyConductivityConst_classname,&PField_k);
   DataFieldGetEntries(PField_k,(void**)&data_k);
 
+  /* Be carefull !!! 
+     to avoid issues with heat production on material points I defined a diffusivity and not a conductivity
+     therefore rho and Cp for thermal parameters are set to 1.0 and all thermal parameters are set with non-dimension */
   rho_ref = 1.0;
   Cp  = 1.0;
   /* Constant parameters for all phases */
@@ -208,7 +211,6 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
   phi_rad     = M_PI * phi/180.0;
   phi_inf_rad = M_PI * phi_inf/180.0;
   
-  // UPPER CRUST WITH STRIPES OF 4
   // -------------------- //
   /* UPPER CRUST PHASE 0 */
   // ------------------- //  
@@ -243,7 +245,7 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
   /* ENERGY */
   source_type[0] = ENERGYSOURCE_USE_MATERIALPOINT_VALUE;
   ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
-  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-6);
+  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-1);
 //  EnergySourceConstSetField_HeatSource(&data_Q[region_idx],data->h_prod);
 
   // -------------------- //
@@ -251,7 +253,7 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
   // ------------------- //  
   region_idx = 1;
   alpha      = 2.0e-5;
-  beta       = 3.e-12;
+  beta       = 3.e-12*1.0e+7;
   rho_lc     = 2800;
   ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_I_rho_lc",&rho_lc,NULL);CHKERRQ(ierr);
   MaterialConstantsSetValues_MaterialType(materialconstants,region_idx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);//DENSITY_BOUSSINESQ); 
@@ -279,14 +281,14 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
 
 /* ENERGY */
   ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
-  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-6);
+  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-1);
 
   // -------------------------- //
   /* MANTLE LITHOSPHERE PHASE 2 */
   // -------------------------- //  
   region_idx = 2;
   alpha      = 2.0e-5;
-  beta       = 3.e-12;
+  beta       = 3.e-12*1.0e+7;
   rho_ml     = 3300;
   ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_I_rho_ml",&rho_ml,NULL);CHKERRQ(ierr);
   MaterialConstantsSetValues_MaterialType(materialconstants,region_idx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);//DENSITY_BOUSSINESQ); 
@@ -314,14 +316,14 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
 
 /* ENERGY */
   ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
-  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-6);
+  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-1);
 
   // ---------------------------- //
   /* MANTLE ASTHENOSPHERE PHASE 3 */
   // ---------------------------- //  
   region_idx = 3;
   alpha      = 2.0e-5;
-  beta       = 3.e-12;
+  beta       = 3.e-12*1.0e+7;
   rho_ma     = 3300;
   ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_I_rho_ma",&rho_ma,NULL);CHKERRQ(ierr);
   MaterialConstantsSetValues_MaterialType(materialconstants,region_idx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);//DENSITY_BOUSSINESQ); 
@@ -349,7 +351,7 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
 
 /* ENERGY */
   ierr = MaterialConstantsSetValues_EnergyMaterialConstants(region_idx,matconstants_e,alpha,beta,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_CONSTANT,source_type);CHKERRQ(ierr);
-  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-6);
+  EnergyConductivityConstSetField_k0(&data_k[region_idx],1.0e-1);
   
   /* Read the options */
   /*cutoff */
@@ -428,6 +430,7 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
     data->density_bar   = data->pressure_bar / data->length_bar;
     data->h_prod_bar    = data->pressure_bar / data->time_bar;
     data->k_bar         = data->pressure_bar*data->length_bar*data->length_bar/data->time_bar;
+	data->Cp_bar        = data->pressure_bar/data->density_bar;
 
     PetscPrintf(PETSC_COMM_WORLD,"[rift3D_I]:  during the solve scaling will be done using \n");
     PetscPrintf(PETSC_COMM_WORLD,"  L*    : %1.4e [m]\n", data->length_bar );
@@ -460,15 +463,14 @@ PetscErrorCode ModelInitialize_Rift3D_I(pTatinCtx c,void *ctx)
     // scale material properties
     for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
       MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
-      MaterialConstantsEnergyScaleAll(materialconstants,regionidx,data->length_bar,data->time_bar,
-          data->pressure_bar);
+      //MaterialConstantsEnergyScaleAll(materialconstants,regionidx,data->length_bar,data->time_bar,data->pressure_bar);
     }
     // scale thermal paramatres 
     data->h_prod = data->h_prod / data->h_prod_bar;
     data->h_prod_rcp = data->h_prod_rcp / (data->h_prod_bar/(data->density_bar*(data->pressure_bar/data->density_bar)));
     data->k_ref  = data->k_ref / data->k_bar;
     data->qm     = data->qm / (data->pressure_bar*data->velocity_bar);
-
+	
     /*Reports scaled values*/
 
     PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_I_Ox   :  %+1.4e    -model_rift3D_I_Lx   :  %+1.4e  \n", data->Ox ,data->Lx );
@@ -1347,6 +1349,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest_Rift3D_I(pTatinCtx c,
   ModelRift3D_ICtx *data = (ModelRift3D_ICtx*)ctx;
   int              p,n_mp_points;
   PetscScalar      y_lab,y_moho,y_midcrust,notch_l,notch_w2,xc,notchspace;
+  PetscScalar      Cp,rho_m,rho_ci,rho_cs;
   DataBucket       db;
   DataField        PField_std,PField_pls,PField_energy;
   int              phase;
@@ -1380,6 +1383,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest_Rift3D_I(pTatinCtx c,
   notch_l    = 120.e3;
   xc         = (data->Lx + data->Ox)/2.0* data->length_bar;
   notchspace = 200.e3;
+  Cp         = 1.0e+3/data->Cp_bar;
+  rho_m      = 3.3e+3/data->density_bar;
+  rho_ci     = 2.85e+3/data->density_bar;
+  rho_cs     = 2.7e+3/data->density_bar;
   //xc         = 0.0;
   DataBucketGetSizes(db,&n_mp_points,0,0);
 
@@ -1411,6 +1418,17 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest_Rift3D_I(pTatinCtx c,
     
     /* Heat source production decreasing exponentially with depth */
     prod = data->h_prod*exp(-position[1]/data->y_prod);
+	/* Since I set a diffusivity and a rho_ref and Cp = 1.0 in order to avoid issues with heat source on material points
+	   the H has to be set as a H/(rho*Cp), the following conditions do this */
+	if (position[1] < y_lab/data->length_bar) {
+		prod = prod/(rho_m*Cp);
+	} else if (position[1] < y_moho/data->length_bar) {
+		prod = prod/(rho_m*Cp);
+	} else if (position[1] < y_midcrust/data->length_bar) {
+		prod = prod/(rho_ci*Cp);
+	} else {
+		prod = prod/(rho_cs*Cp);
+	}
 
     /* convert to scaled units */
     xcoord = position[0] * data->length_bar;
