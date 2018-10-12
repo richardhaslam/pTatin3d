@@ -517,27 +517,34 @@ PetscErrorCode PhysCompLoad2_Energy(DM dav,const char jfilename[],PhysCompEnergy
 
   /* query file for state vector filenames - load vectors into energy struct */
   {
-    cJSON *jso_petscvec = NULL;
-
     /* u - V */
-    if (jphys) { jso_petscvec = cJSON_GetObjectItem(jphys,"u_minus_V"); }
-    if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"u_minus_V\"");
+    if (jphys) {
+      cJSON *jso_petscvec = NULL;
+      jso_petscvec = cJSON_GetObjectItem(jphys,"u_minus_V");
+      if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"u_minus_V\"");
+    }
 
     ierr = cJSONGetPetscString(comm,jso_petscvec,"fileName",pathtovec,&found);CHKERRQ(ierr);
     if (found) { ierr = VecLoadFromFile((*E)->u_minus_V,pathtovec);CHKERRQ(ierr);
     } else       SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"fileName\"");
 
     /* T^{k} */
-    if (jphys) { jso_petscvec = cJSON_GetObjectItem(jphys,"Told"); }
-    if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"Told\"");
+    if (jphys) {
+      cJSON *jso_petscvec = NULL;
+      jso_petscvec = cJSON_GetObjectItem(jphys,"Told");
+      if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"Told\"");
+    }
 
     ierr = cJSONGetPetscString(comm,jso_petscvec,"fileName",pathtovec,&found);CHKERRQ(ierr);
     if (found) { ierr = VecLoadFromFile((*E)->Told,pathtovec);CHKERRQ(ierr);
     } else       SETERRQ(comm,PETSC_ERR_USER,"Failed to locate key \"fileName\"");
 
     /* X^{k} */
-    if (jphys) { jso_petscvec = cJSON_GetObjectItem(jphys,"Xold"); }
-    if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"Xold\"");
+    if (jphys) {
+      cJSON *jso_petscvec = NULL;
+      jso_petscvec = cJSON_GetObjectItem(jphys,"Xold");
+      if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"Xold\"");
+    }
 
     ierr = cJSONGetPetscString(comm,jso_petscvec,"fileName",pathtovec,&found);CHKERRQ(ierr);
     if (found) { ierr = VecLoadFromFile((*E)->Xold,pathtovec);CHKERRQ(ierr);
