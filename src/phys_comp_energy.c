@@ -517,9 +517,11 @@ PetscErrorCode PhysCompLoad2_Energy(DM dav,const char jfilename[],PhysCompEnergy
 
   /* query file for state vector filenames - load vectors into energy struct */
   {
+    cJSON *jso_petscvec;
+
     /* u - V */
     if (jphys) {
-      cJSON *jso_petscvec = NULL;
+      jso_petscvec = NULL;
       jso_petscvec = cJSON_GetObjectItem(jphys,"u_minus_V");
       if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"u_minus_V\"");
     }
@@ -530,7 +532,7 @@ PetscErrorCode PhysCompLoad2_Energy(DM dav,const char jfilename[],PhysCompEnergy
 
     /* T^{k} */
     if (jphys) {
-      cJSON *jso_petscvec = NULL;
+      jso_petscvec = NULL;
       jso_petscvec = cJSON_GetObjectItem(jphys,"Told");
       if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"Told\"");
     }
@@ -541,7 +543,7 @@ PetscErrorCode PhysCompLoad2_Energy(DM dav,const char jfilename[],PhysCompEnergy
 
     /* X^{k} */
     if (jphys) {
-      cJSON *jso_petscvec = NULL;
+      jso_petscvec = NULL;
       jso_petscvec = cJSON_GetObjectItem(jphys,"Xold");
       if (!jso_petscvec) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate key \"Xold\"");
     }
