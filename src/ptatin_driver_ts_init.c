@@ -1108,7 +1108,7 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
 
     /* first time this is called we REQUIRE that a valid time step is chosen */
     energy->dt = user->dt;
-    ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X_e,energy,energy->dt);CHKERRQ(ierr);
+    ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X_s,energy,energy->dt);CHKERRQ(ierr);
     ierr = pTatinPhysCompEnergy_ComputeTimestep(energy,energy->Told,&timestep);CHKERRQ(ierr);
 
     /*
