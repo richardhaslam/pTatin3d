@@ -144,12 +144,20 @@ PTH_CONF_FILE=$(INSTALL_DIR)/pth.conf
 
 test :
 	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --smoke) -w $(PTH_CONF_FILE)
+	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
+	-@echo "To check test results (after waiting, if on a batch system), use"
+	-@echo "   make testcheck"
+	-@echo "To run a larger set of tests, use "
+	-@echo "   make testall"
 
 testcheck :
 	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --smoke) --verify -w $(PTH_CONF_FILE)
 
 testall :
 	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --skip=$(TEST_IGNORE)) -w $(PTH_CONF_FILE)
+	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
+	-@echo "To check test results (after waiting, if on a batch system), use"
+	-@echo "   make testallcheck"
 
 testallcheck :
 	cd tests && ./runTests.py --verify -t $(shell ./tests/getTestGroup.py --skip=$(TEST_IGNORE)) -w $(PTH_CONF_FILE)
