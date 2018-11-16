@@ -1,5 +1,5 @@
 /*
-This file has been copied from the PETSc v3.9 source tree (git tag v3.9)
+This file has been copied from the PETSc v3.10 source tree (commit d245c76cbd564eb268fb9086f7a891b164dc731f)
   $PETSC_DIR/src/ksp/ksp/examples/tutorials/ex43-solcx.h
 */
 
