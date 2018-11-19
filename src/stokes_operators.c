@@ -136,6 +136,9 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
   ierr = PetscFunctionListAdd(&MatMult_flist,"subrepart",MFStokesWrapper_A11_SubRepart);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&SetUp_flist,"subrepart",MFA11SetUp_SubRepart);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&Destroy_flist,"subrepart",MFA11Destroy_SubRepart);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&MatMult_flist,"avxcuda",MFStokesWrapper_A11_AVXCUDA);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&SetUp_flist,"avxcuda",MFA11SetUp_AVXCUDA);CHKERRQ(ierr);
+  ierr = PetscFunctionListAdd(&Destroy_flist,"avxcuda",MFA11Destroy_AVXCUDA);CHKERRQ(ierr);
 #endif
 
   /* Set A11 operator type, defaulting to AVX if available, otherwise tensor */

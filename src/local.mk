@@ -63,6 +63,7 @@ libptatin3d-y.c += $(call thisdir, \
   stokes_operators_tensor.c \
   stokes_operators_avx.c \
   stokes_operators_subrepart.c \
+  stokes_operators_avxcuda.c \
   quadrature.c \
   phase_map.c \
   cartgrid.c \
