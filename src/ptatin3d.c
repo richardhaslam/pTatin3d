@@ -697,7 +697,7 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
     char  logfile[PETSC_MAX_PATH_LEN];
     PetscViewer viewer;
 
-    sprintf(logfile,"%s/ptatin.petsc.log_summary-%s",user->outputpath,user->formatted_timestamp);
+    PetscSNPrintf(logfile,PETSC_MAX_PATH_LEN-1,"%s/ptatin.petsc.log_summary-%s",user->outputpath,user->formatted_timestamp);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&viewer);CHKERRQ(ierr);
     ierr = PetscLogView(viewer);CHKERRQ(ierr);
@@ -796,10 +796,10 @@ PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
   ierr = pTatinLogOpenFile(ctx);CHKERRQ(ierr);
   ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
 
-  sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
+  ierr = PetscSNPrintf(optionsfile,PETSC_MAX_PATH_LEN-1,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);CHKERRQ(ierr);
   ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
 
-  sprintf(optionsfile,"%s/ptatin.options",ctx->outputpath);
+  ierr = PetscSNPrintf(optionsfile,PETSC_MAX_PATH_LEN-1,"%s/ptatin.options",ctx->outputpath);CHKERRQ(ierr);
   ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
 
 //  ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);

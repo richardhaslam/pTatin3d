@@ -45,7 +45,7 @@ PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
   PetscErrorCode ierr;
 
   pTatinGenerateFormattedTimestamp(date_time);
-  sprintf(name,"%s/ptatin.log-%s",ctx->outputpath,date_time);
+  ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/ptatin.log-%s",ctx->outputpath,date_time);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
   if (!stdout) {
