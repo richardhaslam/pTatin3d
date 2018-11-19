@@ -156,7 +156,7 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
   /* slab geometry */
   ierr = iPLUS_CreateSlabGeometry(data);CHKERRQ(ierr);
 
-  sprintf(logfile,"%s/iplus.logfile",c->outputpath);
+  ierr = PetscSNPrintf(logfile,PETSC_MAX_PATH_LEN-1,"%s/iplus.logfile",c->outputpath);CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&data->logviewer);CHKERRQ(ierr);
 
   data->iplus_output_frequency = 1;

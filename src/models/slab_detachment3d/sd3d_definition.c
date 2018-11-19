@@ -205,7 +205,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
   {
     char logfile[PETSC_MAX_PATH_LEN];
 
-    sprintf(logfile,"%s/sd3d.logfile",ptatinctx->outputpath);
+  ierr = PetscSNPrintf(logfile,PETSC_MAX_PATH_LEN-1,"%s/sd3d.logfile",ptatinctx->outputpath);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&modeldata->logviewer);CHKERRQ(ierr);
 
     PetscViewerASCIIPrintf(modeldata->logviewer,"# Slab detachment 3D logfile\n");
