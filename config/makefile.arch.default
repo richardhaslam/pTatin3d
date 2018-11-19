@@ -1,7 +1,7 @@
 #
 #  Default architecture neutral makefile for pTatin
 #    Operating system: OSX operating system
-#    Compiler: gcc,gfortran
+#    Compiler: gcc
 
 # ----------------------------------------------------------------------------
 #  pTatin specific compilation flags can be defined using TATIN_CFLAGS
@@ -28,19 +28,6 @@ export TATIN_CFLAGS	= -std=gnu99 -Wall
 # <examples> Enforce specific optimisation flags for ptatin build (independent of petsc configuration
 #export TATIN_CFLAGS	= -std=gnu99 -O2 -Wall -fstrict-aliasing -funroll-loops -mavx
 #export TATIN_CFLAGS	= -std=gnu99 -O3 -Wall -fast -ftree-vectorize -ftree-vectorizer-verbose=4 -fstrict-aliasing -funroll-loops -mavx
-
-# ----------------------------------------------------------------------------
-# Definition of TATIN_FFLAGS (user to edit)
-# ----------------------------------------------------------------------------
-
-# Use default petsc compilation flags + petsc cflags
-export TATIN_FFLAGS	= -ffree-line-length-4000
-
-# <example> Enforce debug pTatin build of fortran source
-#export TATIN_FFLAGS	= -O0 -ffree-line-length-4000
-
-# <example> Enforce optimised pTatin build of fortran source
-#export TATIN_FFLAGS	= -O2 -ffree-line-length-4000
 
 # ----------------------------------------------------------------------------
 #    pTatin build configuration settings (user to edit - defaults are shown)

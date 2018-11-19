@@ -99,10 +99,6 @@ libptatin3d-$(CONFIG_OPENCL).c += $(call thisdir, \
 # One file needs special flags.
 $(OBJDIR)/$(call thisdir,ptatin_init.o) : CFLAGS += -DCOMPFLAGS='$(TATIN_CFLAGS)'
 
-libptatin3d-$(CONFIG_FORTRAN).f += $(call thisdir, \
-  stokes_q2p1_mf_operators_def.f90 \
-)
-
 ptatin-drivers-y.c += $(call thisdir, \
   ptatin_driver_ic.c \
   ptatin_write_pvts.c \

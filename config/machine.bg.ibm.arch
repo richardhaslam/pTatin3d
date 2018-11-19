@@ -8,16 +8,10 @@ export TATIN_CFLAGS_DEBUG = -O0 -Wall -g
 export TATIN_CFLAGS_OPT_a = -O2 -Wall -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
 export TATIN_CFLAGS_OPT_b = -O3 -Wall -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
 
-export TATIN_FFLAGS_DEBUG = -O0 -g -ffree-line-length-4000
-export TATIN_FFLAGS_OPT_a = -O2 -ffree-line-length-4000 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
-export TATIN_FFLAGS_OPT_b = -O2 -ffree-line-length-4000 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
-
 #
 #  Select optimized or debug compilation flags
 #
 export TATIN_CFLAGS = ${TATIN_CFLAGS_OPT_a}
-export TATIN_FFLAGS = ${TATIN_FFLAGS_OPT_a}
-
 
 #
 #  -- pTatin external packages --
