@@ -79,7 +79,7 @@ static void PetscSortLongInt_Private(long int *v,long int right)
 {
   long int i,j;
   long int pivot,tmp;
-  
+
   if (right <= 1) {
     if (right == 1) {
       if (v[0] > v[1]) PT_SWAP(v[0],v[1],tmp);
@@ -103,7 +103,7 @@ static void PetscSortLongInt_Private(long int *v,long int right)
 PetscErrorCode PetscSortedRemoveDupsLongInt(long int *n,long int ii[])
 {
   long int i,s = 0,N = *n, b = 0;
-  
+
   PetscFunctionBegin;
   for (i=0; i<N-1; i++) {
     if (PetscUnlikely(ii[b+s+1] < ii[b])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Input array is not sorted");
@@ -121,7 +121,7 @@ static inline PetscErrorCode PTableValues_Insert_default(PTableValues *ptv,long 
   long int  i;
   PetscBool found = PETSC_FALSE;
   long int  *tmp;
-  
+
   for (i=0; i<ptv->len; i++) {
     if (ptv->values[i] == v) {
       found = PETSC_TRUE;
@@ -142,7 +142,7 @@ static inline PetscErrorCode PTableValues_Insert_default(PTableValues *ptv,long 
 PetscErrorCode PTableValues_SortPurge(PTableValues *ptv)
 {
   long int  *tmp;
-  
+
   //printf("sort\n");
   PetscSortLongInt_Private(ptv->values,ptv->len-1);
   PetscSortedRemoveDupsLongInt(&ptv->len,ptv->values);
@@ -156,20 +156,20 @@ static inline PetscErrorCode PTableValues_Insert_greedy(PTableValues *ptv,long i
 {
   long int  *tmp;
   static long int counter = 0;
-  
+
   tmp = (long int*)realloc(ptv->values,sizeof(long int)*(ptv->len+1));
   ptv->allocated_len = ptv->len+1;
   ptv->values = tmp;
   ptv->values[ptv->len] = v;
   ptv->len++;
-  
+
   counter++;
-  
+
   if (counter == 100000) {
     PTableValues_SortPurge(ptv);
     counter = 0;
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -205,13 +205,13 @@ PetscErrorCode _PTableSortPurgeValues(PTable table)
 {
   PetscErrorCode ierr;
   long int       k;
-  
+
   if (table->type == PTABLE_DENSE) {
     PTable_DENSE *dense = (PTable_DENSE*)table->data;
 
     for (k=0; k<table->size; k++) {
       PTableValues *row = NULL;
-      
+
       row = &dense->row[k];
       ierr = PTableValues_SortPurge(row);CHKERRQ(ierr);
     }
@@ -219,13 +219,13 @@ PetscErrorCode _PTableSortPurgeValues(PTable table)
     PTable_SPARSE *sparse = (PTable_SPARSE*)table->data;
 
     ierr = PTableSparse_PrepareKeyList(sparse);CHKERRQ(ierr);
-    
+
     /* traverse and pluck */
     for (k=0; k<sparse->key_list_len; k++) {
       long int     key;
       khiter_t     iterator;
       PTableValues *row = NULL;
-      
+
       key = sparse->key_list[k];
       iterator = kh_get(ptable64, sparse->hash, key);
       row = kh_value(sparse->hash, iterator);
@@ -244,7 +244,7 @@ PetscErrorCode PTableSetValue_DENSE(PTable p,long int r,long int v)
   PetscErrorCode ierr;
   long int       rid;
   PTableValues   *row;
-  
+
   rid = r - p->start;
   row = &dense->row[rid];
   ierr = PTableValues_Insert(row,v);CHKERRQ(ierr);
@@ -261,7 +261,7 @@ PetscErrorCode PTableGetValues_DENSE(PTable p,long int r,long int *len,const lon
 {
   PTable_DENSE   *dense = (PTable_DENSE*)p->data;
   long int       rid;
-  
+
   rid = r - p->start;
   if (len) {
     *len = dense->row[ rid ].len;
@@ -277,7 +277,7 @@ PetscErrorCode PTableCreate_DENSE(PTable p)
   PTable_DENSE   *dense;
   long int       i;
   PetscErrorCode ierr;
-  
+
   ierr = PetscMalloc1(1,&dense);CHKERRQ(ierr);
   p->data = (void*)dense;
   dense->nentries = p->size;
@@ -317,11 +317,11 @@ PetscErrorCode PTableSparse_PrepareKeyList(PTable_SPARSE *sparse)
   khiter_t       k0,k1,k;
   khint_t        len;
   long int       key,cnt;
-  
+
   if (sparse->key_list) {
     ierr = PetscFree(sparse->key_list);CHKERRQ(ierr);
   }
-  
+
   k0 = kh_begin(sparse->hash);
   k1 = kh_end(sparse->hash);
   len = kh_size(sparse->hash);
@@ -339,7 +339,7 @@ PetscErrorCode PTableSparse_PrepareKeyList(PTable_SPARSE *sparse)
     }
   }
   sparse->key_list_len = cnt;
-  
+
   /* sort keys */
   PetscSortLongInt_Private(sparse->key_list,cnt-1);
   sparse->key_list_sorted = PETSC_TRUE;
@@ -353,16 +353,16 @@ PetscErrorCode PTableSetValue_SPARSE(PTable p,long int r,long int v)
   PTableValues   *row = NULL;
   khiter_t       iterator;
   long int       key;
-  
+
   key = r - p->start; /* not sure it is a clever idea to offset this */
-  
+
   iterator = kh_get(ptable64, sparse->hash, key);
   if (!kh_exist(sparse->hash, iterator)) {
     int ret;
 
     ierr = PetscMalloc1(1,&row);CHKERRQ(ierr);
     ierr = PTableValues_New(row);CHKERRQ(ierr);
-    
+
     iterator = kh_put(ptable64, sparse->hash, key, &ret);
     (kh_value(sparse->hash, iterator)) = row;
     sparse->nentries++;
@@ -382,7 +382,7 @@ PetscErrorCode PTableHasValues_SPARSE(PTable p,long int r,PetscBool *found)
   PTable_SPARSE  *sparse = (PTable_SPARSE*)p->data;
   khiter_t       iterator;
   long int       key;
-  
+
   key = r - p->start;
   iterator = kh_get(ptable64, sparse->hash, key);
   if (!kh_exist(sparse->hash, iterator)) {
@@ -399,9 +399,9 @@ PetscErrorCode PTableGetValues_SPARSE(PTable p,long int r,long int *len,const lo
   PTableValues   *row = NULL;
   khiter_t       iterator;
   long int       key;
-  
+
   key = r - p->start;
-  
+
   iterator = kh_get(ptable64, sparse->hash, key);
   //if (!kh_exist(sparse->hash, iterator)) {
   //  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Key %ld does not exist in table. Use PTableQueryValues() if you want to double-check prior to calling PTableGetValues()",key);
@@ -410,12 +410,12 @@ PetscErrorCode PTableGetValues_SPARSE(PTable p,long int r,long int *len,const lo
     if (len) { *len = 0; }
     if (v) {   *v = NULL; }
   }
-  
+
   row = kh_value(sparse->hash, iterator);
   if (!row) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Key %ld maps to a NULL row entry in the table. An initialization error has occurred",key);
   }
-  
+
   if (len) {
     *len = row->len;
   }
@@ -432,28 +432,28 @@ PetscErrorCode PTableCreate_SPARSE(PTable p)
   int            ret;
   khiter_t       iterator;
   long int       key = -1;
-  
+
   ierr = PetscMalloc1(1,&sparse);CHKERRQ(ierr);
   p->data = (void*)sparse;
   sparse->nentries = 0;
 
   sparse->hash = kh_init(ptable64);
   sparse->nentries = 0;
-  
+
   /* insert key into slot 1 */
   iterator = kh_put(ptable64, sparse->hash, key, &ret);
   {
     PTableValues *row_dummy;
-    
+
     ierr = PetscMalloc1(1,&row_dummy);CHKERRQ(ierr);
     ierr = PTableValues_New(row_dummy);CHKERRQ(ierr);
-    
+
     (kh_value(sparse->hash, iterator)) = row_dummy;
   }
 
   sparse->key_list = NULL;
   sparse->key_list_sorted = PETSC_FALSE;
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -465,12 +465,12 @@ PetscErrorCode PTableDestroy_SPARSE(PTable p)
   long int       key;
   PetscErrorCode ierr;
   khiter_t k,k0,k1;
-  
+
   if (sparse->key_list) { ierr = PetscFree(sparse->key_list);CHKERRQ(ierr); }
-  
+
   k0 = kh_begin(sparse->hash);
   k1 = kh_end(sparse->hash);
-  
+
   for (k=k0; k<k1; k++) {
     key = kh_key(sparse->hash, k);
     if (kh_exist(sparse->hash, k)) {
@@ -482,7 +482,7 @@ PetscErrorCode PTableDestroy_SPARSE(PTable p)
   }
   kh_destroy(ptable64, sparse->hash);
   sparse->hash = NULL;
-  
+
   ierr = PetscFree(sparse);CHKERRQ(ierr);
   p->data = NULL;
   PetscFunctionReturn(0);
@@ -496,9 +496,9 @@ PetscErrorCode PTableView_Self(PTable p)
 {
   long int k,i,nentries;
   PetscBool has_row;
-  
+
   if (!p) PetscFunctionReturn(0);
-  
+
   printf("PTableView:\n");
   PetscPrintf(p->comm,"  commsize: %D\n",(PetscInt)p->commsize);
   if (p->type == PTABLE_DENSE ) {  printf("  Type: \"dense\"\n"); }
@@ -516,11 +516,11 @@ PetscErrorCode PTableView_Self(PTable p)
     } else {
       long int       rl;
       const long int *rv;
-      
+
       printf("row %.6ld ",k);
       PTableGetValues(p,k,&rl,&rv);
       printf(": nentries %.6ld : ",rl);
-      
+
       // viewer for short arrary of values
       if (rl < 20) {
         for (i=0; i<rl-1; i++) {
@@ -547,10 +547,10 @@ PetscErrorCode PTableView_Self(PTable p)
           printf("%ld\n",rv[rl-1]);
         }
       }
-      
+
     }
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -561,9 +561,9 @@ PetscErrorCode PTableView(PTable p)
   PetscErrorCode ierr;
   long int k,i;
   PetscBool has_row;
-  
+
   if (!p) PetscFunctionReturn(0);
-  
+
   ierr = MPI_Comm_rank(p->comm,&commrank);CHKERRQ(ierr);
 
   PetscPrintf(p->comm,"PTableView:\n");
@@ -592,11 +592,11 @@ PetscErrorCode PTableView(PTable p)
     } else {
       long int       rl;
       const long int *rv;
-      
+
       PetscSynchronizedPrintf(p->comm,"row %.6ld ",k);
       PTableGetValues(p,k,&rl,&rv);
       PetscSynchronizedPrintf(p->comm,": nentries %.6ld : ",rl);
-      
+
       // viewer for short arrary of values
       if (rl < 20) {
         for (i=0; i<rl-1; i++) {
@@ -608,7 +608,7 @@ PetscErrorCode PTableView(PTable p)
       // viewer for longer arrary of values
       if (rl >= 20) {
         long int nnr = rl/20;
-        
+
         for (long int kk=0; kk<nnr; kk++) {
           PetscSynchronizedPrintf(p->comm,"\n    ");
           for (long int ii=0; ii<20; ii++) {
@@ -623,7 +623,7 @@ PetscErrorCode PTableView(PTable p)
           PetscSynchronizedPrintf(p->comm,"%ld\n",rv[rl-1]);
         }
       }
-      
+
     }
   }
   PetscSynchronizedFlush(p->comm,PETSC_STDOUT);
@@ -636,11 +636,11 @@ PetscErrorCode PTableViewLite(PTable p)
   PetscErrorCode ierr;
   long int k,nentries,nentries_g;
   PetscBool has_row;
-  
+
   if (!p) PetscFunctionReturn(0);
-  
+
   ierr = MPI_Comm_rank(p->comm,&commrank);CHKERRQ(ierr);
-  
+
   PetscPrintf(p->comm,"PTableViewLite:\n");
   if (p->type == PTABLE_DENSE ) {  PetscPrintf(p->comm,"  Type: \"dense\"\n"); }
   if (p->type == PTABLE_SPARSE ) { PetscPrintf(p->comm,"  Type: \"sparse\"\n"); }
@@ -664,13 +664,13 @@ PetscErrorCode PTableViewLite(PTable p)
     } else {
       long int       rl;
       const long int *rv;
-      
+
       PTableGetValues(p,k,&rl,&rv);
       PetscSynchronizedPrintf(p->comm,"row %.6ld : nentries %.6ld\n",k,rl);
     }
   }
   PetscSynchronizedFlush(p->comm,PETSC_STDOUT);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -678,10 +678,10 @@ PetscErrorCode PTableDestroy(PTable *pt)
 {
   PetscErrorCode ierr;
   PTable p;
-  
+
   if (!pt) PetscFunctionReturn(0);
   p = *pt;
-  
+
   if (p->start_all) { ierr = PetscFree(p->start_all);CHKERRQ(ierr); }
   if (p->end_all) { ierr = PetscFree(p->end_all);CHKERRQ(ierr); }
   if (p->cache) {
@@ -697,12 +697,12 @@ PetscErrorCode PTableCreate(MPI_Comm comm,PTable *p)
 {
   PTable _p;
   PetscErrorCode ierr;
-  
-  
+
+
   ierr = PetscMalloc1(1,&_p);CHKERRQ(ierr);
   ierr = PetscMemzero(_p,sizeof(struct _p_PTable));CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&_p->commsize);CHKERRQ(ierr);
-  
+
   _p->comm = comm;
   _p->start = -2;
   _p->end   = -1;
@@ -713,14 +713,14 @@ PetscErrorCode PTableCreate(MPI_Comm comm,PTable *p)
   _p->start_all = NULL;
   _p->end_all   = NULL;
   _p->issynchronized = PETSC_FALSE;
-  
+
   if (_p->commsize > 1) {
     ierr = PTableCreate(PETSC_COMM_SELF,&_p->cache);CHKERRQ(ierr);
     ierr = PTableSetType(_p->cache,PTABLE_SPARSE);CHKERRQ(ierr);
     ierr = PetscMalloc1(_p->commsize,&_p->start_all);CHKERRQ(ierr);
     ierr = PetscMalloc1(_p->commsize,&_p->end_all);CHKERRQ(ierr);
   }
-  
+
   *p = _p;
   PetscFunctionReturn(0);
 }
@@ -740,18 +740,18 @@ PetscErrorCode PTableSync_MPI(PTable p)
   DataEx         de;
   long int       *pack_buffer,*recv_buffer;
   PetscInt       recv_length,cnt;
-  
-  
+
+
   ierr = MPI_Comm_rank(p->comm,&commrank);CHKERRQ(ierr);
   cache = p->cache;
-  
+
   /* should do a sort/purge on the cached table */
   ierr = _PTableSortPurgeValues(cache);CHKERRQ(ierr);
   p->cache->issynchronized = PETSC_TRUE; /* cache is sequential so it always up to date - furthermore, one should never access it via GetValues */
-  
+
   sparse = (PTable_SPARSE*)cache->data;
   ierr = PTableSparse_PrepareKeyList(sparse);CHKERRQ(ierr);
-  
+
   //for (k=0; k<sparse->key_list_len; k++) {
   //  printf("r %d : k %ld : key %ld \n",commrank,k,sparse->key_list[k]);
   //}
@@ -762,7 +762,7 @@ PetscErrorCode PTableSync_MPI(PTable p)
 
   // [dsde:topology]
   ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
-  
+
   /* This is a hack and simple done because I was lazy */
   for (j=0; j<p->commsize; j++) {
     PetscMPIInt rank_j = (PetscMPIInt)j;
@@ -778,9 +778,9 @@ PetscErrorCode PTableSync_MPI(PTable p)
   for (k=0; k<sparse->key_list_len; k++) {
     long int len;
     PetscMPIInt target_rank;
-    
+
     key = sparse->key_list[k];
-    
+
     //ierr = PTableGetValues(cache,key,&len,NULL);CHKERRQ(ierr);
     ierr = cache->getvalues(cache,key,&len,NULL);CHKERRQ(ierr);
 
@@ -793,13 +793,13 @@ PetscErrorCode PTableSync_MPI(PTable p)
         }
       }
     }
-    
+
     ierr = DataExAddToSendCount(de, target_rank, len+2 );CHKERRQ(ierr);
-    
+
   }
 
   ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
-  
+
   // [dsde:pack]
   ierr = DataExPackInitialize(de,sizeof(long int));CHKERRQ(ierr);
 
@@ -809,7 +809,7 @@ PetscErrorCode PTableSync_MPI(PTable p)
     PetscMPIInt target_rank;
 
     key = sparse->key_list[k];
-    
+
     //ierr = PTableGetValues(cache,key,&len,&vals);CHKERRQ(ierr);
     ierr = cache->getvalues(cache,key,&len,&vals);CHKERRQ(ierr);
 
@@ -823,9 +823,9 @@ PetscErrorCode PTableSync_MPI(PTable p)
       }
     }
 
-    
+
     ierr = PetscMalloc1(len+2,&pack_buffer);CHKERRQ(ierr);
-    
+
     pack_buffer[0] = key;
     pack_buffer[1] = len;
     //if (commrank == 0){ printf("[p] key %ld : len %ld : v \n",key,len); }
@@ -834,24 +834,24 @@ PetscErrorCode PTableSync_MPI(PTable p)
     //for (j=2; j<len+2; j++) {
     //  if (commrank == 0){ printf("[p] key %ld : len %ld : v %ld \n",key,len,pack_buffer[j]); }
     //}
-    
+
     for (j=0; j<len+2; j++) {
       ierr = DataExPackData( de, target_rank, 1,(void*)&pack_buffer[j] );CHKERRQ(ierr);
     }
-    
+
     ierr = PetscFree(pack_buffer);CHKERRQ(ierr);
   }
-  
+
   ierr = DataExPackFinalize(de);CHKERRQ(ierr);
-  
+
   // [send-recv]
   ierr = DataExBegin(de);CHKERRQ(ierr);
   ierr = DataExEnd(de);CHKERRQ(ierr);
-  
-  
+
+
   // [un-pack]
   ierr = DataExGetRecvData( de, &recv_length, (void**)&recv_buffer );CHKERRQ(ierr);
-  
+
   /*
   if (commrank == 1) {
     for (k=0; k<recv_length; k++) {
@@ -863,35 +863,35 @@ PetscErrorCode PTableSync_MPI(PTable p)
   cnt = 0;
   while (cnt < recv_length) {
     long int len;
-    
+
     key = recv_buffer[cnt]; cnt++;
     len = recv_buffer[cnt]; cnt++;
     for (k=0; k<len; k++) {
       long int v = recv_buffer[cnt];
-      
+
       //if (commrank == 1){ printf("[up] key %ld : len %ld : v %ld\n",key,len,v); }
       ierr = PTableSetValue(p,key,v);CHKERRQ(ierr);
       cnt++;
     }
   }
-  
-  
-  
+
+
+
   ierr = DataExDestroy(de);CHKERRQ(ierr);
 
   /* =================== Flush cache =================== */
 
-  
+
   for (k=0; k<sparse->key_list_len; k++) {
     khiter_t iterator;
-    
+
     key = sparse->key_list[k];
     iterator = kh_get(ptable64, sparse->hash, key);
     if (!kh_exist(sparse->hash, iterator)) {
       SETERRQ2(p->comm,PETSC_ERR_USER,"k %ld : key %ld - a valid value should have been found...\n",k,key);
     } else {
       PTableValues *row = NULL;
-      
+
       row = kh_value(sparse->hash, iterator);
       //printf("   --> row %p\n",row);
       if (row) {
@@ -904,7 +904,7 @@ PetscErrorCode PTableSync_MPI(PTable p)
   sparse->nentries = (long int)kh_size(sparse->hash);
   sparse->nentries = sparse->nentries - 1; /* subtract one here to account for the dummy value with key = -1 */
 
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -912,10 +912,10 @@ PetscErrorCode PTableSync_MPI(PTable p)
 PetscErrorCode PTableSynchronize(PTable p)
 {
   PetscErrorCode ierr;
-  
+
   /* should do a sort/purge on the local table */
   ierr = _PTableSortPurgeValues(p);CHKERRQ(ierr);
-  
+
   if (p->sync) {
     ierr = p->sync(p);CHKERRQ(ierr);
   }
@@ -927,13 +927,13 @@ PetscErrorCode PTableSynchronize(PTable p)
 PetscErrorCode PTableSetup(PTable p)
 {
   PetscErrorCode ierr;
-  
+
   if (p->issetup) PetscFunctionReturn(0);
   switch (p->type) {
     case PTABLE_UNINIT:
       SETERRQ(p->comm,PETSC_ERR_ORDER,"Table type has not been set");
       break;
-      
+
     case PTABLE_DENSE:
       p->size = p->end - p->start;
       // set methods
@@ -943,7 +943,7 @@ PetscErrorCode PTableSetup(PTable p)
       p->hasvalues = PTableHasValues_DENSE;
       p->destroy   = PTableDestroy_DENSE;
       break;
-      
+
     case PTABLE_SPARSE:
       p->size = 0;
       // set methods
@@ -953,7 +953,7 @@ PetscErrorCode PTableSetup(PTable p)
       p->hasvalues = PTableHasValues_SPARSE;
       p->destroy   = PTableDestroy_SPARSE;
       break;
-      
+
     default:
       SETERRQ(p->comm,PETSC_ERR_ORDER,"Table type has not been set");
       break;
@@ -962,20 +962,20 @@ PetscErrorCode PTableSetup(PTable p)
   if (p->commsize > 1) {
     p->sync = PTableSync_MPI;
   }
-  
+
   // create, setup context
   ierr = p->create(p);CHKERRQ(ierr);
   p->issetup = PETSC_TRUE;
-  
+
   /* collect min,max ranges */
   if (p->cache) {
     long int g_start,g_end,k;
-    
+
     ierr = MPI_Allreduce(&p->start,&g_start,1,MPI_LONG,MPI_MIN,p->comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&p->end,  &g_end,  1,MPI_LONG,MPI_MAX,p->comm);CHKERRQ(ierr);
     ierr = MPI_Allgather(&p->start,1,MPI_LONG,p->start_all,1,MPI_LONG,p->comm);CHKERRQ(ierr);
     ierr = MPI_Allgather(&p->end,  1,MPI_LONG,p->end_all,  1,MPI_LONG,p->comm);CHKERRQ(ierr);
-    
+
     // 0 15
     // 10 30
     for (k=1; k<p->commsize; k++) {
@@ -991,12 +991,12 @@ PetscErrorCode PTableSetup(PTable p)
         }
       }
     }
-    
-    
+
+
     ierr = PTableSetRange(p->cache,g_start,g_end);CHKERRQ(ierr);
     ierr = PTableSetup(p->cache);CHKERRQ(ierr);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1028,7 +1028,7 @@ PetscErrorCode PTableGetRange(PTable p,long int *start,long int *end)
 PetscErrorCode PTableSetValue_SEQ(PTable p,long int row,long int val_j)
 {
   PetscErrorCode ierr;
-  
+
   p->issynchronized = PETSC_TRUE;
   if (row >= p->start && row < p->end) {
     ierr = p->setvalue(p,row,val_j);CHKERRQ(ierr);
@@ -1045,7 +1045,7 @@ PetscErrorCode PTableSetValue_MPI(PTable p,long int row,long int val_j)
   if (row < p->cache->start || row >= p->cache->end) {
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"row %ld is outside table range [%ld,%ld)",row,p->cache->start,p->cache->end);
   }
-  
+
   if (row >= p->start && row < p->end) {
     p->issynchronized = PETSC_FALSE;
     ierr = p->setvalue(p,row,val_j);CHKERRQ(ierr);
@@ -1062,7 +1062,7 @@ PetscErrorCode PTableSetValue_MPI(PTable p,long int row,long int val_j)
 PetscErrorCode PTableSetValue(PTable p,long int row,long int val_j)
 {
   PetscErrorCode ierr;
-  
+
   if (!p->issetup) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Table is not setup. Call PTableSetup() first");
   if (p->commsize > 1) {
     ierr = PTableSetValue_MPI(p,row,val_j);CHKERRQ(ierr);
@@ -1106,7 +1106,7 @@ PetscErrorCode PTableGetNumberOfEntriesLocal(PTable p,long int *nentries)
 {
   if (!p->issetup) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Table is not setup. Call PTableSetup() first");
   if (!p->issynchronized) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Table is not synchronized. Call PTableSynchronize()  first");
-  
+
   switch (p->type) {
     case PTABLE_DENSE:
     {
@@ -1114,19 +1114,19 @@ PetscErrorCode PTableGetNumberOfEntriesLocal(PTable p,long int *nentries)
       *nentries = dense->nentries;
     }
       break;
-      
+
     case PTABLE_SPARSE:
     {
       PTable_SPARSE *sparse = (PTable_SPARSE*)p->data;
       *nentries = sparse->nentries;
     }
       break;
-      
+
     default:
       SETERRQ(p->comm,PETSC_ERR_ORDER,"Table type has not been set");
       break;
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1138,7 +1138,7 @@ PetscErrorCode _PTableFlattenIntoIS_SPARSE(PTable p,PetscBool ignore_empty_slots
   PetscInt *indices_f,*indices_t;
   long int start = 0,end = 0;
   PetscErrorCode ierr;
-  
+
   ierr = PTableSparse_PrepareKeyList(sparse);CHKERRQ(ierr);
 
   if (ignore_empty_slots) {
@@ -1149,18 +1149,18 @@ PetscErrorCode _PTableFlattenIntoIS_SPARSE(PTable p,PetscBool ignore_empty_slots
   }
   ierr = PetscMalloc1(length,&indices_f);CHKERRQ(ierr);
   ierr = PetscMalloc1(length,&indices_t);CHKERRQ(ierr);
-  
+
   for (i=0; i<length; i++) {
     indices_f[i] = -1;
     indices_t[i] = -1;
   }
-  
+
   /* traverse */
   if (ignore_empty_slots) {
     for (k=0; k<sparse->key_list_len; k++) {
       long int     key,len_k;
       const long int *val_k;
-      
+
       key = sparse->key_list[k];
       ierr = PTableGetValues(p,key,&len_k,&val_k);CHKERRQ(ierr);
       if (len_k > 0 && val_k != NULL) {
@@ -1172,10 +1172,10 @@ PetscErrorCode _PTableFlattenIntoIS_SPARSE(PTable p,PetscBool ignore_empty_slots
     for (k=0; k<sparse->key_list_len; k++) {
       long int     key,len_k;
       const long int *val_k;
-      
+
       key = sparse->key_list[k];
       if (key > length) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"key index out of range");
-      
+
       ierr = PTableGetValues(p,key,&len_k,&val_k);CHKERRQ(ierr);
       if (len_k > 0 && val_k != NULL) {
         /* note that the first arg "key" is local to the rank so key <= length */
@@ -1191,10 +1191,10 @@ PetscErrorCode _PTableFlattenIntoIS_SPARSE(PTable p,PetscBool ignore_empty_slots
   if (to_is) {
     ierr = ISCreateGeneral(p->comm,(PetscInt)length,indices_t,PETSC_COPY_VALUES,to_is);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscFree(indices_f);CHKERRQ(ierr);
   ierr = PetscFree(indices_t);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1205,23 +1205,23 @@ PetscErrorCode _PTableFlattenIntoIS_DENSE(PTable p,PetscBool ignore_empty_slots,
   PetscInt *indices_f,*indices_t;
   long int start = 0,end = 0;
   PetscErrorCode ierr;
-  
+
   ierr = PTableGetNumberOfEntriesLocal(p,&length);CHKERRQ(ierr);
   ierr = PTableGetRange(p,&start,&end);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(length,&indices_f);CHKERRQ(ierr);
   ierr = PetscMalloc1(length,&indices_t);CHKERRQ(ierr);
-  
+
   for (i=0; i<length; i++) {
     indices_f[i] = -1;
     indices_t[i] = -1;
   }
-  
+
   /* traverse */
   for (k=start; k<end; k++) {
     long int     key,len_k;
     const long int *val_k;
-    
+
     key = k;
     ierr = PTableGetValues(p,key,&len_k,&val_k);CHKERRQ(ierr);
     if (len_k > 0 && val_k != NULL) {
@@ -1229,17 +1229,17 @@ PetscErrorCode _PTableFlattenIntoIS_DENSE(PTable p,PetscBool ignore_empty_slots,
       indices_t[k-start] = (PetscInt)val_k[0];
     }
   }
-  
+
   if (from_is) {
     ierr = ISCreateGeneral(p->comm,(PetscInt)length,indices_f,PETSC_COPY_VALUES,from_is);CHKERRQ(ierr);
   }
   if (to_is) {
     ierr = ISCreateGeneral(p->comm,(PetscInt)length,indices_t,PETSC_COPY_VALUES,to_is);CHKERRQ(ierr);
   }
-  
+
   ierr = PetscFree(indices_f);CHKERRQ(ierr);
   ierr = PetscFree(indices_t);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1261,7 +1261,7 @@ PetscErrorCode PTableFlattenIntoIS(PTable p,PetscBool ignore_empty_slots,IS *fis
   } else {
     SETERRQ(p->comm,PETSC_ERR_ORDER,"Table type has not been set");
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1275,14 +1275,14 @@ void hashdemo(void)
   long int key;
   long int size;
   khint_t k;
-  
+
   hash = kh_init(ptable64);
 
   dummy = malloc(sizeof(PTableValues));
   dummy->len = 1;
   dummy->allocated_len = 1;
   dummy->values = NULL;
-  
+
   /* insert key into slot 1 */
   iterator = kh_put(ptable64, hash, -1, &ret);
   row = malloc(sizeof(PTableValues));
@@ -1291,14 +1291,14 @@ void hashdemo(void)
   row->values = NULL;
   (kh_value(hash, iterator)) = row;
 
-  
+
   key = 10;
   row = malloc(sizeof(PTableValues));
   row->len = 10;
   row->allocated_len = 10;
   row->values = NULL;
   printf("key %ld : row %p\n",key,row);
-  
+
   iterator = kh_put(ptable64, hash, key, &ret);
   (kh_value(hash, iterator)) = row;
 
@@ -1318,18 +1318,18 @@ void hashdemo(void)
   row->allocated_len = -2;
   row->values = NULL;
   printf("key %ld : row %p\n",key,row);
-  
+
   iterator = kh_put(ptable64, hash, key, &ret);
   (kh_value(hash, iterator)) = row;
 
-  
+
   key = 100;
   row = malloc(sizeof(PTableValues));
   row->len = 100;
   row->allocated_len = 100;
   row->values = NULL;
   printf("key %ld : row %p\n",key,row);
-  
+
   iterator = kh_put(ptable64, hash, key, &ret);
   (kh_value(hash, iterator)) = row;
 
@@ -1339,20 +1339,20 @@ void hashdemo(void)
   row->allocated_len = 15;
   row->values = NULL;
   printf("key %ld : row %p\n",key,row);
-  
+
   iterator = kh_put(ptable64, hash, key, &ret);
   (kh_value(hash, iterator)) = row;
 
-  
+
   row = NULL;
-  
+
   /* fetch */
   key = 10;
   iterator = kh_get(ptable64, hash, key);
   row = kh_value(hash, iterator);
   printf("key %ld --> row %p\n",key,row);
   printf("key %ld --> %ld %ld\n",key,row->len,row->allocated_len);
-  
+
 
   size = kh_size(hash);
   printf("size %ld \n",size);
@@ -1364,27 +1364,27 @@ void hashdemo(void)
   size = kh_size(hash);
   printf("size %ld \n",size);
   //
-  
-  
+
+
   khiter_t k0,k1;
-  
+
   k0 = kh_begin(hash);
   k1 = kh_end(hash);
-  
+
   for (k=k0; k<k1; k++) {
     key = 0;
     key = kh_key(hash, k);
     //iterator = kh_get(ptable64, hash, key);
     if (kh_exist(hash, k)) {
       printf("k %u : key %ld\n",k,key);
-      
+
       iterator = kh_get(ptable64, hash, key);
       row = kh_value(hash, iterator);
       printf("   --> row %p\n",row);
     }
-    
+
   }
-  
+
   kh_destroy(ptable64, hash);
 }
 
@@ -1395,12 +1395,12 @@ PetscErrorCode ex1(void)
 {
   PTable table;
   PetscErrorCode ierr;
-  
+
   ierr = PTableCreate(PETSC_COMM_SELF,&table);CHKERRQ(ierr);
   ierr = PTableSetRange(table,0,30);CHKERRQ(ierr);
   ierr = PTableSetType(table,PTABLE_SPARSE);CHKERRQ(ierr);
   ierr = PTableSetup(table);CHKERRQ(ierr);
-  
+
   ierr = PTableSetValue(table,5,0);CHKERRQ(ierr);
   ierr = PTableSetValue(table,6,19);CHKERRQ(ierr);
   // ierr = PTableSetValue(table,7,101);CHKERRQ(ierr);
@@ -1411,11 +1411,11 @@ PetscErrorCode ex1(void)
   }
 
   ierr = PTableSynchronize(table);CHKERRQ(ierr);
-  
+
   //ierr = PTableView(table);CHKERRQ(ierr);
   //ierr = PTableViewLite(table);CHKERRQ(ierr);
   ierr = PTableDestroy(&table);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1424,14 +1424,14 @@ PetscErrorCode ex2(void)
   PTable table;
   PetscErrorCode ierr;
   PetscMPIInt rank;
-  
+
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  
+
   ierr = PTableCreate(PETSC_COMM_WORLD,&table);CHKERRQ(ierr);
   ierr = PTableSetRange(table,rank*30,rank*30+30);CHKERRQ(ierr);
   ierr = PTableSetType(table,PTABLE_SPARSE);CHKERRQ(ierr);
   ierr = PTableSetup(table);CHKERRQ(ierr);
-  
+
   ierr = PTableSetValue(table,5,8870);CHKERRQ(ierr);
   /*
   ierr = PTableSetValue(table,5,0);CHKERRQ(ierr);
@@ -1442,7 +1442,7 @@ PetscErrorCode ex2(void)
     ierr = PTableSetValue(table,7,i);CHKERRQ(ierr);
   }
 
-   
+
   */
   if (rank == 0) {
     ierr = PTableSetValue(table,55,501);CHKERRQ(ierr);
@@ -1455,15 +1455,15 @@ PetscErrorCode ex2(void)
       ierr = PTableSetValue(table,59,i+100000);CHKERRQ(ierr);
     }
   }
-  
+
   ierr = PTableSynchronize(table);CHKERRQ(ierr);
-  
+
   MPI_Barrier(table->comm);
   ierr = PTableView(table);CHKERRQ(ierr);
   if (rank == 0) {
     //  ierr = PTableView_Self(table->cache);CHKERRQ(ierr);
   }
-  
+
   ierr = PTableDestroy(&table);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1473,16 +1473,16 @@ PetscErrorCode ex3(void)
   PTable table;
   IS fis,tis;
   PetscErrorCode ierr;
-  
+
   ierr = PTableCreate(PETSC_COMM_SELF,&table);CHKERRQ(ierr);
   ierr = PTableSetRange(table,0,30);CHKERRQ(ierr);
   ierr = PTableSetType(table,PTABLE_SPARSE);CHKERRQ(ierr);
   ierr = PTableSetup(table);CHKERRQ(ierr);
-  
+
   ierr = PTableSetValue(table,5,23);CHKERRQ(ierr);
   ierr = PTableSetValue(table,6,19);CHKERRQ(ierr);
   ierr = PTableSetValue(table,7,101);CHKERRQ(ierr);
-  
+
   ierr = PTableSynchronize(table);CHKERRQ(ierr);
 
   ierr = PTableView(table);CHKERRQ(ierr);
@@ -1491,9 +1491,9 @@ PetscErrorCode ex3(void)
   //ierr = PTableFlattenIntoIS(table,PETSC_FALSE,&fis,&tis);CHKERRQ(ierr);
   ierr = ISView(fis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(tis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+
   ierr = PTableDestroy(&table);CHKERRQ(ierr);
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1504,11 +1504,11 @@ PetscErrorCode ex4(void)
   PTable table;
   PetscErrorCode ierr;
   PetscMPIInt rank,size;
-  
+
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size > 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for comm.size=2");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  
+
   ierr = PTableCreate(PETSC_COMM_WORLD,&table);CHKERRQ(ierr);
   if (rank == 0) {
     ierr = PTableSetRange(table,0,15);CHKERRQ(ierr);
@@ -1517,16 +1517,16 @@ PetscErrorCode ex4(void)
   }
   ierr = PTableSetType(table,PTABLE_SPARSE);CHKERRQ(ierr);
   ierr = PTableSetup(table);CHKERRQ(ierr);
-  
+
   if (rank == 0) {
     ierr = PTableSetValue(table,5,8870);CHKERRQ(ierr);
   }
   if (rank == 1) {
     ierr = PTableSetValue(table,12,8);CHKERRQ(ierr);
   }
-  
+
   ierr = PTableSynchronize(table);CHKERRQ(ierr);
-  
+
   MPI_Barrier(table->comm);
   ierr = PTableView(table);CHKERRQ(ierr);
   ierr = PTableDestroy(&table);CHKERRQ(ierr);
@@ -1542,7 +1542,7 @@ void ex5_ksort(void)
   long int *vals,*init;
   long int i,N = 25000000;
   int x;
-  
+
   PetscMalloc1(N,&vals);
   PetscMalloc1(N,&init);
 
@@ -1550,42 +1550,42 @@ void ex5_ksort(void)
     init[i] = i + 10;
     init[i] = rand();
   }
-  
+
   PetscMemcpy(vals,init,sizeof(long int)*N);
   PetscTime(&t0);
   PetscSortLongInt_Private(vals,N-1);
   PetscTime(&t1);
   printf("recursive    %1.4e (sec) (%ld,%ld)\n",t1-t0,vals[0],vals[N-1]);
-  
-  
+
+
   PetscMemcpy(vals,init,sizeof(long int)*N);
   PetscTime(&t0);
   ks_mergesort(long, N, vals, 0);
   PetscTime(&t1);
   printf("ks_mergesort %1.4e (sec) (%ld,%ld)\n",t1-t0,vals[0],vals[N-1]);
 
-  
+
   PetscMemcpy(vals,init,sizeof(long int)*N);
   PetscTime(&t0);
   ks_combsort(long, N, vals);
   PetscTime(&t1);
   printf("ks_combsort  %1.4e (sec) (%ld,%ld)\n",t1-t0,vals[0],vals[N-1]);
 
-  
+
   PetscMemcpy(vals,init,sizeof(long int)*N);
   PetscTime(&t0);
   ks_introsort(long, N, vals);
   PetscTime(&t1);
   printf("ks_introsort %1.4e (sec) (%ld,%ld)\n",t1-t0,vals[0],vals[N-1]);
 
-  
+
   PetscMemcpy(vals,init,sizeof(long int)*N);
   PetscTime(&t0);
   x = ks_ksmall(long, N, vals, 10500);
   PetscTime(&t1);
   printf("ks_ksmall    %1.4e (sec) (%ld,%ld)\n",t1-t0,vals[0],vals[N-1]);
 
-  
+
   PetscMemcpy(vals,init,sizeof(long int)*N);
   PetscTime(&t0);
   ks_heapmake(long, N, vals);
@@ -1595,7 +1595,7 @@ void ex5_ksort(void)
   ks_heapsort(long, N, vals);
   PetscTime(&t1);
   printf("ks_heapsort  %1.4e (sec) (%ld,%ld)\n",t1-t0,vals[0],vals[N-1]);
-  
+
   PetscFree(vals);
   PetscFree(init);
 }
@@ -1605,7 +1605,7 @@ PetscErrorCode  DMGlobalToLocalBegin_DAQ2(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   VecScatter myg2l = NULL;
-  
+
   PetscFunctionBegin;
   PetscObjectQuery((PetscObject)da,"g2lq2",(PetscObject*)&myg2l);
   ierr = VecScatterBegin(myg2l,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1616,7 +1616,7 @@ PetscErrorCode  DMGlobalToLocalEnd_DAQ2(DM da,Vec g,InsertMode mode,Vec l)
 {
   PetscErrorCode ierr;
   VecScatter myg2l = NULL;
-  
+
   PetscFunctionBegin;
   PetscObjectQuery((PetscObject)da,"g2lq2",(PetscObject*)&myg2l);
   ierr = VecScatterEnd(myg2l,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1627,7 +1627,7 @@ PetscErrorCode  DMLocalToGlobalBegin_DAQ2(DM da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
   VecScatter myg2l = NULL;
-  
+
   PetscFunctionBegin;
   PetscObjectQuery((PetscObject)da,"g2lq2",(PetscObject*)&myg2l);
   if (mode == ADD_VALUES) {
@@ -1642,7 +1642,7 @@ PetscErrorCode  DMLocalToGlobalEnd_DAQ2(DM da,Vec l,InsertMode mode,Vec g)
 {
   PetscErrorCode ierr;
   VecScatter     myg2l = NULL;
-  
+
   PetscFunctionBegin;
   PetscObjectQuery((PetscObject)da,"g2lq2",(PetscObject*)&myg2l);
   if (mode == ADD_VALUES) {
@@ -1658,7 +1658,7 @@ PetscErrorCode  DMCreateGlobalVector_DAQ2(DM da,Vec *g)
   PetscErrorCode ierr;
   VecScatter     myg2l = NULL;
   PetscInt       m,n,length;
-  
+
   PetscFunctionBegin;
   PetscObjectQuery((PetscObject)da,"g2lq2",(PetscObject*)&myg2l);
 
@@ -1678,9 +1678,9 @@ PetscErrorCode  DMCreateLocalVector_DAQ2(DM da,Vec *g)
   PetscInt mx = 2;
   PetscInt nx,ny;
   int rank;
-  
+
   PetscFunctionBegin;
-  
+
   nx = 2*1 + 1; // decomp in x
   ny = 2*nx + 1;
   length = nx * ny;
@@ -1695,7 +1695,7 @@ PetscErrorCode  DMCreateLocalVector_DAQ2(DM da,Vec *g)
     VecSetSizes(*g,length,length);
     VecSetType(*g,VECSEQ);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -1723,18 +1723,18 @@ PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2)
   DMDAQ2Mapping  *mapping = NULL;
   PetscContainer myg2lctx = NULL;
   PetscErrorCode ierr;
-  
+
   // query for object
   ierr = PetscObjectQuery((PetscObject)dm,"g2lq2",(PetscObject*)&myg2lctx);CHKERRQ(ierr);
   if (!myg2lctx) {
     PetscContainer c = NULL;
-    
+
     // If the container is not found,
     // (i) initialize DMDAQ2Mapping mapping
     // (ii) copy original function pointers, store them
     // (iii) create a containers
     // (iv) stuff mapping in to the container and attach it to the dm
-    
+
     // (ii)
     mapping->createlocalvector_default  = dm->ops->createlocalvector;
     mapping->creatematrix_default       = dm->ops->creatematrix;
@@ -1742,16 +1742,16 @@ PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2)
     mapping->globaltolocalend_default   = dm->ops->globaltolocalend;
     mapping->localtoglobalbegin_default = dm->ops->localtoglobalbegin;
     mapping->localtoglobalend_default   = dm->ops->localtoglobalend;
-    
+
     myg2lctx = c;
   }
-  
+
   ierr = PetscContainerGetPointer(myg2lctx,(void**)&mapping);CHKERRQ(ierr);
   if (!useQ2) {
     // flush exisiting cached vectors //
     ierr = DMClearGlobalVectors(dm);CHKERRQ(ierr);
     ierr = DMClearLocalVectors(dm);CHKERRQ(ierr);
-    
+
     // restore original function pointers
     dm->ops->createlocalvector  = mapping->createlocalvector_default;
 
@@ -1765,7 +1765,7 @@ PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2)
     // flush exisiting cached vectors //
     ierr = DMClearGlobalVectors(dm);CHKERRQ(ierr);
     ierr = DMClearLocalVectors(dm);CHKERRQ(ierr);
-    
+
     // swap in new methods //
     dm->ops->createlocalvector  = DMCreateLocalVector_DAQ2;
 
@@ -1775,7 +1775,7 @@ PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2)
     dm->ops->globaltolocalend   = DMGlobalToLocalEnd_DAQ2;
     dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_DAQ2;
     dm->ops->localtoglobalend   = DMLocalToGlobalEnd_DAQ2;
-    
+
   }
   PetscFunctionReturn(0);
 }
@@ -1809,7 +1809,7 @@ PetscErrorCode dmdaq2(void)
   PTable table;
   long int cnt;
   VecScatter scatter;
-  
+
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   lx[0] = 3;
@@ -1826,29 +1826,29 @@ PetscErrorCode dmdaq2(void)
   /* fetch existing map */
   DMGetLocalToGlobalMapping(da,&l2gmap);
   ierr = ISLocalToGlobalMappingGetIndices(l2gmap, &gindices);CHKERRQ(ierr);
-  
+
   DMDAGetGhostCorners(da,0,0,0,&nx_ghost,0,0);
   printf("rank %d : <dm-default> nx_ghost %d\n",rank,nx_ghost);
 
-  
+
   /* traverse the part you want using the stencil width=2, store g -> l */
   ierr = PTableCreate(PETSC_COMM_SELF,&table);CHKERRQ(ierr);
   ierr = PTableSetRange(table,0,(2*1+1)*(2*mx+1));CHKERRQ(ierr);
   ierr = PTableSetType(table,PTABLE_DENSE);CHKERRQ(ierr);
   ierr = PTableSetup(table);CHKERRQ(ierr);
-  
-  
+
+
   cnt = 0;
   if (rank == 0) {
     for (j=0; j<2*mx+1; j++) {
       for (i=0; i<3; i++) {
         PetscInt l_index;
-        
+
         l_index = i + j * nx_ghost;
         //printf("local %d -> global %d \n",l_index,gindices[l_index]);
-        
+
         ierr = PTableSetValue(table,cnt,gindices[l_index]);CHKERRQ(ierr);
-        
+
         cnt++;
       }
     }
@@ -1857,50 +1857,50 @@ PetscErrorCode dmdaq2(void)
     for (j=0; j<2*mx+1; j++) {
       for (i=1; i<4; i++) {
         PetscInt l_index;
-        
+
         l_index = i + j * nx_ghost;
         //printf("local %d -> global %d \n",l_index,gindices[l_index]);
         ierr = PTableSetValue(table,cnt,gindices[l_index]);CHKERRQ(ierr);
-        
+
         cnt++;
       }
     }
   }
-  
+
   ierr = ISLocalToGlobalMappingRestoreIndices(l2gmap, &gindices);CHKERRQ(ierr);
-  
+
   ierr = PTableSynchronize(table);CHKERRQ(ierr);
-  
+
   //if (rank == 1) {
   //  ierr = PTableView(table);CHKERRQ(ierr);
   //}
-    
+
   ierr = PTableFlattenIntoIS(table,PETSC_TRUE,&to,&from);CHKERRQ(ierr);
   //ierr = ISView(from,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
 
-  
+
   //da->ops->createglobalvector = DMCreateGlobalVector_DAQ2; /* retain */
   da->ops->createlocalvector = DMCreateLocalVector_DAQ2;
-  
+
   da->ops->globaltolocalbegin = DMGlobalToLocalBegin_DAQ2;
   da->ops->globaltolocalend   = DMGlobalToLocalEnd_DAQ2;
   da->ops->localtoglobalbegin = DMLocalToGlobalBegin_DAQ2;
   da->ops->localtoglobalend   = DMLocalToGlobalEnd_DAQ2;
-  
+
   DMCreateLocalVector(da,&xl);
   VecGetSize(xl,&N);
   printf("rank %d : N %d\n",rank,N);
   //if (rank == 0) {
   //  VecView(xl,PETSC_VIEWER_STDOUT_SELF);
   //}
-  
+
 
   VecScatterCreate(xg,from,xl,to,&scatter);
-  
+
   PetscObjectCompose((PetscObject)da,"g2lq2",(PetscObject)scatter);
-  
-  
+
+
   //DMGlobalToLocalBegin(da,xg,INSERT_VALUES,xl);
   //DMGlobalToLocalEnd(da,xg,INSERT_VALUES,xl);
 
@@ -1918,16 +1918,16 @@ PetscErrorCode dmdaq2(void)
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     printf(" in[%d]  %p : out %p \n",i,da->localin[i],da->localout[i]);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  
+
   ierr = PetscInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
-  
+
   //hashdemo();
   //ex1(); /* test sparse/dense in serial */
   //ex2(); /* test sparse/dense in parallel */
@@ -1935,7 +1935,7 @@ int main(int argc,char **argv)
   //ex4(); /* test for overlapping ranges */
   //ex5_ksort();
   dmdaq2();
-  
+
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
