@@ -1173,7 +1173,9 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 
   /* Zero entries in local vectors corresponding to dirichlet boundary conditions */
   /* This has the affect of zeroing out columns when the mat-mult is performed */
-  ierr = BCListInsertLocalZero(ctx->u_bclist,XUloc);CHKERRQ(ierr);
+  if (ctx->u_bclist) {
+    ierr = BCListInsertLocalZero(ctx->u_bclist,XUloc);CHKERRQ(ierr);
+  }
 
   ierr = VecGetArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
 
@@ -1198,7 +1200,9 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   /* modify Y for the boundary conditions, y_k = scale_k(x_k) */
   /* Clobbering entries in global vector corresponding to dirichlet boundary conditions */
   /* This has the affect of zeroing out rows when the mat-mult is performed */
-  ierr = BCListInsertDirichlet_MatMult(ctx->u_bclist,X,Y);CHKERRQ(ierr);
+  if (ctx->u_bclist) {
+    ierr = BCListInsertDirichlet_MatMult(ctx->u_bclist,X,Y);CHKERRQ(ierr);
+  }
 
   ierr = PetscLogEventEnd(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
