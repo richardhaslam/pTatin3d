@@ -195,6 +195,16 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
   ierr = PetscFree(lyv);CHKERRQ(ierr);
   ierr = PetscFree(lzv);CHKERRQ(ierr);
 
+  /* force setup of my element layout */
+  {
+    PetscInt nel,nen;
+    const PetscInt *e;
+    
+    ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&e);CHKERRQ(ierr);
+  }
+  
+  /* Ideally we would set the DMDA to use the custom Q2 mappings now */
+  
   PetscFunctionReturn(0);
 }
 
