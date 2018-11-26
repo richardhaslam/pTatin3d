@@ -906,6 +906,12 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
   // hack
   ierr = DMDAUseQ2Mappings(user->stokes_ctx->dav,enable_q2_mapping);CHKERRQ(ierr);
   //
+  if (enable_q2_mapping) {
+    // hack
+    // I explicityly REMOVE the boundary conditions as these are set up prior to switching
+    // to the Q2 local space
+    ierr = BCListDestroy(&user->stokes_ctx->u_bclist);CHKERRQ(ierr);
+  }
   
   found  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-compare_operators",&found,0);CHKERRQ(ierr);
