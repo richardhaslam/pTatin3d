@@ -279,32 +279,42 @@ PetscErrorCode BCListGlobalToLocal(BCList list)
 PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 {
   BCList ll;
-  PetscInt bs,N,m,n,p,Ng,mg,ng,pg;
-  PetscInt dim,ndof;
-  PetscInt si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz;
+  /*PetscInt N,m,n,p,Ng,mg,ng,pg,dim,ndof;*/
+  PetscInt bs,N,Ng;
+  /*PetscInt si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz;*/
+  Vec x;
   PetscErrorCode ierr;
 
   ierr = DMDAGetInfo(da,0, 0,0,0, 0,0,0, &bs,0, 0,0,0, 0);CHKERRQ(ierr);
+  /*
   ierr = DMDAGetCorners(da, 0,0,0, &m,&n,&p);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da, 0,0,0, &mg,&ng,&pg);CHKERRQ(ierr);
   N = m;
-  if (n!=0) N = N * n; /* 2d */
-  if (p!=0) N = N * p; /* 3d */
+ if (n!=0) N = N * n; // 2d //
+ if (p!=0) N = N * p; // 3d //
   Ng = mg;
-  if (ng!=0) Ng = Ng * ng; /* 2d */
-  if (pg!=0) Ng = Ng * pg; /* 3d */
-
-
+  if (ng!=0) Ng = Ng * ng; // 2d //
+  if (pg!=0) Ng = Ng * pg; // 3d //
+  */
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  N = N/3;
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(da,&x);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&Ng);CHKERRQ(ierr);
+  Ng = Ng/3;
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  
   ierr = BCListCreate(&ll);CHKERRQ(ierr);
   ll->dm = da;
   ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
   ierr = BCListSetSizes(ll,bs,N,Ng);CHKERRQ(ierr);
   ierr = BCListInitialize(ll);CHKERRQ(ierr);
 
-  ierr = DMDAGetGhostCorners(da,&gsi,&gsj,&gsk,&gnx,&gny,&gnz);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+  /*ierr = DMDAGetGhostCorners(da,&gsi,&gsj,&gsk,&gnx,&gny,&gnz);CHKERRQ(ierr);*/
+  /*ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);*/
 
-  ierr = DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);
+  /*ierr = DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);*/
 
   ierr = BCListInitGlobal(ll);CHKERRQ(ierr);
   ierr = BCListGlobalToLocal(ll);CHKERRQ(ierr);
