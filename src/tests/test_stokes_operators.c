@@ -911,6 +911,8 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
     // I explicityly REMOVE the boundary conditions as these are set up prior to switching
     // to the Q2 local space
     ierr = BCListDestroy(&user->stokes_ctx->u_bclist);CHKERRQ(ierr);
+    ierr = PhysCompCreateBoundaryList_Stokes(user->stokes_ctx);CHKERRQ(ierr);
+    ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
   }
   
   found  = PETSC_FALSE;
