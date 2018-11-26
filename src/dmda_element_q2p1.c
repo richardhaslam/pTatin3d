@@ -30,9 +30,14 @@
 
 #include <petsc.h>
 #include <petscdm.h>
+#include <petsc/private/dmimpl.h>
 #include <petsc/private/dmdaimpl.h>
+#include "ptatin3d.h"
+#include "private/ptatin_impl.h"
 #include "ptatin3d_defs.h"
+#include "ptatin3d_stokes.h"
 #include "dmda_element_q2p1.h"
+#include "ptable.h"
 
 
 /* DA Q2 1D,2D,3D */
@@ -712,3 +717,545 @@ PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt n
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMCreateMatrix_DAQ2(DM dm,Mat *B)
+{
+  PetscErrorCode         ierr;
+  PTable                 table;
+  PetscInt               start,end,M,m,e,i,j,nelements,nen_u;
+  const PetscInt         *elnidx_u;
+  PetscInt               num_gindices,ge_eqnums[3*Q2_NODES_PER_EL_3D];
+  PetscInt               vel_el_lidx[3*U_BASIS_FUNCTIONS];
+  Vec                    xg;
+  PetscInt               *dnnz = NULL,*onnz = NULL;
+  ISLocalToGlobalMapping ltog;
+  const PetscInt         *gindices;
+  Mat                    A;
+  
+  ierr = DMCreateGlobalVector(dm,&xg);CHKERRQ(ierr);
+  ierr = VecGetSize(xg,&M);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xg,&start,&end);CHKERRQ(ierr);
+  m = end - start;
+  ierr = VecDestroy(&xg);CHKERRQ(ierr);
+  
+  ierr = PTableCreate(PETSC_COMM_WORLD,&table);CHKERRQ(ierr);
+  ierr = PTableSetRange(table,start,end);CHKERRQ(ierr);
+  ierr = PTableSetType(table,PTABLE_DENSE);CHKERRQ(ierr);
+  ierr = PTableSetup(table);CHKERRQ(ierr);
+  
+  ierr = DMDAGetElements_pTatinQ2P1(dm,&nelements,&nen_u,&elnidx_u);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(dm, &ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog, &num_gindices);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog, &gindices);CHKERRQ(ierr);
+  
+  for (e=0; e<nelements; e++) {
+    
+    /* get local indices */
+    ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+    
+    /* get global indices */
+    for (i=0; i<nen_u; i++) {
+      const int nid = elnidx_u[nen_u*e + i];
+      
+      ge_eqnums[3*i  ] = gindices[ 3*nid   ];
+      ge_eqnums[3*i+1] = gindices[ 3*nid+1 ];
+      ge_eqnums[3*i+2] = gindices[ 3*nid+2 ];
+    }
+    
+    for (i=0; i<3*nen_u; i++) {
+      for (j=0; j<3*nen_u; j++) {
+        PetscInt row,col;
+        
+        row = ge_eqnums[i];
+        col = ge_eqnums[j];
+        ierr = PTableSetValue(table,(long int)row,(long int)col);CHKERRQ(ierr);
+      }
+    }
+    
+  }
+  ierr = PTableSynchronize(table);CHKERRQ(ierr);
+  
+  /* determine non-zero structure using PTable */
+  
+  ierr = PetscMalloc1((end-start),&dnnz);CHKERRQ(ierr);
+  ierr = PetscMalloc1((end-start),&onnz);CHKERRQ(ierr);
+  
+  for (i=start; i<end; i++) {
+    long int rl;
+    const long int *vals;
+    
+    dnnz[i-start] = 0;
+    onnz[i-start] = 0;
+    
+    ierr = PTableGetValues(table,i,&rl,&vals);CHKERRQ(ierr);
+    
+    for (j=0; j<rl; j++) {
+      PetscInt col = (PetscInt)vals[j];
+      
+      if (col >= start && col < end) {
+        dnnz[i-start]++;
+      } else {
+        onnz[i-start]++;
+      }
+    }
+  }
+  
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,m,m,M,M);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(A,3);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetUp(A);CHKERRQ(ierr);
+  
+  ierr = MatSeqAIJSetPreallocation(A,0,dnnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A,0,dnnz,0,onnz);CHKERRQ(ierr);
+  
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  
+  /* push non-zero structure using PTable */
+  for (i=start; i<end; i++) {
+    long int rl;
+    const long int *vals;
+    
+    dnnz[i-start] = 0;
+    onnz[i-start] = 0;
+    
+    ierr = PTableGetValues(table,i,&rl,&vals);CHKERRQ(ierr);
+    
+    for (j=0; j<rl; j++) {
+      PetscInt col = (PetscInt)vals[j];
+      
+      ierr = MatSetValue(A,i,col,0.0,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+  
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &gindices);CHKERRQ(ierr);
+  ierr = PetscFree(dnnz);CHKERRQ(ierr);
+  ierr = PetscFree(onnz);CHKERRQ(ierr);
+  ierr = PTableDestroy(&table);CHKERRQ(ierr);
+  
+  *B = A;
+  
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCreateMatrixAuuHelper(DM dm,PetscBool use_custom_mapping,Mat *B)
+{
+  PetscErrorCode ierr;
+  if (use_custom_mapping) {
+    ierr = DMCreateMatrix_DAQ2(dm,B);CHKERRQ(ierr);
+  } else {
+    ierr = DMCreateMatrix(dm,B);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+typedef struct {
+  PetscInt   refcnt;
+  VecScatter global2local;
+  IS         from,to;
+  PetscInt   *elements_default;
+  PetscInt   *elements_custom;
+  PetscInt   nlocal,nelements,mx,my,mz;
+  /* reference function pointers to the standard / default DMDA implementations */
+  PetscErrorCode (*createlocalvector_default)(DM,Vec*);
+  PetscErrorCode (*creatematrix_default)(DM, Mat*);
+  PetscErrorCode (*globaltolocalbegin_default)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*globaltolocalend_default)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtoglobalbegin_default)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtoglobalend_default)(DM,Vec,InsertMode,Vec);
+  /* reference function pointers to the standard / default Coordinate DMDA implementations */
+  PetscErrorCode (*createlocalvector_default_c)(DM,Vec*);
+  PetscErrorCode (*creatematrix_default_c)(DM, Mat*);
+  PetscErrorCode (*globaltolocalbegin_default_c)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*globaltolocalend_default_c)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtoglobalbegin_default_c)(DM,Vec,InsertMode,Vec);
+  PetscErrorCode (*localtoglobalend_default_c)(DM,Vec,InsertMode,Vec);
+} DMDAQ2Mapping;
+
+PetscErrorCode DMDAQ2MappingDestroy(DMDAQ2Mapping **m)
+{
+  DMDAQ2Mapping  *map;
+  PetscErrorCode ierr;
+  
+  if (!m) PetscFunctionReturn(0);
+  map = *m;
+  if (--(map->refcnt) > 0) { *m = NULL; PetscFunctionReturn(0); }
+  
+  ierr = VecScatterDestroy(&map->global2local);CHKERRQ(ierr);
+  ierr = ISDestroy(&map->from);CHKERRQ(ierr);
+  ierr = ISDestroy(&map->to);CHKERRQ(ierr);
+  ierr = PetscFree(map->elements_default);CHKERRQ(ierr);
+  ierr = PetscFree(map->elements_custom);CHKERRQ(ierr);
+  ierr = PetscFree(map);CHKERRQ(ierr);
+  *m = NULL;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscContainer_DMDAQ2MappingDestroy(void *ctx)
+{
+  PetscErrorCode ierr;
+  DMDAQ2Mapping  *map = (DMDAQ2Mapping*)ctx;
+  ierr = DMDAQ2MappingDestroy(&map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* dmda over-rides */
+PetscErrorCode DMGlobalToLocalBegin_DAQ2(DM da,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  PetscContainer c = NULL;
+  DMDAQ2Mapping  *mapping = NULL;
+  
+  PetscFunctionBegin;
+  PetscObjectQuery((PetscObject)da,"DMDACustomMapping",(PetscObject*)&c);
+  PetscContainerGetPointer(c,(void**)&mapping);
+  //printf("custom g2l-b\n");
+  ierr = VecScatterBegin(mapping->global2local,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMGlobalToLocalEnd_DAQ2(DM da,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  PetscContainer c = NULL;
+  DMDAQ2Mapping  *mapping = NULL;
+  
+  PetscFunctionBegin;
+  PetscObjectQuery((PetscObject)da,"DMDACustomMapping",(PetscObject*)&c);
+  PetscContainerGetPointer(c,(void**)&mapping);
+  //printf("custom g2l-e\n");
+  ierr = VecScatterEnd(mapping->global2local,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMLocalToGlobalBegin_DAQ2(DM da,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+  PetscContainer c = NULL;
+  DMDAQ2Mapping  *mapping = NULL;
+  
+  PetscFunctionBegin;
+  PetscObjectQuery((PetscObject)da,"DMDACustomMapping",(PetscObject*)&c);
+  PetscContainerGetPointer(c,(void**)&mapping);
+  //printf("custom l2g-b\n");
+  if (mode == ADD_VALUES) {
+    ierr = VecScatterBegin(mapping->global2local,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  } else if (mode == INSERT_VALUES) {
+    ierr = VecScatterBegin(mapping->global2local,l,g,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMLocalToGlobalEnd_DAQ2(DM da,Vec l,InsertMode mode,Vec g)
+{
+  PetscErrorCode ierr;
+  PetscContainer c = NULL;
+  DMDAQ2Mapping  *mapping = NULL;
+  
+  PetscFunctionBegin;
+  PetscObjectQuery((PetscObject)da,"DMDACustomMapping",(PetscObject*)&c);
+  PetscContainerGetPointer(c,(void**)&mapping);
+  //printf("custom l2g-2\n");
+  if (mode == ADD_VALUES) {
+    ierr = VecScatterEnd(mapping->global2local,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  } else if (mode == INSERT_VALUES) {
+    ierr = VecScatterEnd(mapping->global2local,l,g,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Not yet implemented");
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMCreateLocalVector_DAQ2(DM da,Vec *g)
+{
+  PetscErrorCode ierr;
+  PetscContainer c = NULL;
+  DMDAQ2Mapping  *mapping = NULL;
+  PetscInt       length;
+  
+  PetscFunctionBegin;
+  PetscObjectQuery((PetscObject)da,"DMDACustomMapping",(PetscObject*)&c);
+  PetscContainerGetPointer(c,(void**)&mapping);
+  
+  //printf("custom CreateLocal\n");
+  length = mapping->nlocal * 3;
+  ierr = VecCreate(PETSC_COMM_SELF,g);CHKERRQ(ierr);
+  ierr = VecSetSizes(*g,length,length);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*g,3);CHKERRQ(ierr);
+  ierr = VecSetType(*g,VECSEQ);CHKERRQ(ierr);
+  ierr = VecSetDM(*g, da);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMDAQ2ElementLayout(PetscInt eidx[],PetscInt mx,PetscInt my,PetscInt mz)
+{
+  PetscInt       elcnt,n,i,j,k,ei,ej,ek,X,Y,nid[27];
+  PetscInt       *el;
+  PetscErrorCode ierr;
+  
+  ierr = PetscMemzero(eidx,sizeof(PetscInt)*(mx*my*mz)*27);CHKERRQ(ierr);
+  
+  elcnt = 0;
+  X = 2*mx + 1;
+  Y = 2*my + 1;
+  
+  for (ek=0; ek<mz; ek++) {
+    k = 2*ek;
+    for (ej=0; ej<my; ej++) {
+      j = 2*ej;
+      for (ei=0; ei<mx; ei++) {
+        i = 2*ei;
+        
+        el = &eidx[27*elcnt];
+        
+        nid[ 0] = (i  ) + (j  ) *X  + (k  ) *X*Y;
+        nid[ 1] = (i+1) + (j  ) *X  + (k  ) *X*Y;
+        nid[ 2] = (i+2) + (j  ) *X  + (k  ) *X*Y;
+        
+        nid[ 3] = (i  ) + (j+1) *X  + (k  ) *X*Y;
+        nid[ 4] = (i+1) + (j+1) *X  + (k  ) *X*Y;
+        nid[ 5] = (i+2) + (j+1) *X  + (k  ) *X*Y;
+        
+        nid[ 6] = (i  ) + (j+2) *X  + (k  ) *X*Y;
+        nid[ 7] = (i+1) + (j+2) *X  + (k  ) *X*Y;
+        nid[ 8] = (i+2) + (j+2) *X  + (k  ) *X*Y;
+        
+        nid[ 9] = (i  ) + (j  ) *X  + (k+1) *X*Y;
+        nid[10] = (i+1) + (j  ) *X  + (k+1) *X*Y;
+        nid[11] = (i+2) + (j  ) *X  + (k+1) *X*Y;
+        
+        nid[12] = (i  ) + (j+1) *X  + (k+1) *X*Y;
+        nid[13] = (i+1) + (j+1) *X  + (k+1) *X*Y;
+        nid[14] = (i+2) + (j+1) *X  + (k+1) *X*Y;
+        
+        nid[15] = (i  ) + (j+2) *X  + (k+1) *X*Y;
+        nid[16] = (i+1) + (j+2) *X  + (k+1) *X*Y;
+        nid[17] = (i+2) + (j+2) *X  + (k+1) *X*Y;
+        
+        nid[18] = (i  ) + (j  ) *X  + (k+2) *X*Y;
+        nid[19] = (i+1) + (j  ) *X  + (k+2) *X*Y;
+        nid[20] = (i+2) + (j  ) *X  + (k+2) *X*Y;
+        
+        nid[21] = (i  ) + (j+1) *X  + (k+2) *X*Y;
+        nid[22] = (i+1) + (j+1) *X  + (k+2) *X*Y;
+        nid[23] = (i+2) + (j+1) *X  + (k+2) *X*Y;
+        
+        nid[24] = (i  ) + (j+2) *X  + (k+2) *X*Y;
+        nid[25] = (i+1) + (j+2) *X  + (k+2) *X*Y;
+        nid[26] = (i+2) + (j+2) *X  + (k+2) *X*Y;
+        
+        for (n=0; n<27; n++) {
+          el[n] = nid[n];
+        }
+        
+        elcnt++;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+ This might be a good idea for clean switching between standard DMDA
+ and the custom methods associated with Q2 finite elements.
+*/
+PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2)
+{
+  DMDAQ2Mapping  *mapping = NULL;
+  PetscContainer myg2lctx = NULL;
+  DM             cdm;
+  PetscErrorCode ierr;
+  
+  ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+  
+  // query for object
+  ierr = PetscObjectQuery((PetscObject)dm,"DMDACustomMapping",(PetscObject*)&myg2lctx);CHKERRQ(ierr);
+  if (!myg2lctx) {
+    PetscContainer c = NULL;
+    PetscInt e,nelements,nen_u,i;
+    const PetscInt *elnidx_u;
+    PTable table;
+    PetscInt               num_gindices,ge_eqnums[3*Q2_NODES_PER_EL_3D];
+    PetscInt               vel_el_lidx[3*U_BASIS_FUNCTIONS];
+    ISLocalToGlobalMapping ltog;
+    const PetscInt         *gindices;
+    
+    
+    // If the container is not found,
+    // (i) initialize DMDAQ2Mapping mapping
+    // (ii) copy original function pointers, store them
+    // (iii) create containers
+    // (iv) stuff mapping in to the container and attach it to the dm
+    
+    // (i)
+    ierr = PetscMalloc1(1,&mapping);CHKERRQ(ierr);
+    ierr = PetscMemzero(mapping,sizeof(DMDAQ2Mapping));CHKERRQ(ierr);
+    mapping->refcnt = 1;
+    
+    // (iii)
+    ierr = PetscContainerCreate(PetscObjectComm((PetscObject)dm),&c);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(c,(void*)mapping);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(c,PetscContainer_DMDAQ2MappingDestroy);CHKERRQ(ierr);
+    
+    // (iv) - compose early so DMCreateLocalVector_DAQ2() can be called
+    ierr = PetscObjectCompose((PetscObject)dm,"DMDACustomMapping",(PetscObject)c);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)cdm,"DMDACustomMapping",(PetscObject)c);CHKERRQ(ierr);
+    
+    // setup sizes
+    ierr = DMDAGetLocalSizeElementQ2(dm,&mapping->mx,&mapping->my,&mapping->mz);CHKERRQ(ierr);
+    mapping->nelements = mapping->mx * mapping->my * mapping->mz;
+    mapping->nlocal = (2*mapping->mx+1) * (2*mapping->my+1) * (2*mapping->mz+1);
+    
+    // setup element arrays
+    ierr = PetscMalloc1(mapping->nelements*27,&mapping->elements_default);CHKERRQ(ierr);
+    ierr = PetscMalloc1(mapping->nelements*27,&mapping->elements_custom);CHKERRQ(ierr);
+    
+    ierr = DMDAGetElements_pTatinQ2P1(dm,&nelements,&nen_u,&elnidx_u);CHKERRQ(ierr);
+    
+    ierr = PetscMemcpy(mapping->elements_default,(PetscInt*)elnidx_u,sizeof(PetscInt)*mapping->nelements*27);CHKERRQ(ierr);
+    ierr = DMDAQ2ElementLayout(mapping->elements_custom,mapping->mx,mapping->my,mapping->mz);CHKERRQ(ierr);
+    
+    // setup table
+    ierr = PTableCreate(PETSC_COMM_SELF,&table);CHKERRQ(ierr);
+    ierr = PTableSetRange(table,0,mapping->nlocal * 3);CHKERRQ(ierr);
+    ierr = PTableSetType(table,PTABLE_DENSE);CHKERRQ(ierr);
+    ierr = PTableSetup(table);CHKERRQ(ierr);
+    
+    ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog,&num_gindices);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog,&gindices);CHKERRQ(ierr);
+    
+    for (e=0; e<nelements; e++) {
+      
+      /* get local indices */
+      ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+      
+      /* get global indices */
+      for (i=0; i<nen_u; i++) {
+        const int nid = elnidx_u[nen_u*e + i]; /* use default map to fetch global dof indices */
+        
+        ge_eqnums[3*i  ] = gindices[ 3*nid   ];
+        ge_eqnums[3*i+1] = gindices[ 3*nid+1 ];
+        ge_eqnums[3*i+2] = gindices[ 3*nid+2 ];
+      }
+      
+      for (i=0; i<nen_u; i++) {
+        PetscInt basis_id,local_dof_id;
+        
+        basis_id     = mapping->elements_custom[nen_u*e + i]; /* use custom map to fetch global dof indices for row */
+        
+        local_dof_id = 3 * basis_id + 0;
+        ierr = PTableSetValue(table,local_dof_id,ge_eqnums[3*i  ]);CHKERRQ(ierr);
+        
+        local_dof_id = 3 * basis_id + 1;
+        ierr = PTableSetValue(table,local_dof_id,ge_eqnums[3*i+1]);CHKERRQ(ierr);
+        
+        local_dof_id = 3 * basis_id + 2;
+        ierr = PTableSetValue(table,local_dof_id,ge_eqnums[3*i+2]);CHKERRQ(ierr);
+      }
+    }
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&gindices);CHKERRQ(ierr);
+    ierr = PTableSynchronize(table);CHKERRQ(ierr);
+    
+    // setup IS
+    ierr = PTableFlattenIntoIS(table,PETSC_TRUE,&mapping->to,&mapping->from);CHKERRQ(ierr);
+    
+    // setup VecScatter
+    {
+      Vec xg,xl;
+      
+      ierr = DMCreateGlobalVector(dm,&xg);CHKERRQ(ierr);
+      ierr = DMCreateLocalVector_DAQ2(dm,&xl);CHKERRQ(ierr);
+      
+      ierr = VecScatterCreate(xg,mapping->from,xl,mapping->to,&mapping->global2local);CHKERRQ(ierr);
+      
+      ierr = VecDestroy(&xl);CHKERRQ(ierr);
+      ierr = VecDestroy(&xg);CHKERRQ(ierr);
+    }
+    
+    // (ii)
+    mapping->createlocalvector_default  = dm->ops->createlocalvector;
+    mapping->creatematrix_default       = dm->ops->creatematrix;
+    mapping->globaltolocalbegin_default = dm->ops->globaltolocalbegin;
+    mapping->globaltolocalend_default   = dm->ops->globaltolocalend;
+    mapping->localtoglobalbegin_default = dm->ops->localtoglobalbegin;
+    mapping->localtoglobalend_default   = dm->ops->localtoglobalend;
+    
+    mapping->createlocalvector_default_c  = cdm->ops->createlocalvector;
+    mapping->creatematrix_default_c       = cdm->ops->creatematrix;
+    mapping->globaltolocalbegin_default_c = cdm->ops->globaltolocalbegin;
+    mapping->globaltolocalend_default_c   = cdm->ops->globaltolocalend;
+    mapping->localtoglobalbegin_default_c = cdm->ops->localtoglobalbegin;
+    mapping->localtoglobalend_default_c   = cdm->ops->localtoglobalend;
+    
+    
+    ierr = PTableDestroy(&table);CHKERRQ(ierr);
+    
+    myg2lctx = c;
+    mapping = NULL;
+  }
+  
+  ierr = PetscContainerGetPointer(myg2lctx,(void**)&mapping);CHKERRQ(ierr);
+  if (!useQ2) {
+    DM_DA *da_context = (DM_DA*)dm->data;
+    
+    // flush exisiting cached vectors //
+    ierr = DMClearGlobalVectors(dm);CHKERRQ(ierr);
+    ierr = DMClearLocalVectors(dm);CHKERRQ(ierr);
+    
+    // restore original function pointers
+    dm->ops->createlocalvector  = mapping->createlocalvector_default;
+    dm->ops->creatematrix       = mapping->creatematrix_default;
+    dm->ops->globaltolocalbegin = mapping->globaltolocalbegin_default;
+    dm->ops->globaltolocalend   = mapping->globaltolocalend_default;
+    dm->ops->localtoglobalbegin = mapping->localtoglobalbegin_default;
+    dm->ops->localtoglobalend   = mapping->localtoglobalend_default;
+    
+    // over-ride elements
+    ierr = PetscMemcpy(da_context->e,mapping->elements_default,sizeof(PetscInt)*mapping->nelements*27);CHKERRQ(ierr);
+    
+    ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+    // restore original function pointers
+    cdm->ops->createlocalvector  = mapping->createlocalvector_default_c;
+    cdm->ops->creatematrix       = mapping->creatematrix_default_c;
+    cdm->ops->globaltolocalbegin = mapping->globaltolocalbegin_default_c;
+    cdm->ops->globaltolocalend   = mapping->globaltolocalend_default_c;
+    cdm->ops->localtoglobalbegin = mapping->localtoglobalbegin_default_c;
+    cdm->ops->localtoglobalend   = mapping->localtoglobalend_default_c;
+    
+    ierr = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
+    dm->coordinatesLocal = NULL;
+  } else {
+    DM_DA *da_context = (DM_DA*)dm->data;
+    
+    PetscPrintf(PETSC_COMM_WORLD,"**** using custom Q2 DMDA mappings ****\n");
+    
+    // flush exisiting cached vectors //
+    ierr = DMClearGlobalVectors(dm);CHKERRQ(ierr);
+    ierr = DMClearLocalVectors(dm);CHKERRQ(ierr);
+    
+    // swap in new methods //
+    dm->ops->createlocalvector  = DMCreateLocalVector_DAQ2;
+    //da->ops->creatematrix       = DMCreateMatrix_DAQ2;
+    dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_DAQ2;
+    dm->ops->globaltolocalend   = DMGlobalToLocalEnd_DAQ2;
+    dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_DAQ2;
+    dm->ops->localtoglobalend   = DMLocalToGlobalEnd_DAQ2;
+    
+    // over-ride elements
+    ierr = PetscMemcpy(da_context->e,mapping->elements_custom,sizeof(PetscInt)*mapping->nelements*27);CHKERRQ(ierr);
+    
+    ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+    // swap in new methods - under the assumption that dm.dof = cdm.dof //
+    cdm->ops->createlocalvector  = DMCreateLocalVector_DAQ2;
+    cdm->ops->globaltolocalbegin = DMGlobalToLocalBegin_DAQ2;
+    cdm->ops->globaltolocalend   = DMGlobalToLocalEnd_DAQ2;
+    cdm->ops->localtoglobalbegin = DMLocalToGlobalBegin_DAQ2;
+    cdm->ops->localtoglobalend   = DMLocalToGlobalEnd_DAQ2;
+    
+    ierr = VecDestroy(&dm->coordinatesLocal);CHKERRQ(ierr);
+    dm->coordinatesLocal = NULL;
+  }
+  PetscFunctionReturn(0);
+}

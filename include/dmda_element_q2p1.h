@@ -62,7 +62,9 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,Pet
 PetscErrorCode DMDASetValuesLocalStencil_SetValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[]);
 PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[]);
 PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,PetscInt elnid[],PetscScalar LA_gfield[]);
-
+PetscErrorCode DMCreateMatrixAuuHelper(DM dm,PetscBool use_custom_mapping,Mat *B);
+PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2);
+  
 #ifdef __cplusplus
 }
 #endif
