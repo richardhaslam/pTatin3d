@@ -73,7 +73,7 @@ PetscErrorCode BCListDestroy(BCList *list)
 
   if (!list) PetscFunctionReturn(0);
   ll = *list;
-  
+
   {
     PetscBool isdir;
     PetscInt n,cnt;
@@ -298,13 +298,13 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
   */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
-  N = N/3;
+  N = N/bs;
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&x);CHKERRQ(ierr);
   ierr = VecGetSize(x,&Ng);CHKERRQ(ierr);
-  Ng = Ng/3;
+  Ng = Ng/bs;
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  
+
   ierr = BCListCreate(&ll);CHKERRQ(ierr);
   ll->dm = da;
   ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
