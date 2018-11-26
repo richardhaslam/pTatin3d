@@ -43,9 +43,12 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "stokes_form_function.h"
 #include "stokes_assembly.h"
 #include "stokes_operators.h"
+#include "dmda_element_q2p1.h"
 
 
-PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
+PetscBool enable_q2_mapping = PETSC_FALSE;
+
+PetscErrorCode _GenerateTestVector(DM da2,PetscInt dofs,PetscInt index,Vec x)
 {
   PetscErrorCode ierr;
   Vec tmp;
@@ -55,8 +58,9 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
   ISLocalToGlobalMapping ltog;
   PetscInt NUM_GINDICES;
   const PetscInt *GINDICES;
+  DM da;
 
-
+  ierr = DMDAGetReducedDMDA(da2,3,&da);CHKERRQ(ierr);
 
   ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
@@ -87,7 +91,8 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -152,7 +157,7 @@ PetscErrorCode ass_A11(PhysCompStokes stk)
   da = stk->dav;
 
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrixAuuHelper(da,enable_q2_mapping,&B);CHKERRQ(ierr);
 
   ierr = PetscObjectTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
   if (same) {
@@ -270,7 +275,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
   ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
 
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrixAuuHelper(da,enable_q2_mapping,&B);CHKERRQ(ierr);
   PetscTime(&t0);
   ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
   PetscTime(&t1);
@@ -551,7 +556,7 @@ PetscErrorCode compare_mf_diagA11(PhysCompStokes user)
   ierr = VecDuplicate(y,&y2);CHKERRQ(ierr);
 
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrixAuuHelper(da,enable_q2_mapping,&B);CHKERRQ(ierr);
   ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 
   ierr = MatGetDiagonal(B,y2);CHKERRQ(ierr);
@@ -615,6 +620,10 @@ PetscErrorCode apply_mf_A11(PhysCompStokes user)
   ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
   ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+  ierr = MatView(Auu,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
   PetscTime(&t0);
   for (ii=0; ii<iterations; ii++) {
     ierr = MatMult(Auu,x,y);CHKERRQ(ierr);
@@ -668,7 +677,8 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
   ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrixAuuHelper(da,enable_q2_mapping,&B);CHKERRQ(ierr);
+  //ierr = DMCreateMatrixQ2(da,&B);CHKERRQ(ierr);
   PetscTime(&t0);
   ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
   PetscTime(&t1);
@@ -677,6 +687,10 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
   ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  
   PetscTime(&t0);
   for (ii=0; ii<iterations; ii++) {
     ierr = MatMult(B,x,y);CHKERRQ(ierr);
@@ -734,7 +748,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
   ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 
   ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+  ierr = DMCreateMatrixAuuHelper(da,enable_q2_mapping,&B);CHKERRQ(ierr);
   PetscTime(&t0);
   ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
   PetscTime(&t1);
@@ -889,6 +903,10 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
   //  ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
 
 
+  // hack
+  ierr = DMDAUseQ2Mappings(user->stokes_ctx->dav,enable_q2_mapping);CHKERRQ(ierr);
+  //
+  
   found  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-compare_operators",&found,0);CHKERRQ(ierr);
   if (found) {
@@ -938,6 +956,7 @@ int main(int argc,char **argv)
 
   ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 
+  ierr = PetscOptionsGetBool(NULL,NULL,"-enable_q2_mapping",&enable_q2_mapping,NULL);CHKERRQ(ierr);
   ierr = pTatin3d_assemble_stokes(argc,argv);CHKERRQ(ierr);
 
   ierr = pTatinFinalize();CHKERRQ(ierr);
