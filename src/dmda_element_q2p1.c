@@ -859,6 +859,8 @@ typedef struct {
   PetscInt   *elements_default;
   PetscInt   *elements_custom;
   PetscInt   nlocal,nelements,mx,my,mz;
+  ISLocalToGlobalMapping isl2gmap_default;
+  ISLocalToGlobalMapping isl2gmap_custom;
   /* reference function pointers to the standard / default DMDA implementations */
   PetscErrorCode (*createlocalvector_default)(DM,Vec*);
   PetscErrorCode (*creatematrix_default)(DM, Mat*);
@@ -884,6 +886,7 @@ PetscErrorCode DMDAQ2MappingDestroy(DMDAQ2Mapping **m)
   map = *m;
   if (--(map->refcnt) > 0) { *m = NULL; PetscFunctionReturn(0); }
   
+  ierr = ISLocalToGlobalMappingDestroy(&map->isl2gmap_custom);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&map->global2local);CHKERRQ(ierr);
   ierr = ISDestroy(&map->from);CHKERRQ(ierr);
   ierr = ISDestroy(&map->to);CHKERRQ(ierr);
@@ -1174,6 +1177,27 @@ PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2)
       ierr = VecDestroy(&xg);CHKERRQ(ierr);
     }
     
+    // setup ISLocalToGlobalMapping
+    {
+      ISLocalToGlobalMapping isl2gmap;
+      PetscInt               i,*indices;
+      const PetscInt         *gidx3;
+
+      ierr = ISGetIndices(mapping->from,&gidx3);CHKERRQ(ierr);
+      ierr = PetscMalloc1(mapping->nlocal,&indices);CHKERRQ(ierr);
+      for (i=0; i<mapping->nlocal; i++) {
+        indices[i] = gidx3[3*i]/3;
+      }
+
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm),3,mapping->nlocal,(const PetscInt*)indices,PETSC_COPY_VALUES,&isl2gmap);CHKERRQ(ierr);
+
+      ierr = PetscFree(indices);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(mapping->from,&gidx3);CHKERRQ(ierr);
+
+      mapping->isl2gmap_default = dm->ltogmap;
+      mapping->isl2gmap_custom  = isl2gmap;
+    }
+
     // (ii)
     mapping->createlocalvector_default  = dm->ops->createlocalvector;
     mapping->creatematrix_default       = dm->ops->creatematrix;
@@ -1215,6 +1239,8 @@ PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2)
     // over-ride elements
     ierr = PetscMemcpy(da_context->e,mapping->elements_default,sizeof(PetscInt)*mapping->nelements*27);CHKERRQ(ierr);
     
+    dm->ltogmap = mapping->isl2gmap_default;
+
     ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
     // restore original function pointers
     cdm->ops->createlocalvector  = mapping->createlocalvector_default_c;
@@ -1246,6 +1272,8 @@ PetscErrorCode DMDAUseQ2Mappings(DM dm,PetscBool useQ2)
     // over-ride elements
     ierr = PetscMemcpy(da_context->e,mapping->elements_custom,sizeof(PetscInt)*mapping->nelements*27);CHKERRQ(ierr);
     
+    dm->ltogmap = mapping->isl2gmap_custom;
+
     ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
     // swap in new methods - under the assumption that dm.dof = cdm.dof //
     cdm->ops->createlocalvector  = DMCreateLocalVector_DAQ2;
