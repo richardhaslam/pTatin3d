@@ -68,9 +68,12 @@ PetscErrorCode BCListCreate(BCList *list)
 
 PetscErrorCode BCListDestroy(BCList *list)
 {
-  BCList         ll = *list;
+  BCList         ll;
   PetscErrorCode ierr;
 
+  if (!list) PetscFunctionReturn(0);
+  ll = *list;
+  
   {
     PetscBool isdir;
     PetscInt n,cnt;
