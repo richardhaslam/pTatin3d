@@ -856,11 +856,6 @@ PetscErrorCode perform_residual_evaluation(pTatinCtx ctx,PhysCompStokes user)
   ierr = SNESSetUp(snes);CHKERRQ(ierr);
   PetscTime(&t1);
   
-  ierr = DMCompositeGetAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
-  ierr = VecNorm(xu,NORM_2,&norms[0]);CHKERRQ(ierr);
-  ierr = VecNorm(xp,NORM_2,&norms[1]);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
-
   tl = (double)(t1 - t0);
   ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -868,7 +863,14 @@ PetscErrorCode perform_residual_evaluation(pTatinCtx ctx,PhysCompStokes user)
   PetscPrintf(PETSC_COMM_WORLD,"SNESSetUp:                       time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
   
   PetscTime(&t0);
+  
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+
+  ierr = DMCompositeGetAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
+  ierr = VecNorm(xu,NORM_2,&norms[0]);CHKERRQ(ierr);
+  ierr = VecNorm(xp,NORM_2,&norms[1]);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"SNESNorms:  |Fu|_2 %1.6e ; |Fp|_2 %1.6e\n",norms[0],norms[1]);
   
   for (ii=1; ii<iterations; ii++) {
     ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
@@ -882,6 +884,12 @@ PetscErrorCode perform_residual_evaluation(pTatinCtx ctx,PhysCompStokes user)
   PetscPrintf(PETSC_COMM_WORLD,"SNESFormFucnction(cycles = %.3D)  time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
   PetscPrintf(PETSC_COMM_WORLD,"SNESFormFucnction: average       time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
   
+  ierr = DMCompositeGetAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
+  ierr = VecNorm(xu,NORM_2,&norms[0]);CHKERRQ(ierr);
+  ierr = VecNorm(xp,NORM_2,&norms[1]);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"SNESNorms:  |Fu|_2 %1.6e ; |Fp|_2 %1.6e\n",norms[0],norms[1]);
+
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);
