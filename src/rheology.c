@@ -41,6 +41,8 @@
 #include "stokes_rheology_vp_std.h"
 #include "stokes_rheology_lava.h"
 
+PetscLogEvent PTATIN_CoefficientEvaluate;
+PetscLogEvent PTATIN_CoefficientEvolve;
 
 PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
 {
@@ -198,7 +200,9 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,Petsc
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
+  ierr = PetscLogEventBegin(PTATIN_CoefficientEvaluate,0,0,0,0);CHKERRQ(ierr);
   ierr = pTatin_EvaluateRheologyNonlinearitiesMarkers(user,dau,u,dap,p);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PTATIN_CoefficientEvaluate,0,0,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -247,6 +251,7 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 
   PetscFunctionBegin;
 
+  ierr = PetscLogEventBegin(PTATIN_CoefficientEvolve,0,0,0,0);CHKERRQ(ierr);
   ierr = pTatinGetRheology(user,&rheo);
 
   switch (rheo->rheology_type) {
@@ -289,6 +294,7 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"StokesCoefficientUpdate is not defined");
       break;
   }
+  ierr = PetscLogEventEnd(PTATIN_CoefficientEvolve,0,0,0,0);CHKERRQ(ierr);
 
 
   been_here = 1;

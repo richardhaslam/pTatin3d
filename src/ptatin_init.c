@@ -165,6 +165,9 @@ extern PetscLogEvent PTATIN_ModelApplyMaterialBoundaryCondition;
 extern PetscLogEvent PTATIN_ModelUpdateMeshGeometry;
 extern PetscLogEvent PTATIN_ModelOutput;
 
+extern PetscLogEvent PTATIN_CoefficientEvaluate;
+extern PetscLogEvent PTATIN_CoefficientEvolve;
+
 
 PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const char help[])
 {
@@ -215,6 +218,9 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
   ierr = PetscLogEventRegister("ModelMatBC",     PTATIN_CLASSID,&PTATIN_ModelApplyMaterialBoundaryCondition);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("ModelUpdateMesh",PTATIN_CLASSID,&PTATIN_ModelUpdateMeshGeometry);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("ModelOutput",    PTATIN_CLASSID,&PTATIN_ModelOutput);CHKERRQ(ierr);
+
+  ierr = PetscLogEventRegister("CoeffEvaluate",  PTATIN_CLASSID,&PTATIN_CoefficientEvaluate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("CoeffEvolve",    PTATIN_CLASSID,&PTATIN_CoefficientEvolve);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister("MPAdvGCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvGlobalCoordUpdate);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MPAdvLCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvLocalCoordUpdate);CHKERRQ(ierr);
