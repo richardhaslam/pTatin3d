@@ -1,5 +1,5 @@
 /*
-This file has been copied from the PETSc 3.10 source tree (git commit d245c76cbd564eb268fb9086f7a891b164dc731f_
+This file has been copied from the PETSc 3.10 source tree (git commit d245c76cbd564eb268fb9086f7a891b164dc731f)
   $PETSC_DIR/src/mat/impls/mffd/mffdimpl.h
 */
 /*
