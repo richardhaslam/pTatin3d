@@ -150,7 +150,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
   /* Get array for temporary usage */
   // TODO consider whether this can be made more efficient
-  ierr = DMGetGlobalVector(mf->daUVW,&YuTempVec);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(mf->daUVW,&YuTempVec);CHKERRQ(ierr);
   ierr = VecGetLocalSize(YuTempVec,&nYu);CHKERRQ(ierr);
   ierr = VecZeroEntries(YuTempVec);CHKERRQ(ierr);// TODO only zero the last portion
   ierr = VecGetArray(YuTempVec,&YuTemp);CHKERRQ(ierr);
@@ -164,7 +164,6 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
 // TODO launch all GPU operations except copy back (to overlap)
 
-  // TODO put this AVX stuff into a function
 #if defined(_OPENMP)
     #pragma omp parallel for private(i)
 #endif
@@ -288,7 +287,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 
   ierr = VecRestoreArray(YuTempVec,&YuTemp);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(mf->daUVW,&YuTempVec);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(mf->daUVW,&YuTempVec);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
