@@ -144,6 +144,7 @@ PetscErrorCode PTableValues_SortPurge(PTableValues *ptv)
   long int  *tmp;
 
   //printf("sort\n");
+  if (ptv->len < 2) PetscFunctionReturn(0);
   PetscSortLongInt_Private(ptv->values,ptv->len-1);
   PetscSortedRemoveDupsLongInt(&ptv->len,ptv->values);
   tmp = (long int*)realloc(ptv->values,sizeof(long int)*(ptv->len));
@@ -746,7 +747,7 @@ PetscErrorCode PTableSync_MPI(PTable p)
   cache = p->cache;
 
   /* should do a sort/purge on the cached table */
-  ierr = _PTableSortPurgeValues(cache);CHKERRQ(ierr);
+  ierr = _PTableSortPurgeValues(cache);CHKERRQ(ierr); /* only required for PTableValues_Insert_greedy */
   p->cache->issynchronized = PETSC_TRUE; /* cache is sequential so it always up to date - furthermore, one should never access it via GetValues */
 
   sparse = (PTable_SPARSE*)cache->data;
@@ -913,12 +914,12 @@ PetscErrorCode PTableSynchronize(PTable p)
 {
   PetscErrorCode ierr;
 
-  /* should do a sort/purge on the local table */
-  ierr = _PTableSortPurgeValues(p);CHKERRQ(ierr);
-
   if (p->sync) {
     ierr = p->sync(p);CHKERRQ(ierr);
   }
+  /* should do a sort/purge on the local table - we do this last to flatten any communicated values */
+  ierr = _PTableSortPurgeValues(p);CHKERRQ(ierr); /* only required for PTableValues_Insert_greedy */
+
   p->issynchronized = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
