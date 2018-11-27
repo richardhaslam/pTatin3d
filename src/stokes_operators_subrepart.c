@@ -26,7 +26,6 @@
 #if defined(__AVX__) && defined(TATIN_HAVE_CUDA)
 
 #include <petscfe.h>
-#include <petsc/private/hash.h>
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
