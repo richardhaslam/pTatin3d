@@ -59,13 +59,13 @@ PetscErrorCode PTableSparse_PrepareKeyList(PTable_SPARSE *sparse);
 #define PT_SWAP(a,b,t) {t=a;a=b;b=t;}
 
 #define PT_MEDIAN3(v,a,b,c)                        \
-(v[a]<v[b]                                    \
-? (v[b]<v[c]                                 \
-? b                                       \
-: (v[a]<v[c] ? c : a))                    \
-: (v[c]<v[b]                                 \
-? b                                       \
-: (v[a]<v[c] ? a : c)))
+     (v[a]<v[b]                                    \
+      ? (v[b]<v[c]                                 \
+         ? b                                       \
+         : (v[a]<v[c] ? c : a))                    \
+      : (v[c]<v[b]                                 \
+         ? b                                       \
+      : (v[a]<v[c] ? a : c)))
 
 #define PT_MEDIAN(v,right) PT_MEDIAN3(v,right/4,right/2,right/4*3)
 
@@ -115,7 +115,6 @@ PetscErrorCode PetscSortedRemoveDupsLongInt(long int *n,long int ii[])
   PetscFunctionReturn(0);
 }
 
-
 static inline PetscErrorCode PTableValues_Insert_default(PTableValues *ptv,long int v)
 {
   long int  i;
@@ -141,9 +140,8 @@ static inline PetscErrorCode PTableValues_Insert_default(PTableValues *ptv,long 
 
 PetscErrorCode PTableValues_SortPurge(PTableValues *ptv)
 {
-  long int  *tmp;
+  long int *tmp;
 
-  //printf("sort\n");
   if (ptv->len < 2) PetscFunctionReturn(0);
   PetscSortLongInt_Private(ptv->values,ptv->len-1);
   PetscSortedRemoveDupsLongInt(&ptv->len,ptv->values);
@@ -155,7 +153,7 @@ PetscErrorCode PTableValues_SortPurge(PTableValues *ptv)
 
 static inline PetscErrorCode PTableValues_Insert_greedy(PTableValues *ptv,long int v)
 {
-  long int  *tmp;
+  long int        *tmp;
   static long int counter = 0;
 
   tmp = (long int*)realloc(ptv->values,sizeof(long int)*(ptv->len+1));
@@ -200,7 +198,6 @@ PetscErrorCode PTableValues_Destroy(PTableValues *ptv)
   ptv->allocated_len = 0;
   PetscFunctionReturn(0);
 }
-
 
 PetscErrorCode _PTableSortPurgeValues(PTable table)
 {
@@ -495,57 +492,57 @@ PetscErrorCode PTableDestroy_SPARSE(PTable p)
 
 PetscErrorCode PTableView_Self(PTable p)
 {
-  long int k,i,nentries;
+  long int  k,i,nentries;
   PetscBool has_row;
 
   if (!p) PetscFunctionReturn(0);
 
-  printf("PTableView:\n");
-  PetscPrintf(p->comm,"  commsize: %D\n",(PetscInt)p->commsize);
-  if (p->type == PTABLE_DENSE ) {  printf("  Type: \"dense\"\n"); }
-  if (p->type == PTABLE_SPARSE ) { printf("  Type: \"sparse\"\n"); }
-  printf("  start: %ld\n",p->start);
-  printf("  end:   %ld\n",p->end);
-  printf("  size:  %ld\n",p->size);
+  PetscPrintf(PETSC_COMM_SELF,"PTableView:\n");
+  PetscPrintf(PETSC_COMM_SELF,"  commsize: %D\n",(PetscInt)p->commsize);
+  if (p->type == PTABLE_DENSE ) {  PetscPrintf(PETSC_COMM_SELF,"  Type: \"dense\"\n"); }
+  if (p->type == PTABLE_SPARSE ) { PetscPrintf(PETSC_COMM_SELF,"  Type: \"sparse\"\n"); }
+  PetscPrintf(PETSC_COMM_SELF,"  start: %ld\n",p->start);
+  PetscPrintf(PETSC_COMM_SELF,"  end:   %ld\n",p->end);
+  PetscPrintf(PETSC_COMM_SELF,"  size:  %ld\n",p->size);
   PTableGetNumberOfEntriesLocal(p,&nentries);
-  printf("  nentries:  %ld\n",nentries);
+  PetscPrintf(PETSC_COMM_SELF,"  nentries:  %ld\n",nentries);
   //printf("nentries %ld ",p->end);
   for (k=p->start; k<p->end; k++) {
     PTableHasValues(p,k,&has_row);
     if (!has_row) {
-      //printf("[r%.6ld] : \"empty\"\n",k);
+      //PetscPrintf(PETSC_COMM_SELF,"[r%.6ld] : \"empty\"\n",k);
     } else {
       long int       rl;
       const long int *rv;
 
-      printf("row %.6ld ",k);
+      PetscPrintf(PETSC_COMM_SELF,"row %.6ld ",k);
       PTableGetValues(p,k,&rl,&rv);
-      printf(": nentries %.6ld : ",rl);
+      PetscPrintf(PETSC_COMM_SELF,": nentries %.6ld : ",rl);
 
       // viewer for short arrary of values
       if (rl < 20) {
         for (i=0; i<rl-1; i++) {
-          printf("%ld,",rv[i]);
+          PetscPrintf(PETSC_COMM_SELF,"%ld,",rv[i]);
         }
-        printf("%ld",rv[i]);
-        printf("\n");
+        PetscPrintf(PETSC_COMM_SELF,"%ld",rv[i]);
+        PetscPrintf(PETSC_COMM_SELF,"\n");
       }
       // viewer for longer arrary of values
       if (rl >= 20) {
         long int nnr = rl/20;
         
         for (long int kk=0; kk<nnr; kk++) {
-          printf("\n    ");
+          PetscPrintf(PETSC_COMM_SELF,"\n    ");
           for (long int ii=0; ii<20; ii++) {
-            printf("%ld,",rv[20*kk+ii]);
+            PetscPrintf(PETSC_COMM_SELF,"%ld,",rv[20*kk+ii]);
           }
         }
         if (rl - nnr*20 > 0) { /* non zero remainder */
-          printf("\n    ");
+          PetscPrintf(PETSC_COMM_SELF,"\n    ");
           for (long int ii=nnr*20; ii<rl-1; ii++) {
-            printf("%ld,",rv[ii]);
+            PetscPrintf(PETSC_COMM_SELF,"%ld,",rv[ii]);
           }
-          printf("%ld\n",rv[rl-1]);
+          PetscPrintf(PETSC_COMM_SELF,"%ld\n",rv[rl-1]);
         }
       }
 
@@ -558,14 +555,10 @@ PetscErrorCode PTableView_Self(PTable p)
 /* collective */
 PetscErrorCode PTableView(PTable p)
 {
-  PetscMPIInt commrank;
-  PetscErrorCode ierr;
-  long int k,i;
+  long int  k,i;
   PetscBool has_row;
 
   if (!p) PetscFunctionReturn(0);
-
-  ierr = MPI_Comm_rank(p->comm,&commrank);CHKERRQ(ierr);
 
   PetscPrintf(p->comm,"PTableView:\n");
   if (p->type == PTABLE_DENSE ) {  PetscPrintf(p->comm,"  Type: \"dense\"\n"); }
@@ -589,7 +582,7 @@ PetscErrorCode PTableView(PTable p)
   for (k=p->start; k<p->end; k++) {
     PTableHasValues(p,k,&has_row);
     if (!has_row) {
-      //printf("[r%.6ld] : \"empty\"\n",k);
+      //PetscSynchronizedPrintf(p->comm,"row %.6ld : \"empty\"\n",k);
     } else {
       long int       rl;
       const long int *rv;
@@ -633,14 +626,11 @@ PetscErrorCode PTableView(PTable p)
 
 PetscErrorCode PTableViewLite(PTable p)
 {
-  PetscMPIInt commrank;
   PetscErrorCode ierr;
-  long int k,nentries,nentries_g;
-  PetscBool has_row;
+  long int       k,nentries,nentries_g;
+  PetscBool      has_row;
 
   if (!p) PetscFunctionReturn(0);
-
-  ierr = MPI_Comm_rank(p->comm,&commrank);CHKERRQ(ierr);
 
   PetscPrintf(p->comm,"PTableViewLite:\n");
   if (p->type == PTABLE_DENSE ) {  PetscPrintf(p->comm,"  Type: \"dense\"\n"); }
@@ -661,7 +651,7 @@ PetscErrorCode PTableViewLite(PTable p)
   for (k=p->start; k<p->end; k++) {
     PTableHasValues(p,k,&has_row);
     if (!has_row) {
-      //printf("[r%.6ld] : \"empty\"\n",k);
+      //PetscSynchronizedPrintf(p->comm,"row %.6ld : \"empty\"\n",k);
     } else {
       long int       rl;
       const long int *rv;
@@ -678,7 +668,7 @@ PetscErrorCode PTableViewLite(PTable p)
 PetscErrorCode PTableDestroy(PTable *pt)
 {
   PetscErrorCode ierr;
-  PTable p;
+  PTable         p;
 
   if (!pt) PetscFunctionReturn(0);
   p = *pt;
@@ -696,9 +686,8 @@ PetscErrorCode PTableDestroy(PTable *pt)
 
 PetscErrorCode PTableCreate(MPI_Comm comm,PTable *p)
 {
-  PTable _p;
+  PTable         _p;
   PetscErrorCode ierr;
-
 
   ierr = PetscMalloc1(1,&_p);CHKERRQ(ierr);
   ierr = PetscMemzero(_p,sizeof(struct _p_PTable));CHKERRQ(ierr);
@@ -742,7 +731,6 @@ PetscErrorCode PTableSync_MPI(PTable p)
   long int       *pack_buffer,*recv_buffer;
   PetscInt       recv_length,cnt;
 
-
   ierr = MPI_Comm_rank(p->comm,&commrank);CHKERRQ(ierr);
   cache = p->cache;
 
@@ -752,10 +740,6 @@ PetscErrorCode PTableSync_MPI(PTable p)
 
   sparse = (PTable_SPARSE*)cache->data;
   ierr = PTableSparse_PrepareKeyList(sparse);CHKERRQ(ierr);
-
-  //for (k=0; k<sparse->key_list_len; k++) {
-  //  printf("r %d : k %ld : key %ld \n",commrank,k,sparse->key_list[k]);
-  //}
 
   /* =================== DSDE =================== */
   // [dsde:create]
@@ -796,7 +780,6 @@ PetscErrorCode PTableSync_MPI(PTable p)
     }
 
     ierr = DataExAddToSendCount(de, target_rank, len+2 );CHKERRQ(ierr);
-
   }
 
   ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
@@ -824,17 +807,12 @@ PetscErrorCode PTableSync_MPI(PTable p)
       }
     }
 
-
     ierr = PetscMalloc1(len+2,&pack_buffer);CHKERRQ(ierr);
 
     pack_buffer[0] = key;
     pack_buffer[1] = len;
-    //if (commrank == 0){ printf("[p] key %ld : len %ld : v \n",key,len); }
 
     ierr = PetscMemcpy(&pack_buffer[2],vals,len*sizeof(long int));CHKERRQ(ierr);
-    //for (j=2; j<len+2; j++) {
-    //  if (commrank == 0){ printf("[p] key %ld : len %ld : v %ld \n",key,len,pack_buffer[j]); }
-    //}
 
     for (j=0; j<len+2; j++) {
       ierr = DataExPackData( de, target_rank, 1,(void*)&pack_buffer[j] );CHKERRQ(ierr);
@@ -849,17 +827,8 @@ PetscErrorCode PTableSync_MPI(PTable p)
   ierr = DataExBegin(de);CHKERRQ(ierr);
   ierr = DataExEnd(de);CHKERRQ(ierr);
 
-
   // [un-pack]
   ierr = DataExGetRecvData( de, &recv_length, (void**)&recv_buffer );CHKERRQ(ierr);
-
-  /*
-  if (commrank == 1) {
-    for (k=0; k<recv_length; k++) {
-      printf("i %ld val %ld\n",k,recv_buffer[k]);
-    }
-  }
-  */
 
   cnt = 0;
   while (cnt < recv_length) {
@@ -870,19 +839,14 @@ PetscErrorCode PTableSync_MPI(PTable p)
     for (k=0; k<len; k++) {
       long int v = recv_buffer[cnt];
 
-      //if (commrank == 1){ printf("[up] key %ld : len %ld : v %ld\n",key,len,v); }
       ierr = PTableSetValue(p,key,v);CHKERRQ(ierr);
       cnt++;
     }
   }
 
-
-
   ierr = DataExDestroy(de);CHKERRQ(ierr);
 
   /* =================== Flush cache =================== */
-
-
   for (k=0; k<sparse->key_list_len; k++) {
     khiter_t iterator;
 
@@ -894,7 +858,6 @@ PetscErrorCode PTableSync_MPI(PTable p)
       PTableValues *row = NULL;
 
       row = kh_value(sparse->hash, iterator);
-      //printf("   --> row %p\n",row);
       if (row) {
         free(row->values);
         ierr = PetscFree(row);CHKERRQ(ierr);
@@ -904,7 +867,6 @@ PetscErrorCode PTableSync_MPI(PTable p)
   }
   sparse->nentries = (long int)kh_size(sparse->hash);
   sparse->nentries = sparse->nentries - 1; /* subtract one here to account for the dummy value with key = -1 */
-
 
   PetscFunctionReturn(0);
 }
@@ -977,8 +939,6 @@ PetscErrorCode PTableSetup(PTable p)
     ierr = MPI_Allgather(&p->start,1,MPI_LONG,p->start_all,1,MPI_LONG,p->comm);CHKERRQ(ierr);
     ierr = MPI_Allgather(&p->end,  1,MPI_LONG,p->end_all,  1,MPI_LONG,p->comm);CHKERRQ(ierr);
 
-    // 0 15
-    // 10 30
     for (k=1; k<p->commsize; k++) {
       //if (p->start_all[k] < p->start_all[k-1]) SETERRQ(p->comm,PETSC_ERR_SUP,"Start ranges must increase monotonically");
       if (p->start_all[k] >= p->start_all[k-1]) {
@@ -992,7 +952,6 @@ PetscErrorCode PTableSetup(PTable p)
         }
       }
     }
-
 
     ierr = PTableSetRange(p->cache,g_start,g_end);CHKERRQ(ierr);
     ierr = PTableSetup(p->cache);CHKERRQ(ierr);
@@ -1057,7 +1016,6 @@ PetscErrorCode PTableSetValue_MPI(PTable p,long int row,long int val_j)
   }
   PetscFunctionReturn(0);
 }
-
 
 /* not collective */
 PetscErrorCode PTableSetValue(PTable p,long int row,long int val_j)
@@ -1133,11 +1091,11 @@ PetscErrorCode PTableGetNumberOfEntriesLocal(PTable p,long int *nentries)
 
 PetscErrorCode _PTableFlattenIntoIS_SPARSE(PTable p,PetscBool ignore_empty_slots,IS *from_is,IS *to_is)
 {
-  PTable_SPARSE *sparse = (PTable_SPARSE*)p->data;
-  long int k,length;
-  PetscInt i;
-  PetscInt *indices_f,*indices_t;
-  long int start = 0,end = 0;
+  PTable_SPARSE  *sparse = (PTable_SPARSE*)p->data;
+  long int       k,length;
+  PetscInt       i;
+  PetscInt       *indices_f,*indices_t;
+  long int       start = 0,end = 0;
   PetscErrorCode ierr;
 
   ierr = PTableSparse_PrepareKeyList(sparse);CHKERRQ(ierr);
@@ -1201,10 +1159,10 @@ PetscErrorCode _PTableFlattenIntoIS_SPARSE(PTable p,PetscBool ignore_empty_slots
 
 PetscErrorCode _PTableFlattenIntoIS_DENSE(PTable p,PetscBool ignore_empty_slots,IS *from_is,IS *to_is)
 {
-  long int k,length;
-  PetscInt i;
-  PetscInt *indices_f,*indices_t;
-  long int start = 0,end = 0;
+  long int       k,length;
+  PetscInt       i;
+  PetscInt       *indices_f,*indices_t;
+  long int       start = 0,end = 0;
   PetscErrorCode ierr;
 
   ierr = PTableGetNumberOfEntriesLocal(p,&length);CHKERRQ(ierr);
@@ -1265,6 +1223,9 @@ PetscErrorCode PTableFlattenIntoIS(PTable p,PetscBool ignore_empty_slots,IS *fis
 
   PetscFunctionReturn(0);
 }
+
+/* testing code */
+#if 0
 
 void hashdemo(void)
 {
@@ -1389,9 +1350,6 @@ void hashdemo(void)
   kh_destroy(ptable64, hash);
 }
 
-/* testing code */
-#if 0
-
 PetscErrorCode ex1(void)
 {
   PTable table;
@@ -1442,8 +1400,6 @@ PetscErrorCode ex2(void)
   for (int i=0; i<21; i++) {
     ierr = PTableSetValue(table,7,i);CHKERRQ(ierr);
   }
-
-
   */
   if (rank == 0) {
     ierr = PTableSetValue(table,55,501);CHKERRQ(ierr);
@@ -1497,7 +1453,6 @@ PetscErrorCode ex3(void)
 
   PetscFunctionReturn(0);
 }
-
 
 /* overlapping ranges */
 PetscErrorCode ex4(void)
