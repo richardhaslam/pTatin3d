@@ -58,6 +58,7 @@ libptatin3d-y.c += $(call thisdir, \
   stokes_rheology_vp_std.c \
   stokes_rheology_lava.c \
   stokes_form_function.c \
+  stokes_form_function_avx.c \
   stokes_operators_mf.c \
   stokes_operators.c \
   stokes_operators_tensor.c \
