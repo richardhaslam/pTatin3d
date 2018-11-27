@@ -72,7 +72,7 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
       SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"%s must be in [0,1]",PTATIN_AVXCUDA_CPU_FRAC_OPT);
     }
     // TODO consider forcing to a layer boundary
-    ctx->nel_cpu = (PetscInt) (cpufrac * ctx->nel);
+    ctx->nel_cpu = NEV * ((PetscInt) ((cpufrac/NEV) * ctx->nel)); /* Force to vector block size */
     ctx->nel_gpu = ctx->nel - ctx->nel_cpu;
   }
   // TODO compute an upper bound on the dof #s for cpu, and a lower bound for gpu
@@ -108,26 +108,23 @@ PetscErrorCode MFA11Destroy_AVXCUDA(MatA11MF mf)
 PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
   PetscErrorCode        ierr;
-  MFA11AVXCUDA          ctx;
+  DM                    cda;
+  Vec                   gcoords;
+  const PetscReal       *LA_gcoords;
+  PetscInt              nel,nen_u;
+  const PetscInt        *elnidx_u;
+  QPntVolCoefStokes     *all_gausspoints;
+  PetscReal             x1[3],w1[3],B[3][3],D[3][3],w[NQP];
+  PetscInt              i,j,k,e;
+  MFA11AVXCUDA          ctx = (MFA11AVXCUDA)mf->ctx;
+  Vec                   YuTempVec;
+  PetscScalar           *YuTemp;
+  PetscInt              nYu;
 
-  // TODO this is just the AVX kernel data
-  DM cda;
-  Vec gcoords;
-  const PetscReal *LA_gcoords;
-  PetscInt nel,nen_u;
-  const PetscInt *elnidx_u;
-  QPntVolCoefStokes *all_gausspoints;
-  PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
-  PetscInt i,j,k,e;
 
   PetscFunctionBeginUser;
   ctx = (MFA11AVXCUDA)mf->ctx;
 
-  // TODO
-
-  // TODO placeholder: just 2 copies of the AVX kernel (test logic, set up passing tests)
-
-  // TODO placeholder: this is just the AVX kernel
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     B[i][0] = .5*(PetscSqr(x1[i]) - x1[i]);
@@ -151,16 +148,27 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 
+  /* Get array for temporary usage */
+  // TODO consider whether this can be made more efficient
+  ierr = DMGetGlobalVector(mf->daUVW,&YuTempVec);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(YuTempVec,&nYu);CHKERRQ(ierr);
+  ierr = VecZeroEntries(YuTempVec);CHKERRQ(ierr);// TODO only zero the last portion
+  ierr = VecGetArray(YuTempVec,&YuTemp);CHKERRQ(ierr);
+  printf("xxxx %d\n",nYu);CHKERRQ(ierr);
+
 #if defined(_OPENMP)
   #define OPENMP_CHKERRQ(x)
 #else
   #define OPENMP_CHKERRQ(x)   CHKERRQ(x)
 #endif
 
+// TODO launch all GPU operations except copy back (to overlap)
+
+  // TODO put this AVX stuff into a function
 #if defined(_OPENMP)
     #pragma omp parallel for private(i)
 #endif
-  for (e=0;e<nel;e+=NEV) {
+  for (e=0;e<ctx->nel_cpu;e+=NEV) {
     PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
     PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
     const QPntVolCoefStokes *cell_gausspoints[NEV];
@@ -212,11 +220,75 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
   }
 
+  // TODO Remove placeholder - second round of AVX
+#if defined(_OPENMP)
+    #pragma omp parallel for private(i)
+#endif
+  for (e=ctx->nel_cpu;e<ctx->nel;e+=NEV) {
+    PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
+    PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
+    const QPntVolCoefStokes *cell_gausspoints[NEV];
+    PetscInt ee,l;
+
+    for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+      for (ee=0; ee<NEV; ee++) {
+        PetscInt E = elnidx_u[nen_u*PetscMin(e+ee,nel-1)+i]; // Pad up to length NEV by duplicating last element
+        for (l=0; l<3; l++) {
+          elx[l][i][ee] = LA_gcoords[3*E+l];
+          elu[l][i][ee] = ufield[3*E+l];
+        }
+      }
+    }
+    for (ee=0; ee<NEV; ee++) {
+      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,nel-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
+    }
+
+    ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
+
+    ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
+
+    ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
+
+    ierr = QuadratureAction_A11_AVX(cell_gausspoints,dx,dxdet,w,du,dv);OPENMP_CHKERRQ(ierr);
+
+    ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+    ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
+
+#if defined(_OPENMP)
+    #pragma omp critical
+#endif
+    for (ee=0; ee<PetscMin(NEV,nel-e); ee++) {
+      for (i=0; i<NQP; i++) {
+        PetscInt E = elnidx_u[nen_u*(e+ee)+i];
+        for (l=0; l<3; l++) {
+          YuTemp[3*E+l] += elv[l][i][ee];
+        }
+      }
+    }
+
+  }
+
+  // TODO only move over the last portion
+  for (i=0; i<nYu; ++i) Yu[i] += YuTemp[i];
+
+// TODO real GPU operations
+
 #undef OPENMP_CHKERRQ
 
   PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
   PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
   PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+
+  ierr = VecRestoreArray(YuTempVec,&YuTemp);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(mf->daUVW,&YuTempVec);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
