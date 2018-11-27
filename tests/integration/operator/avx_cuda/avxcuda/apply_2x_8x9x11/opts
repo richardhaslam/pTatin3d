@@ -1,0 +1,11 @@
+-apply_A11mf_operator
+-iterations 2
+-mx 8
+-my 9
+-mz 11
+-output_path pt3dout
+-ptatin_model viscous_sinker
+-model_viscous_sinker_eta1 10
+-lattice_layout_perturb 0.0
+-a11_op avxcuda
+-options_left

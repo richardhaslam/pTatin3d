@@ -1,0 +1,10 @@
+-compare_operators
+-mx 5
+-my 7
+-mz 14
+-output_path pt3dout
+-ptatin_model viscous_sinker
+-model_viscous_sinker_eta1 10
+-lattice_layout_perturb 0.0
+-a11_op avxcuda
+-options_left
