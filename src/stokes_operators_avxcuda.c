@@ -31,12 +31,16 @@ extern PetscLogEvent MAT_MultMFA11_cfr;
 
 #define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
+#define PTATIN_AVXCUDA_CPU_FRAC_OPT "-avxcuda_cpu_frac"
+
 typedef struct _p_MFA11AVXCUDA *MFA11AVXCUDA;
 
 struct _p_MFA11AVXCUDA {
   PetscObjectState state;
   // TODO
-  MFA11CUDA        cudactx;
+  PetscInt  nel,nel_cpu,nel_gpu,nen_u;
+  PetscInt  *elnidx_u;
+  MFA11CUDA cudactx;
 };
 
 PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
@@ -53,7 +57,24 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
 
   ctx->state = 0;
 
-  // TODO
+  ierr = DMDAGetElements_pTatinQ2P1(dau,&ctx->nel,&ctx->nen_u,&ctx->elnidx_u);CHKERRQ(ierr);
+
+  /* Determine element partition between the two kernels */
+  {
+    PetscBool set;
+    PetscReal cpufrac = 0.25;
+    ierr = PetscOptionsGetReal(NULL,NULL,PTATIN_AVXCUDA_CPU_FRAC_OPT,&cpufrac,&set);CHKERRQ(ierr);
+    if (!set) {
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)mf->dmUVW),"Warning: %s not provided, so default value of %f used (likely to be unbalanced!)\n",PTATIN_AVXCUDA_CPU_FRAC_OPT,cpufrac);CHKERRQ(ierr);
+    }
+    if (cpufrac < 0.0 || cpufrac > 1.0) {
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"%s must be in [0,1]",PTATIN_AVXCUDA_CPU_FRAC_OPT);
+    }
+    // TODO consider forcing to a layer boundary
+    ctx->nel_cpu = (PetscInt) (cpufrac * ctx->nel);
+    ctx->nel_gpu = ctx->nel - ctx->nel_cpu;
+  }
+  // TODO compute an upper bound on the dof #s for cpu, and a lower bound for gpu
 
   /* Set up CUDA context */
   ierr = PetscMalloc1(1,&ctx->cudactx);CHKERRQ(ierr);
@@ -72,8 +93,6 @@ PetscErrorCode MFA11Destroy_AVXCUDA(MatA11MF mf)
 
   PetscFunctionBeginUser;
   ctx = (MFA11AVXCUDA)mf->ctx;
-
-  // TODO
 
   /* Destroy CUDA ctx */
   ierr = MFA11CUDA_CleanUp(ctx->cudactx);CHKERRQ(ierr);
@@ -94,6 +113,8 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   ctx = (MFA11AVXCUDA)mf->ctx;
 
   // TODO
+
+  // TODO placeholder: just 2 copies of the AVX kernel (test logic, set up passing tests)
 
   PetscFunctionReturn(0);
 }
