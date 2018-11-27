@@ -65,7 +65,8 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
     PetscReal cpufrac = 0.25;
     ierr = PetscOptionsGetReal(NULL,NULL,PTATIN_AVXCUDA_CPU_FRAC_OPT,&cpufrac,&set);CHKERRQ(ierr);
     if (!set) {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)mf->daUVW),"Warning: %s not provided, so default value of %f used (likely to be unbalanced!)\n",PTATIN_AVXCUDA_CPU_FRAC_OPT,cpufrac);CHKERRQ(ierr);
+      //ierr = PetscPrintf(PetscObjectComm((PetscObject)mf->daUVW),"Warning: %s not provided, so default value of %f used (likely to be unbalanced!)\n",PTATIN_AVXCUDA_CPU_FRAC_OPT,cpufrac);CHKERRQ(ierr);
+      SETERRQ2(PetscObjectComm((PetscObject)mf->daUVW),PETSC_ERR_SUP,"%s not provided, so default value of %f used (likely to be unbalanced!)\n",PTATIN_AVXCUDA_CPU_FRAC_OPT,cpufrac);CHKERRQ(ierr); // TODO convert back to warning, but for now we don't want this printing to mess with profiling
     }
     if (cpufrac < 0.0 || cpufrac > 1.0) {
       SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"%s must be in [0,1]",PTATIN_AVXCUDA_CPU_FRAC_OPT);

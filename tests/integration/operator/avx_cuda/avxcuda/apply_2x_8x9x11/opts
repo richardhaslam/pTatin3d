@@ -8,4 +8,5 @@
 -model_viscous_sinker_eta1 10
 -lattice_layout_perturb 0.0
 -a11_op avxcuda
+-avxcuda_cpu_frac 0.25
 -options_left
