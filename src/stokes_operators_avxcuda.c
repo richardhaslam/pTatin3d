@@ -37,8 +37,7 @@ typedef struct _p_MFA11AVXCUDA *MFA11AVXCUDA;
 
 struct _p_MFA11AVXCUDA {
   PetscObjectState state;
-  // TODO
-  PetscInt        nel,nel_cpu,nel_gpu,nen_u;
+  PetscInt        nel,nel_gpu,nen_u,localsize,localsize_gpu;
   const PetscInt  *elnidx_u;
   MFA11CUDA       cudactx;
 };
@@ -47,6 +46,8 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
 {
   PetscErrorCode ierr;
   MFA11AVXCUDA   ctx;
+  DM             cda;
+  Vec            gcoords;
 
   PetscFunctionBeginUser;
   if (mf->ctx) PetscFunctionReturn(0);
@@ -63,6 +64,7 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
   {
     PetscBool set;
     PetscReal cpufrac = 0.25;
+    PetscInt  nel_cpu;
     ierr = PetscOptionsGetReal(NULL,NULL,PTATIN_AVXCUDA_CPU_FRAC_OPT,&cpufrac,&set);CHKERRQ(ierr);
     if (!set) {
       //ierr = PetscPrintf(PetscObjectComm((PetscObject)mf->daUVW),"Warning: %s not provided, so default value of %f used (likely to be unbalanced!)\n",PTATIN_AVXCUDA_CPU_FRAC_OPT,cpufrac);CHKERRQ(ierr);
@@ -72,10 +74,19 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
       SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"%s must be in [0,1]",PTATIN_AVXCUDA_CPU_FRAC_OPT);
     }
     // TODO consider forcing to a layer boundary
-    ctx->nel_cpu = NEV * ((PetscInt) ((cpufrac/NEV) * ctx->nel)); /* Force to vector block size */
-    ctx->nel_gpu = ctx->nel - ctx->nel_cpu;
+    nel_cpu      = NEV * ((PetscInt) ((cpufrac/NEV) * ctx->nel)); /* Force to vector block size */
+    ctx->nel_gpu = ctx->nel - nel_cpu;
   }
-  // TODO compute an upper bound on the dof #s for cpu, and a lower bound for gpu
+
+  /* Get coordinate vector, simply to retrieve its size */
+  ierr = DMGetCoordinateDM( mf->daUVW, &cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal( mf->daUVW, &gcoords );CHKERRQ(ierr);
+  ierr = VecGetLocalSize(gcoords,&ctx->localsize);CHKERRQ(ierr);
+
+  /* The largest dof referred to by elements to be processed on the GPU */
+  // TODO compute this better
+  ctx->localsize_gpu = ctx->localsize; // TODO this should be smaller! (add a brute-force check as well, guarded)
+    // TODO actually use this below to provide the correct size fo the GPU components
 
   /* Set up CUDA context */
   ierr = PetscMalloc1(1,&ctx->cudactx);CHKERRQ(ierr);
@@ -107,19 +118,16 @@ PetscErrorCode MFA11Destroy_AVXCUDA(MatA11MF mf)
 
 PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
-  PetscErrorCode        ierr;
-  DM                    cda;
-  Vec                   gcoords;
-  const PetscReal       *LA_gcoords;
-  PetscInt              nel,nen_u;
-  const PetscInt        *elnidx_u;
-  QPntVolCoefStokes     *all_gausspoints;
-  PetscReal             x1[3],w1[3],B[3][3],D[3][3],w[NQP];
-  PetscInt              i,j,k,e;
-  MFA11AVXCUDA          ctx = (MFA11AVXCUDA)mf->ctx;
-  Vec                   YuTempVec;
-  PetscScalar           *YuTemp;
-  PetscInt              localsize;
+  PetscErrorCode    ierr;
+  DM                cda;
+  Vec               gcoords;
+  const PetscReal   *LA_gcoords;
+  QPntVolCoefStokes *all_gausspoints;
+  PetscReal         x1[3],w1[3],B[3][3],D[3][3],w[NQP];
+  PetscInt          i,j,k,e;
+  Vec               YuTempVec; // TODO get rid of this
+  PetscScalar       *YuTemp;
+  MFA11AVXCUDA      ctx = (MFA11AVXCUDA)mf->ctx;
 
 
   PetscFunctionBeginUser;
@@ -144,15 +152,12 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-  ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
-
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 
   /* Get array for temporary usage */
-  // TODO consider whether this can be made more efficient
+  // TODO just allocate/deallocate an array of size localsize_gpu
   ierr = DMGetLocalVector(mf->daUVW,&YuTempVec);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(YuTempVec,&localsize);CHKERRQ(ierr);
-  ierr = VecZeroEntries(YuTempVec);CHKERRQ(ierr);// TODO only zero the last portion
+  ierr = VecZeroEntries(YuTempVec);CHKERRQ(ierr);
   ierr = VecGetArray(YuTempVec,&YuTemp);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
@@ -184,7 +189,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
       }
 
     }
-    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,ctx->nel_gpu,nen_u,elnidx_u,localsize/NSD);CHKERRQ(ierr); /* Note: nel_gpu */ // TODO note that we still use the full localsize here, when really this could be smaller
+    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,ctx->nel_gpu,ctx->nen_u,ctx->elnidx_u,ctx->localsize/NSD);CHKERRQ(ierr); /* Note: nel_gpu */ // TODO note that we still use the full localsize here, when really this could be smaller
 
     if(gaussdata_host) {
       ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
@@ -194,18 +199,18 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
   /* Process elements with CUDA */
   ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
-  ierr = ProcessElements_A11_CUDA(ctx->cudactx,nen_u,localsize);CHKERRQ(ierr); // TODO note using localsize here
+  ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,ctx->localsize);CHKERRQ(ierr); // TODO note using localsize here
   ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
   /* Read back CUDA data */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-  ierr = CopyFrom_A11_CUDA(ctx->cudactx,YuTemp,localsize);CHKERRQ(ierr); /* Note copy back to YuTemp */ // TODO note using localsize here
+  ierr = CopyFrom_A11_CUDA(ctx->cudactx,YuTemp,ctx->localsize);CHKERRQ(ierr); /* Note copy back to YuTemp */ // TODO note using localsize here
   ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
     #pragma omp parallel for private(i)
 #endif
-  for (e=ctx->nel_gpu; e<nel; e+=NEV) {
+  for (e=ctx->nel_gpu; e<ctx->nel; e+=NEV) {
     PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
     PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
     const QPntVolCoefStokes *cell_gausspoints[NEV];
@@ -213,7 +218,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
     for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
       for (ee=0; ee<NEV; ee++) {
-        PetscInt E = elnidx_u[nen_u*PetscMin(e+ee,nel-1)+i]; // Pad up to length NEV by duplicating last element
+        PetscInt E = ctx->elnidx_u[ctx->nen_u*PetscMin(e+ee,ctx->nel-1)+i]; // Pad up to length NEV by duplicating last element
         for (l=0; l<3; l++) {
           elx[l][i][ee] = LA_gcoords[3*E+l];
           elu[l][i][ee] = ufield[3*E+l];
@@ -221,7 +226,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
       }
     }
     for (ee=0; ee<NEV; ee++) {
-      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,nel-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
+      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,ctx->nel-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
     }
 
     ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
@@ -246,9 +251,9 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 #if defined(_OPENMP)
     #pragma omp critical
 #endif
-    for (ee=0; ee<PetscMin(NEV,nel-e); ee++) {
+    for (ee=0; ee<PetscMin(NEV,ctx->nel-e); ee++) {
       for (i=0; i<NQP; i++) {
-        PetscInt E = elnidx_u[nen_u*(e+ee)+i];
+        PetscInt E = ctx->elnidx_u[ctx->nen_u*(e+ee)+i];
         for (l=0; l<3; l++) {
           Yu[3*E+l] += elv[l][i][ee];
         }
@@ -258,14 +263,15 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   }
 
   /* Accumulate results from GPU (some overlap) */
+  // TODO reverse this - we expect to have most of the work on the GPU, so have the  CPU compute in the temp array?
   // TODO only move over the last portion
-  for (i=0; i<localsize; ++i) Yu[i] += YuTemp[i];
+  for (i=0; i<ctx->localsize; ++i) Yu[i] += YuTemp[i];
 
 #undef OPENMP_CHKERRQ
 
-  PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-  PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-  PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+  PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+  PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 
   ierr = VecRestoreArray(YuTempVec,&YuTemp);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(mf->daUVW,&YuTempVec);CHKERRQ(ierr);
