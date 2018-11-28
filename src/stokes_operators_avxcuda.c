@@ -195,23 +195,15 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   }
   ierr = PetscLogEventEnd(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
 
-  /* CUDA entry point
-   *  - inputs: elnidx_u, LA_gcoords, ufield, gaussdata_w
-   *  - output: Yu
-   */
+  /* Process elements with CUDA */
+  ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
+  ierr = ProcessElements_A11_CUDA(ctx->cudactx,nen_u,localsize);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
-    ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
-    ierr = ProcessElements_A11_CUDA(ctx->cudactx,nen_u,localsize);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
-
-    PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-    PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-    PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
-
-    /* Read back CUDA data */
-    ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-    ierr = CopyFrom_A11_CUDA(ctx->cudactx,YuTemp,localsize);CHKERRQ(ierr); /* Note copy back to YuTemp */
-    ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
+  /* Read back CUDA data */
+  ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
+  ierr = CopyFrom_A11_CUDA(ctx->cudactx,YuTemp,localsize);CHKERRQ(ierr); /* Note copy back to YuTemp */
+  ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
     #pragma omp parallel for private(i)
