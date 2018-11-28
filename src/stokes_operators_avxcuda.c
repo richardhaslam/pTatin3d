@@ -187,7 +187,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
       }
 
     }
-    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,nel,nen_u,elnidx_u,localsize/NSD);CHKERRQ(ierr);
+    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,ctx->nel_gpu,nen_u,elnidx_u,localsize/NSD);CHKERRQ(ierr); /* Note: nel_gpu */ // TODO note we're still passing the full data, just tell it to process less of it!
 
     if(gaussdata_host) {
       ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
@@ -267,9 +267,6 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
     }
 
   }
-
-  // TODO Remove placeholder - redundant GPU computation over whole domain (should just be second part)
-  for (i=0; i<localsize; ++i) Yu[i] = 0; // TODO remove this, obviously!
 
   /* Accumulate results from GPU (some overlap) */
   // TODO only move over the last portion
