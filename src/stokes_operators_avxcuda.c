@@ -161,10 +161,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   #define OPENMP_CHKERRQ(x)   CHKERRQ(x)
 #endif
 
-// TODO launch all GPU operations except copy back (to overlap)
-
-  // TODO only transfer necessary data to GPU
-
+  // TODO overlap GPU operations
 
   /* Set up CUDA data */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
@@ -180,14 +177,14 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
           for (k=0; k<3; k++)
             w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
 
-      ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
-      for (e=0; e<nel; e++) {
+      ierr = PetscMalloc(ctx->nel_gpu * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
+      for (e=0; e<ctx->nel_gpu; e++) {
         ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
         for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
       }
 
     }
-    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,ctx->nel_gpu,nen_u,elnidx_u,localsize/NSD);CHKERRQ(ierr); /* Note: nel_gpu */ // TODO note we're still passing the full data, just tell it to process less of it!
+    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,ctx->nel_gpu,nen_u,elnidx_u,localsize/NSD);CHKERRQ(ierr); /* Note: nel_gpu */ // TODO note that we still use the full localsize here, when really this could be smaller
 
     if(gaussdata_host) {
       ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
@@ -197,12 +194,12 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
   /* Process elements with CUDA */
   ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
-  ierr = ProcessElements_A11_CUDA(ctx->cudactx,nen_u,localsize);CHKERRQ(ierr);
+  ierr = ProcessElements_A11_CUDA(ctx->cudactx,nen_u,localsize);CHKERRQ(ierr); // TODO note using localsize here
   ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
   /* Read back CUDA data */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-  ierr = CopyFrom_A11_CUDA(ctx->cudactx,YuTemp,localsize);CHKERRQ(ierr); /* Note copy back to YuTemp */
+  ierr = CopyFrom_A11_CUDA(ctx->cudactx,YuTemp,localsize);CHKERRQ(ierr); /* Note copy back to YuTemp */ // TODO note using localsize here
   ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
