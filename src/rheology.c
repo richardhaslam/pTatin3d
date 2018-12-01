@@ -180,10 +180,14 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
     case 3:       /* Perform P1 projection and interpolate back to quadrature points */
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P1 marker->quadrature projection not supported");
       break;
-        case 4:
-            ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
-            break;
+    case 4:
+      ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
+      break;
 
+    case 5:
+      ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_sorted(user->materialpoint_db,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+      break;
+      
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Viscosity projection type is not defined");
       break;

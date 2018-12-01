@@ -1943,3 +1943,19 @@ PetscErrorCode MPPCSortedCtxGetPointByCell(DataBucket db,PetscInt cell_idx,Petsc
 
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode MPPCSortedCtxGetPointIdByCell(DataBucket db,PetscInt cell_idx,PetscInt pidx,PSortCtx plist[],PetscInt pcell_list[],int *index)
+{
+  PetscInt       points_per_cell;
+  PetscInt       pid,pid_unsorted;
+  
+  points_per_cell = pcell_list[cell_idx+1] - pcell_list[cell_idx];
+  if (pidx >= points_per_cell) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requesting a marker index which is larger than the number of points per cell");
+  }
+  
+  pid = pcell_list[cell_idx] + pidx;
+  pid_unsorted = plist[pid].point_index;
+  *index = (int)pid_unsorted;
+  PetscFunctionReturn(0);
+}

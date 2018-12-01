@@ -441,7 +441,7 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [dominant phase] not implemented");
       break;
 
-        case 1:
+    case 1:
       PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q1 projection\n");
       break;
     case 2:
@@ -455,6 +455,10 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
     case 4:
       PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using one2one projection\n");
       break;
+    case 5:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q1 projection <sort ctx>\n");
+      break;
+      
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER," -coefficient_projection_type = {0,1,2,4} implying {P0,Q1,Q2,one2on}");
       break;
