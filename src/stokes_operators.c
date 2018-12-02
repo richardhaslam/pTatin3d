@@ -64,6 +64,7 @@
 #include "stokes_operators.h"
 #include "stokes_operators_mf.h"
 #include "stokes_assembly.h"
+#include "dmda_element_q2p1.h"
 
 PetscLogEvent MAT_MultMFA11;
 PetscLogEvent MAT_MultMFA11_stp;
@@ -114,8 +115,13 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
   A11->is_setup       = PETSC_FALSE;
   A11->ctx            = NULL;
   A11->SpMVOp_MatMult = NULL;
+  A11->SpMVOp_MatMult_boundary_iterator = NULL;
+  A11->SpMVOp_MatMult_interior_iterator = NULL;
   A11->SpMVOp_SetUp   = NULL;
   A11->SpMVOp_Destroy = NULL;
+  A11->use_overlapping_implementation = PETSC_FALSE;
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-a11_op_overlap_implementation",&A11->use_overlapping_implementation,NULL);CHKERRQ(ierr);
 
   ierr = PetscFunctionListAdd(&MatMult_flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&MatMult_flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
@@ -149,6 +155,46 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
   ierr = PetscFunctionListFind(SetUp_flist,optype,&A11->SpMVOp_SetUp);CHKERRQ(ierr);
   ierr = PetscFunctionListFind(Destroy_flist,optype,&A11->SpMVOp_Destroy);CHKERRQ(ierr);
   if (!A11->SpMVOp_MatMult) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
+  if (A11->SpMVOp_MatMult) PetscInfo1(NULL,"Found a11_op method \"%s\"\n",optype);
+  
+  if (A11->use_overlapping_implementation) {
+    PetscFunctionList MatMultCellIterator_flist = NULL;
+    PetscBool found_bi[] = { PETSC_FALSE, PETSC_FALSE };
+    
+    // no reference / classic implementation
+    ierr = PetscFunctionListAdd(&MatMultCellIterator_flist,"tensor",MFStokesWrapper_A11_Tensor_celliterator);CHKERRQ(ierr);
+    // no avx implementation (todo)
+    // no cuda implementation (unlikely we ever want one)
+    
+    
+#if defined(__AVX__)
+    ierr = PetscStrcpy(optype,"avx");CHKERRQ(ierr); // I leave this here so you get a big slap in the face to complete a donkey-work todo
+#else
+    ierr = PetscStrcpy(optype,"tensor");CHKERRQ(ierr);
+#endif
+    ierr = PetscOptionsGetString(NULL,NULL,"-a11_op_boundary",optype,sizeof optype,&found_bi[0]);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(MatMultCellIterator_flist,optype,&A11->SpMVOp_MatMult_boundary_iterator);CHKERRQ(ierr);
+    if (A11->SpMVOp_MatMult_boundary_iterator) PetscInfo1(NULL,"Found a11_op_boundary method \"%s\"\n",optype);
+    if (found_bi[0] && !A11->SpMVOp_MatMult_boundary_iterator) PetscInfo1(NULL,"Requested a11_op_boundary method \"%s\" was not registered!\n",optype);
+    
+#if defined(__AVX__)
+    ierr = PetscStrcpy(optype,"avx");CHKERRQ(ierr);
+#else
+    ierr = PetscStrcpy(optype,"tensor");CHKERRQ(ierr);
+#endif
+    ierr = PetscOptionsGetString(NULL,NULL,"-a11_op_interior",optype,sizeof optype,&found_bi[1]);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(MatMultCellIterator_flist,optype,&A11->SpMVOp_MatMult_interior_iterator);CHKERRQ(ierr);
+    if (A11->SpMVOp_MatMult_interior_iterator) PetscInfo1(NULL,"Found a11_op_interior method \"%s\"\n",optype);
+    if (found_bi[1] && !A11->SpMVOp_MatMult_interior_iterator) PetscInfo1(NULL,"Requested a11_op_interior method \"%s\" was not registered!\n",optype);
+    
+    if (found_bi[0] || found_bi[1]) {
+      if (!A11->SpMVOp_MatMult_boundary_iterator) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A registered method for -a11_op_boundary method was not requested, or the option -a11_op_boundary <tensor> was not provided");
+      if (!A11->SpMVOp_MatMult_interior_iterator) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A registered method for -a11_op_interior method was not requested, or the option -a11_op_interior <tensor> was not provided");
+    }
+
+    ierr = PetscFunctionListDestroy(&MatMultCellIterator_flist);CHKERRQ(ierr);
+  }
+
   ierr = PetscFunctionListDestroy(&MatMult_flist);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&SetUp_flist);CHKERRQ(ierr);
   ierr = PetscFunctionListDestroy(&Destroy_flist);CHKERRQ(ierr);
@@ -223,6 +269,359 @@ PetscErrorCode MatStokesMFSetup(MatStokesMF StkCtx,PhysCompStokes user)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatA11MFDestroy_InteriorBoundaryIterator(MatA11MF A11)
+{
+  PetscErrorCode ierr;
+  ierr = ISDestroy(&A11->isl2g_interior_from);CHKERRQ(ierr);
+  ierr = ISDestroy(&A11->isl2g_interior_to);CHKERRQ(ierr);
+  ierr = ISDestroy(&A11->isl2g_boundary_from);CHKERRQ(ierr);
+  ierr = ISDestroy(&A11->isl2g_boundary_to);CHKERRQ(ierr);
+  if (A11->cell_boundary) { ierr = PetscFree(A11->cell_boundary);CHKERRQ(ierr); }
+  if (A11->cell_interior) { ierr = PetscFree(A11->cell_interior);CHKERRQ(ierr); }
+  ierr = VecScatterDestroy(&A11->vscat_l2g_boundary);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&A11->vscat_l2g_interior);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode isblock_MatA11MFSetup_InteriorBoundaryIterator(MatA11MF A11)
+{
+  Vec                    X,Xl;
+  PetscInt               mx,my,mz;
+  PetscInt               *mark,*idx_f,*idx_t,cnt;
+  PetscInt               c,nbasis,j,bpe,num_l2gindices;
+  const PetscInt         *elementmap;
+  ISLocalToGlobalMapping ltog;
+  const PetscInt         *l2gindices;
+  IS                     from_interior,to_interior,from_boundary,to_boundary;
+  PetscErrorCode         ierr;
+  
+  /* Define boundary and interior cells */
+  ierr = DMDAGetLocalSizeElementQ2(A11->daUVW,&mx,&my,&mz);CHKERRQ(ierr);
+
+  A11->ncells_interior = (mx - 2) * (my - 2) * (mz - 2);
+  if (A11->ncells_interior > 0) {
+    PetscInt i,j,k,cnt = 0;
+    
+    ierr = PetscMalloc1(A11->ncells_interior,&A11->cell_interior);CHKERRQ(ierr);
+    for (c=0; c<A11->ncells_interior; c++) { A11->cell_interior[c] = -1; }
+    for (k=1; k<(mz-1); k++) {
+      for (j=1; j<(my-1); j++) {
+        for (i=1; i<(mx-1); i++) {
+          A11->cell_interior[cnt] = i + j * mx + k * mx * my;
+          cnt++;
+        }
+      }
+    }
+  } else {
+    A11->ncells_interior = 0;
+    ierr = PetscMalloc1(1,&A11->cell_interior);CHKERRQ(ierr);
+    A11->cell_interior[0] = -1;
+  }
+  
+  A11->ncells_boundary = mx * my * mz - A11->ncells_interior;
+  ierr = PetscMalloc1(A11->ncells_boundary,&A11->cell_boundary);CHKERRQ(ierr);
+  for (c=0; c<A11->ncells_boundary; c++) { A11->cell_boundary[c] = -1; }
+  {
+    PetscInt i,j,k,cnt = 0;
+    for (k=0; k<mz; k++) {
+      for (j=0; j<my; j++) {
+        for (i=0; i<mx; i++) {
+          if ( (k >= 1) && (k <(mz-1)) ) {
+            if ( (j >= 1) && (j <(my-1)) ) {
+              if ( (i >= 1) && (i <(mx-1)) ) { continue; }
+            }
+          }
+          A11->cell_boundary[cnt] = i + j * mx + k * mx * my;
+          cnt++;
+        }
+      }
+    }
+  }
+  
+  /* Define the interior / boundary IS's and VecScatters for L2G */
+  ierr = DMGetLocalToGlobalMapping(A11->daUVW,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog,&num_l2gindices);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog,&l2gindices);CHKERRQ(ierr);
+  
+  ierr = DMDAGetElements_pTatinQ2P1(A11->daUVW,NULL,&bpe,&elementmap);CHKERRQ(ierr);
+  nbasis = num_l2gindices/3;
+  ierr = PetscMalloc1(nbasis,&mark);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nbasis,&idx_f);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nbasis,&idx_t);CHKERRQ(ierr);
+  
+  // interior setup
+  PetscInt any_off_rank_vals_g = 0,any_off_rank_vals = 0;
+  PetscInt start,end;
+  
+  ierr = DMGetGlobalVector(A11->daUVW,&X);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
+  start = start / 3;
+  end = end / 3;
+  ierr = DMRestoreGlobalVector(A11->daUVW,&X);CHKERRQ(ierr);
+  
+  ierr = PetscMemzero(mark,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
+  for (c=0; c<A11->ncells_interior; c++) {
+    PetscInt element_index = A11->cell_interior[c];
+    const PetscInt *elbasis = &elementmap[bpe*element_index];
+    for (j=0; j<bpe; j++) {
+      mark[elbasis[j]] = 1;
+    }
+  }
+  
+  ierr = PetscMemzero(idx_f,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
+  ierr = PetscMemzero(idx_t,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
+  cnt = 0;
+  for (j=0; j<nbasis; j++) {
+    if (mark[j] == 1) {
+      idx_f[cnt] = l2gindices[3*j]/3;
+      idx_t[cnt] = j;
+      if ((idx_f[cnt] < start) || (idx_f[cnt] >= end)) {
+        any_off_rank_vals = 1;
+      }
+      cnt++;
+    }
+  }
+  ierr = MPI_Allreduce(&any_off_rank_vals,&any_off_rank_vals_g,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)A11->daUVW));CHKERRQ(ierr);
+  PetscPrintf(PetscObjectComm((PetscObject)A11->daUVW),"[MatA11MFSetup_InteriorBoundaryIterator] Detected off-rank values associated within interior %D <reduction>\n",any_off_rank_vals_g);
+  if (any_off_rank_vals_g == 0) {
+    /*
+     - If it is guaranteed that every rank can perform its scatter by memcpy (c.f. MPI_Send/MPI_Recv), then use COMM_SELF for both IS's.
+     - When you desire a memcpy-only use-case, but use dm->comm,
+       VecScatter's inspector methods will not be able to detect the possiblity of a copy only optimization.
+     - We have to help VecScatter's inspector/executor model by choosing the communicator appropriately (or re-write VecScatter).
+     */
+    PetscPrintf(PetscObjectComm((PetscObject)A11->daUVW),"[MatA11MFSetup_InteriorBoundaryIterator] Interior IS's using comm.self such that VecScatter can detect the case \"Local scatter is a copy\"\n");
+    ierr = ISCreateBlock(PETSC_COMM_SELF,3,cnt,(const PetscInt*)idx_f,PETSC_COPY_VALUES,&from_interior);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PETSC_COMM_SELF,3,cnt,(const PetscInt*)idx_t,PETSC_COPY_VALUES,&to_interior);CHKERRQ(ierr);
+  } else {
+    PetscPrintf(PetscObjectComm((PetscObject)A11->daUVW),"[MatA11MFSetup_InteriorBoundaryIterator] Interior IS's using comm.world as at least one interior basis lives off-rank\n");
+    ierr = ISCreateBlock(PetscObjectComm((PetscObject)A11->daUVW),3,cnt,(const PetscInt*)idx_f,PETSC_COPY_VALUES,&from_interior);CHKERRQ(ierr);
+    ierr = ISCreateBlock(PetscObjectComm((PetscObject)A11->daUVW),3,cnt,(const PetscInt*)idx_t,PETSC_COPY_VALUES,&to_interior);CHKERRQ(ierr);
+  }
+  
+  
+  // boundary setup
+  ierr = PetscMemzero(mark,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
+  for (c=0; c<A11->ncells_boundary; c++) {
+    PetscInt element_index = A11->cell_boundary[c];
+    const PetscInt *elbasis = &elementmap[bpe*element_index];
+    for (j=0; j<bpe; j++) {
+      mark[elbasis[j]] = 1;
+    }
+  }
+  
+  ierr = PetscMemzero(idx_f,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
+  ierr = PetscMemzero(idx_t,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
+  cnt = 0;
+  for (j=0; j<nbasis; j++) {
+    if (mark[j] == 1) {
+      idx_f[cnt] = l2gindices[3*j]/3;
+      idx_t[cnt] = j;
+      cnt++;
+    }
+  }
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)A11->daUVW),3,cnt,(const PetscInt*)idx_f,PETSC_COPY_VALUES,&from_boundary);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)A11->daUVW),3,cnt,(const PetscInt*)idx_t,PETSC_COPY_VALUES,&to_boundary);CHKERRQ(ierr);
+  
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&l2gindices);CHKERRQ(ierr);
+  
+  ierr = DMGetGlobalVector(A11->daUVW,&X);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(A11->daUVW,&Xl);CHKERRQ(ierr);
+  
+  ierr = VecScatterCreate(Xl,to_interior,X,from_interior,&A11->vscat_l2g_interior);CHKERRQ(ierr);
+  ierr = VecScatterCreate(Xl,to_boundary,X,from_boundary,&A11->vscat_l2g_boundary);CHKERRQ(ierr);
+  
+  ierr = DMRestoreLocalVector(A11->daUVW,&Xl);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(A11->daUVW,&X);CHKERRQ(ierr);
+  
+  A11->isl2g_interior_from = from_interior;
+  A11->isl2g_interior_to   = to_interior;
+  A11->isl2g_boundary_from = from_boundary;
+  A11->isl2g_boundary_to   = to_boundary;
+  
+  ierr = PetscFree(idx_f);CHKERRQ(ierr);
+  ierr = PetscFree(idx_t);CHKERRQ(ierr);
+  ierr = PetscFree(mark);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode isgeneral_MatA11MFSetup_InteriorBoundaryIterator(MatA11MF A11)
+{
+  Vec                    X,Xl;
+  PetscInt               mx,my,mz;
+  PetscInt               *mark,*idx_f,*idx_t,cnt;
+  PetscInt               c,nbasis,j,bpe,num_l2gindices;
+  const PetscInt         *elementmap;
+  ISLocalToGlobalMapping ltog;
+  const PetscInt         *l2gindices;
+  IS                     from_interior,to_interior,from_boundary,to_boundary;
+  PetscErrorCode         ierr;
+  
+  /* Define boundary and interior cells */
+  ierr = DMDAGetLocalSizeElementQ2(A11->daUVW,&mx,&my,&mz);CHKERRQ(ierr);
+  
+  A11->ncells_interior = (mx - 2) * (my - 2) * (mz - 2);
+  if (A11->ncells_interior > 0) {
+    PetscInt i,j,k,cnt = 0;
+    
+    ierr = PetscMalloc1(A11->ncells_interior,&A11->cell_interior);CHKERRQ(ierr);
+    for (c=0; c<A11->ncells_interior; c++) { A11->cell_interior[c] = -1; }
+    for (k=1; k<(mz-1); k++) {
+      for (j=1; j<(my-1); j++) {
+        for (i=1; i<(mx-1); i++) {
+          A11->cell_interior[cnt] = i + j * mx + k * mx * my;
+          cnt++;
+        }
+      }
+    }
+  } else {
+    A11->ncells_interior = 0;
+    ierr = PetscMalloc1(1,&A11->cell_interior);CHKERRQ(ierr);
+    A11->cell_interior[0] = -1;
+  }
+  
+  A11->ncells_boundary = mx * my * mz - A11->ncells_interior;
+  ierr = PetscMalloc1(A11->ncells_boundary,&A11->cell_boundary);CHKERRQ(ierr);
+  for (c=0; c<A11->ncells_boundary; c++) { A11->cell_boundary[c] = -1; }
+  {
+    PetscInt i,j,k,cnt = 0;
+    for (k=0; k<mz; k++) {
+      for (j=0; j<my; j++) {
+        for (i=0; i<mx; i++) {
+          if ( (k >= 1) && (k <(mz-1)) ) {
+            if ( (j >= 1) && (j <(my-1)) ) {
+              if ( (i >= 1) && (i <(mx-1)) ) { continue; }
+            }
+          }
+          A11->cell_boundary[cnt] = i + j * mx + k * mx * my;
+          cnt++;
+        }
+      }
+    }
+  }
+  
+  /* Define the interior / boundary IS's and VecScatters for L2G */
+  ierr = DMGetLocalToGlobalMapping(A11->daUVW,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(ltog,&num_l2gindices);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog,&l2gindices);CHKERRQ(ierr);
+  
+  ierr = DMDAGetElements_pTatinQ2P1(A11->daUVW,NULL,&bpe,&elementmap);CHKERRQ(ierr);
+  nbasis = num_l2gindices/3;
+  ierr = PetscMalloc1(nbasis,&mark);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num_l2gindices,&idx_f);CHKERRQ(ierr);
+  ierr = PetscMalloc1(num_l2gindices,&idx_t);CHKERRQ(ierr);
+  
+  // interior setup
+  PetscInt any_off_rank_vals_g = 0,any_off_rank_vals = 0;
+  PetscInt start,end;
+  
+  ierr = DMGetGlobalVector(A11->daUVW,&X);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(A11->daUVW,&X);CHKERRQ(ierr);
+  
+  ierr = PetscMemzero(mark,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
+  for (c=0; c<A11->ncells_interior; c++) {
+    PetscInt element_index = A11->cell_interior[c];
+    const PetscInt *elbasis = &elementmap[bpe*element_index];
+    for (j=0; j<bpe; j++) {
+      mark[elbasis[j]] = 1;
+    }
+  }
+  
+  ierr = PetscMemzero(idx_f,sizeof(PetscInt)*num_l2gindices);CHKERRQ(ierr);
+  ierr = PetscMemzero(idx_t,sizeof(PetscInt)*num_l2gindices);CHKERRQ(ierr);
+  cnt = 0;
+  for (j=0; j<nbasis; j++) {
+    if (mark[j] == 1) {
+      PetscInt d;
+      for (d=0; d<3; d++) {
+        idx_f[3*cnt+d] = l2gindices[3*j+d];
+        idx_t[3*cnt+d] = 3*j+d;
+        
+        if ((idx_f[3*cnt+d] < start) || (idx_f[3*cnt+d] >= end)) {
+          any_off_rank_vals = 1;
+        }
+      }
+      cnt++;
+    }
+  }
+  ierr = MPI_Allreduce(&any_off_rank_vals,&any_off_rank_vals_g,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)A11->daUVW));CHKERRQ(ierr);
+  PetscPrintf(PetscObjectComm((PetscObject)A11->daUVW),"[MatA11MFSetup_InteriorBoundaryIterator] Detected off-rank values associated within interior %D <reduction>\n",any_off_rank_vals_g);
+  if (any_off_rank_vals_g == 0) {
+    /*
+     - If it is guaranteed that every rank can perform its scatter by memcpy (c.f. MPI_Send/MPI_Recv), then use COMM_SELF for both IS's.
+     - When you desire a memcpy-only use-case, but use dm->comm,
+     VecScatter's inspector methods will not be able to detect the possiblity of a copy only optimization.
+     - We have to help VecScatter's inspector/executor model by choosing the communicator appropriately (or re-write VecScatter).
+     */
+    PetscPrintf(PetscObjectComm((PetscObject)A11->daUVW),"[MatA11MFSetup_InteriorBoundaryIterator] Interior IS's using comm.self such that VecScatter can detect the case \"Local scatter is a copy\"\n");
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,cnt*3,(const PetscInt*)idx_f,PETSC_COPY_VALUES,&from_interior);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,cnt*3,(const PetscInt*)idx_t,PETSC_COPY_VALUES,&to_interior);CHKERRQ(ierr);
+  } else {
+    PetscPrintf(PetscObjectComm((PetscObject)A11->daUVW),"[MatA11MFSetup_InteriorBoundaryIterator] Interior IS's using comm.world as at least one interior basis lives off-rank\n");
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A11->daUVW),cnt*3,(const PetscInt*)idx_f,PETSC_COPY_VALUES,&from_interior);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A11->daUVW),cnt*3,(const PetscInt*)idx_t,PETSC_COPY_VALUES,&to_interior);CHKERRQ(ierr);
+  }
+  
+  
+  // boundary setup
+  ierr = PetscMemzero(mark,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
+  for (c=0; c<A11->ncells_boundary; c++) {
+    PetscInt element_index = A11->cell_boundary[c];
+    const PetscInt *elbasis = &elementmap[bpe*element_index];
+    for (j=0; j<bpe; j++) {
+      mark[elbasis[j]] = 1;
+    }
+  }
+  
+  ierr = PetscMemzero(idx_f,sizeof(PetscInt)*num_l2gindices);CHKERRQ(ierr);
+  ierr = PetscMemzero(idx_t,sizeof(PetscInt)*num_l2gindices);CHKERRQ(ierr);
+  cnt = 0;
+  for (j=0; j<nbasis; j++) {
+    if (mark[j] == 1) {
+      PetscInt d;
+      for (d=0; d<3; d++) {
+        idx_f[3*cnt+d] = l2gindices[3*j+d];
+        idx_t[3*cnt+d] = 3*j+d;
+      }
+      cnt++;
+    }
+  }
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A11->daUVW),cnt*3,(const PetscInt*)idx_f,PETSC_COPY_VALUES,&from_boundary);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)A11->daUVW),cnt*3,(const PetscInt*)idx_t,PETSC_COPY_VALUES,&to_boundary);CHKERRQ(ierr);
+  
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&l2gindices);CHKERRQ(ierr);
+  
+  ierr = DMGetGlobalVector(A11->daUVW,&X);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(A11->daUVW,&Xl);CHKERRQ(ierr);
+  
+  ierr = VecScatterCreate(Xl,to_interior,X,from_interior,&A11->vscat_l2g_interior);CHKERRQ(ierr);
+  ierr = VecScatterCreate(Xl,to_boundary,X,from_boundary,&A11->vscat_l2g_boundary);CHKERRQ(ierr);
+  
+  ierr = DMRestoreLocalVector(A11->daUVW,&Xl);CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(A11->daUVW,&X);CHKERRQ(ierr);
+  
+  A11->isl2g_interior_from = from_interior;
+  A11->isl2g_interior_to   = to_interior;
+  A11->isl2g_boundary_from = from_boundary;
+  A11->isl2g_boundary_to   = to_boundary;
+  
+  ierr = PetscFree(idx_f);CHKERRQ(ierr);
+  ierr = PetscFree(idx_t);CHKERRQ(ierr);
+  ierr = PetscFree(mark);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatA11MFSetup_InteriorBoundaryIterator(MatA11MF A11)
+{
+  PetscErrorCode ierr;
+  //ierr = isgeneral_MatA11MFSetup_InteriorBoundaryIterator(A11);CHKERRQ(ierr);
+  ierr = isblock_MatA11MFSetup_InteriorBoundaryIterator(A11);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bclist)
 {
   PetscErrorCode ierr;
@@ -264,6 +663,10 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
 
   if (A11Ctx->SpMVOp_SetUp) {
     ierr = A11Ctx->SpMVOp_SetUp(A11Ctx);CHKERRQ(ierr);
+  }
+
+  if (A11Ctx->use_overlapping_implementation) {
+    ierr = MatA11MFSetup_InteriorBoundaryIterator(A11Ctx);CHKERRQ(ierr);
   }
 
   A11Ctx->refcnt = 1;
@@ -323,6 +726,8 @@ PetscErrorCode MatA11MFDestroy(MatA11MF *B)
     if (A->SpMVOp_Destroy) {
       ierr = A->SpMVOp_Destroy(A);CHKERRQ(ierr);
     }
+
+    ierr = MatA11MFDestroy_InteriorBoundaryIterator(A);CHKERRQ(ierr);
 
     ierr = PetscFree(A);CHKERRQ(ierr);
 
@@ -462,6 +867,23 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
     ierr = A11->SpMVOp_SetUp(A11);CHKERRQ(ierr);
   }
 
+  A11->use_overlapping_implementation = A->use_overlapping_implementation;
+  if (A->use_overlapping_implementation) {
+    A11->isl2g_interior_from = A->isl2g_interior_from;    if (A->isl2g_interior_from) { ierr = PetscObjectReference((PetscObject)A->isl2g_interior_from);CHKERRQ(ierr); }
+    A11->isl2g_boundary_from = A->isl2g_boundary_from;    if (A->isl2g_boundary_from) { ierr = PetscObjectReference((PetscObject)A->isl2g_boundary_from);CHKERRQ(ierr); }
+    A11->isl2g_interior_to = A->isl2g_interior_to;        if (A->isl2g_interior_to) { ierr = PetscObjectReference((PetscObject)A->isl2g_interior_to);CHKERRQ(ierr); }
+    A11->isl2g_boundary_to = A->isl2g_boundary_to;        if (A->isl2g_boundary_to) { ierr = PetscObjectReference((PetscObject)A->isl2g_boundary_to);CHKERRQ(ierr); }
+    A11->vscat_l2g_boundary = A->vscat_l2g_boundary;      if (A->vscat_l2g_boundary) { ierr = PetscObjectReference((PetscObject)A->vscat_l2g_boundary);CHKERRQ(ierr); }
+    A11->vscat_l2g_interior = A->vscat_l2g_interior;      if (A->vscat_l2g_interior) { ierr = PetscObjectReference((PetscObject)A->vscat_l2g_interior);CHKERRQ(ierr); }
+
+    A11->ncells_boundary = A->ncells_boundary;
+    A11->ncells_interior = A->ncells_interior;
+    ierr = PetscMalloc1(A11->ncells_boundary,&A11->cell_boundary);CHKERRQ(ierr);
+    ierr = PetscMalloc1(A11->ncells_interior,&A11->cell_interior);CHKERRQ(ierr);
+    ierr = PetscMemcpy(A11->cell_boundary,A->cell_boundary,sizeof(PetscInt)*A11->ncells_boundary);CHKERRQ(ierr);
+    ierr = PetscMemcpy(A11->cell_interior,A->cell_interior,sizeof(PetscInt)*A11->ncells_interior);CHKERRQ(ierr);
+  }
+  
   A11->refcnt = 1;
   A11->is_setup = PETSC_TRUE;
 
@@ -489,6 +911,11 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
   if (A11->SpMVOp_SetUp) {
     ierr = A11->SpMVOp_SetUp(A11);CHKERRQ(ierr);
   }
+
+  if (A11->use_overlapping_implementation) {
+    ierr = MatA11MFSetup_InteriorBoundaryIterator(A11);CHKERRQ(ierr);
+  }
+
   A11->refcnt   = 1;
   A11->is_setup = PETSC_TRUE;
 
@@ -1208,6 +1635,108 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatMult_MFStokes_A11OverlapCommFLOPS(Mat A,Vec X,Vec Y)
+{
+  MatA11MF          ctx;
+  PetscErrorCode    ierr;
+  DM                dau;
+  Vec               XUloc,XUloc_b,YUloc,YUloc_b;
+  PetscScalar       *LA_XUloc,*LA_XUloc_b;
+  PetscScalar       *LA_YUloc,*LA_YUloc_b;
+  VecScatter        vs_b = NULL,vs_i = NULL;
+  PetscObjectState  state;
+  
+  PetscFunctionBegin;
+  
+  ierr = PetscLogEventBegin(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
+  PetscInfo(A,"Custom SpMV for A11 overlapping communication and FLOPs\n");
+  ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+  if (!ctx->is_setup) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"MF operator not setup");
+  
+  ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
+  ctx->state = state;
+  
+  dau = ctx->daUVW;
+  vs_b = ctx->vscat_l2g_boundary;
+  vs_i = ctx->vscat_l2g_interior;
+  
+  ierr = VecZeroEntries(Y);CHKERRQ(ierr);
+
+  /*
+   It is required that we zero entries as the scatters do not set values for all basis in the local space
+  */
+  ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);    ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);    ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dau,&XUloc_b);CHKERRQ(ierr);  ierr = VecZeroEntries(XUloc_b);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dau,&YUloc_b);CHKERRQ(ierr);  ierr = VecZeroEntries(YUloc_b);CHKERRQ(ierr);
+  
+  /* DMGlobalToLocal */
+  ierr = VecScatterBegin(vs_b,X,XUloc_b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr); /* the scatter was defined as local to global so we use reverse */
+
+  ierr = VecScatterBegin(vs_i,X,XUloc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (vs_i,X,XUloc,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecGetArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
+  ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
+
+  /* ------------------------- */
+  /* execute interior iterator */
+  /* ------------------------- */
+  /* momentum: y = A x */
+  ierr = (*ctx->SpMVOp_MatMult_interior_iterator)(ctx,ctx->volQ,dau,ctx->ncells_interior,ctx->cell_interior,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+  
+  ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
+  ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
+
+  /* For non-GPU implementations, we can initiate the send now for the interior values */
+  ierr = VecScatterBegin(vs_i,YUloc,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[interior]
+
+  
+  ierr = VecScatterEnd  (vs_b,X,XUloc_b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr); /* the scatter was defined as local to global so we use reverse */
+  /* Zero entries in local vectors corresponding to dirichlet boundary conditions */
+  /* This has the affect of zeroing out columns when the mat-mult is performed */
+  /* 
+   NOTE: This can almost certainly be safely applied to the boundary values of each sub-domain.
+   It can be strictly enforced to be safe by removing the ability to define Diriclet conditions
+   within the interior of the domain.
+  */
+  if (ctx->u_bclist) {
+    ierr = BCListInsertLocalZero(ctx->u_bclist,XUloc_b);CHKERRQ(ierr);
+  }
+
+  ierr = VecGetArray(XUloc_b,&LA_XUloc_b);CHKERRQ(ierr);
+  ierr = VecGetArray(YUloc_b,&LA_YUloc_b);CHKERRQ(ierr);
+  
+  /* ------------------------- */
+  /* execute boundary iterator */
+  /* ------------------------- */
+  /* momentum: y = A x */
+  ierr = (*ctx->SpMVOp_MatMult_boundary_iterator)(ctx,ctx->volQ,dau,ctx->ncells_boundary,ctx->cell_boundary,LA_XUloc_b,LA_YUloc_b);CHKERRQ(ierr);
+  
+  ierr = VecRestoreArray(YUloc_b,&LA_YUloc_b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(XUloc_b,&LA_XUloc_b);CHKERRQ(ierr);
+
+  
+  ierr = VecScatterBegin(vs_b,YUloc_b,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[boundary]
+  /* If the interior did actually require sending off-rank values then since the send was posted longer ago the message should have arrived :D */
+  ierr = VecScatterEnd  (vs_i,YUloc,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);   // local-to-global[interior]
+  ierr = VecScatterEnd  (vs_b,YUloc_b,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[boundary]
+
+  ierr = DMRestoreLocalVector(dau,&YUloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dau,&XUloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dau,&YUloc_b);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dau,&XUloc_b);CHKERRQ(ierr);
+  
+  /* modify Y for the boundary conditions, y_k = scale_k(x_k) */
+  /* Clobbering entries in global vector corresponding to dirichlet boundary conditions */
+  /* This has the affect of zeroing out rows when the mat-mult is performed */
+  if (ctx->u_bclist) {
+    ierr = BCListInsertDirichlet_MatMult(ctx->u_bclist,X,Y);CHKERRQ(ierr);
+  }
+  
+  ierr = PetscLogEventEnd(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 {
   MatA11MF          ctx;
@@ -1725,7 +2254,11 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
   }
 
   ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11);CHKERRQ(ierr);
+  if (A11->use_overlapping_implementation) {
+    ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11OverlapCommFLOPS);CHKERRQ(ierr);
+  } else {
+    ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11);CHKERRQ(ierr);
+  }
   ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
   ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,(void(*)(void))MatCreateSubMatrix_MFStokes_A11);CHKERRQ(ierr);
   ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF);CHKERRQ(ierr);
