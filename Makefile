@@ -54,6 +54,9 @@ CONFIG_FASTSCAPE ?= n
 CONFIG_CUDA ?= n
 CONFIG_OPENCL ?= n
 
+CONFIG_NVTX ?= n
+NVTX_LIB    ?= -lnvToolsExt
+
 # Populate includes, libraries, and compiler flags
 TATIN_INC := $(PETSC_CC_INCLUDES) -I$(INCDIRGEN) -I$(PWD)/include
 
@@ -67,6 +70,11 @@ ifeq ($(CONFIG_OPENCL),y)
 TATIN_CFLAGS += -DTATIN_HAVE_OPENCL
 TATIN_LIB += $(OPENCL_LIB)
 TATIN_INC += $(OPENCL_INC)
+endif
+
+ifeq ($(CONFIG_NVTX),y)
+TATIN_CFLAGS += -DTATIN_HAVE_NVTX
+TATIN_LIB    += $(NVTX_LIB)
 endif
 
 # Directory that contains most recently-parsed makefile (current)
