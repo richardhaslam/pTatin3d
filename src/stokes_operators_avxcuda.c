@@ -175,6 +175,9 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   #define OPENMP_CHKERRQ(x)   CHKERRQ(x)
 #endif
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA("cuda_AVXCUDA_guts");
+#endif
   // TODO overlap GPU operations
   /* Set up CUDA data for first portion of elemennts (ctx->nel_gpu) */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
@@ -277,10 +280,19 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
 #endif
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA("accum_AVXCUDA");
+#endif
   /* Accumulate results from GPU (some overlap) */
   // TODO reverse this - we expect to have most of the work on the GPU, so have the  CPU compute in the temp array?
   for (i=0; i<ctx->localsize_gpu; ++i) Yu[i] += YuTemp[i];
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
 
 #undef OPENMP_CHKERRQ
 
