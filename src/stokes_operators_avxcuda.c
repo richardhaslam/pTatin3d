@@ -15,6 +15,9 @@
 #include <element_utils_q2.h>
 #include <element_utils_q1.h>
 #include <immintrin.h>
+#ifdef TATIN_HAVE_NVTX
+#include "nvToolsExt.h"
+#endif
 
 extern PetscLogEvent MAT_MultMFA11_SUP;
 extern PetscLogEvent MAT_MultMFA11_stp;
@@ -49,6 +52,9 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
   DM             cda;
   Vec            gcoords;
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
   PetscFunctionBeginUser;
   if (mf->ctx) PetscFunctionReturn(0);
 
@@ -96,6 +102,10 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
   mf->ctx=ctx;
   ierr = PetscLogEventEnd(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
+
   PetscFunctionReturn(0);
 }
 
@@ -129,8 +139,10 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   PetscScalar       *YuTemp;
   MFA11AVXCUDA      ctx = (MFA11AVXCUDA)mf->ctx;
 
-
   PetscFunctionBeginUser;
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
   ctx = (MFA11AVXCUDA)mf->ctx;
 
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
@@ -164,7 +176,6 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 #endif
 
   // TODO overlap GPU operations
-
   /* Set up CUDA data for first portion of elemennts (ctx->nel_gpu) */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
   {
@@ -203,6 +214,10 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
   ierr = CopyFrom_A11_CUDA(ctx->cudactx,YuTemp,ctx->localsize_gpu);CHKERRQ(ierr); /* Note copy back to YuTemp */
   ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
+
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA("avx_AVXCUDA_guts");
+#endif
 
 #if defined(_OPENMP)
     #pragma omp parallel for private(i)
@@ -259,6 +274,10 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
   }
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
+
   /* Accumulate results from GPU (some overlap) */
   // TODO reverse this - we expect to have most of the work on the GPU, so have the  CPU compute in the temp array?
   for (i=0; i<ctx->localsize_gpu; ++i) Yu[i] += YuTemp[i];
@@ -272,6 +291,10 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   ierr = PetscFree(YuTemp);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
 
   PetscFunctionReturn(0);
 }
