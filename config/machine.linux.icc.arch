@@ -2,34 +2,24 @@
 #  -- pTatin Optimization flags --
 #    Operating system: Linux
 #    CPU Architecture: Intel x86_64 Harpertown (E54xx) and above.
-#    Intel Compiler: icc, ifort
+#    Intel Compiler: icc
 #
 
 export TATIN_CFLAGS_DEBUG	= -g -sox -O0
 export TATIN_CFLAGS_OPT_a	= -g -sox -O2 -Wstrict-aliasing -fstrict-aliasing
 export TATIN_CFLAGS_OPT_b	= -g -sox -O3 -xSSSE3 -Wstrict-aliasing -fstrict-aliasing
 
-export TATIN_FFLAGS_DEBUG	= -g -sox -O0
-export TATIN_FFLAGS_OPT_a	= -g -sox -O2
-export TATIN_FFLAGS_OPT_b       = -g -sox -O3 -xSSSE3 -Wstrict-aliasing -fstrict-aliasing
-
 #
 #  Select optimized or debug compilation flags
 #
 #export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG}
-#export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
 export TATIN_CFLAGS	= ${TATIN_CFLAGS_OPT_b}
-export TATIN_FFLAGS	= ${TATIN_FFLAGS_OPT_b}
 
-
-#
 #
 #  -- pTatin external packages --
 #  User should select which packages are present
 #    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
 #    ** please compile external packages using the PETSc compiler          **
 #
-#
 PTATIN_CONTAINS_SPMA = 0
 PTATIN_CONTAINS_FASTSCAPE_V3 = 0
-

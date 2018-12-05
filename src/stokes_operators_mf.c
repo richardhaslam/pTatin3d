@@ -54,7 +54,6 @@
 #include "stokes_q2p1_mf_operators_def_rolled.c"
 #include "stokes_q2p1_mf_operators_diag_def.c"
 
-//#define PTAT3D_USE_FORTRAN_MF_KERNELS
 //#define PTAT3D_LOG_MF_OP
 
 //#define NO_LOWORDER_OPERATORS
@@ -225,11 +224,6 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
   PetscFunctionReturn(0);
 }
 
-#ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
-extern void f_matmultmf_stokes_mixedfem3d_b11_(double*,double*, double*,double*,double*,double*, double*,double*,double*,double*, double*, double*);
-#endif
-
-
 PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
   PetscErrorCode ierr;
@@ -290,18 +284,12 @@ PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScala
     /* initialise element stiffness matrix */
     PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
 
-
 #ifdef PTAT3D_ELEMENT_MF_STANDARD
     for (p=0; p<ngp; p++) {
-      //printf("[e=%4d,p=%d] %1.4e \n", e,p,cell_gausspoints[p].eta);
       el_eta[p] = cell_gausspoints[p].eta;
       fac       = WEIGHT[p] * detJ[p];
 
-      #ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
-        f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
-      #else
-        MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
-      #endif
+      MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
     }
 #endif
 #ifdef PTAT3D_ELEMENT_MF_OPTIMIZED
@@ -309,15 +297,9 @@ PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScala
       fac = 1.0;
       el_eta[p] = cell_gausspoints[p].eta * WEIGHT[p] * detJ[p];
 
-    #ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
-      f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
-    #else
       MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
-    #endif
     }
 #endif
-
-
 
     ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
   }

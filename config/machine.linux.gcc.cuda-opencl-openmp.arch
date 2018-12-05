@@ -1,15 +1,12 @@
 #
 #  -- pTatin Optimization flags --
 #    Operating system: Ubuntu 16.04 operating system
-#    Compiler: gcc,gfortran
+#    Compiler: gcc
 #
 
 export TATIN_CFLAGS_DEBUG       = -std=gnu99 -O0 -Wall -g
 export TATIN_CFLAGS_OPT_a       = -std=gnu99 -O2 -Wall -fstrict-aliasing -funroll-loops
 export TATIN_CFLAGS_OPT_b       = -std=gnu99 -O3 -Wall -ftree-vectorize -ftree-vectorizer-verbose=4 -fstrict-aliasing -funroll-loops
-
-export TATIN_FFLAGS_DEBUG       = -O0 -ffree-line-length-4000
-export TATIN_FFLAGS_OPT_a       = -O2 -ffree-line-length-4000
 
 export CUDA_NVCC = nvcc -arch=sm_35 -D_FORCE_INLINES
 
@@ -17,7 +14,6 @@ export CUDA_NVCC = nvcc -arch=sm_35 -D_FORCE_INLINES
 #  Select optimized or debug compilation flags
 #
 export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_b} -march=native -fopenmp
-export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
 
 #export CUDA_INC = -I/usr/local/cuda/include
 #export OPENCL_INC = -I/usr/local/cuda/include
