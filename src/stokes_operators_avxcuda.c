@@ -19,15 +19,6 @@
 #include "nvToolsExt.h"
 #endif
 
-extern PetscLogEvent MAT_MultMFA11_SUP;
-extern PetscLogEvent MAT_MultMFA11_stp;
-extern PetscLogEvent MAT_MultMFA11_sub;
-extern PetscLogEvent MAT_MultMFA11_rto;
-extern PetscLogEvent MAT_MultMFA11_rfr;
-extern PetscLogEvent MAT_MultMFA11_cto;
-extern PetscLogEvent MAT_MultMFA11_ker;
-extern PetscLogEvent MAT_MultMFA11_cfr;
-
 #ifndef __FMA__
 #  define _mm256_fmadd_pd(a,b,c) _mm256_add_pd(_mm256_mul_pd(a,b),c)
 #endif
@@ -43,7 +34,7 @@ struct _p_MFA11AVXCUDA {
   PetscInt        nel,nel_gpu,nen_u,localsize,localsize_gpu;
   const PetscInt  *elnidx_u;
   MFA11CUDA       cudactx;
-  PetscScalar     *YuTemp;
+  PetscScalar     *YuTemp,*uTemp;
 };
 
 PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
@@ -58,8 +49,6 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
 #endif
   PetscFunctionBeginUser;
   if (mf->ctx) PetscFunctionReturn(0);
-
-  ierr = PetscLogEventBegin(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
 
@@ -101,7 +90,6 @@ PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
   ierr = MFA11CUDA_SetUp(ctx->cudactx);CHKERRQ(ierr);
 
   mf->ctx=ctx;
-  ierr = PetscLogEventEnd(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
 
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
@@ -123,6 +111,7 @@ PetscErrorCode MFA11Destroy_AVXCUDA(MatA11MF mf)
   ierr = PetscFree(ctx->cudactx);CHKERRQ(ierr);
 
   ierr = FreePinned_CUDA((void*)ctx->YuTemp);CHKERRQ(ierr);
+  ierr = FreePinned_CUDA((void*)ctx->uTemp);CHKERRQ(ierr);
 
   ierr = PetscFree(mf->ctx);CHKERRQ(ierr);
   mf->ctx = NULL;
@@ -168,9 +157,10 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 
-  /* Allocate pinned host array for temporary usage, setting state */
+  /* Allocate pinned host arrays for temporary usage, setting state */
   if (!ctx->state) {
     ierr = MallocPinned_CUDA((void**) &ctx->YuTemp,ctx->localsize_gpu*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = MallocPinned_CUDA((void**) &ctx->uTemp,ctx->localsize_gpu*sizeof(PetscScalar));CHKERRQ(ierr);
     ctx->state = mf->state;
   }
   ierr = PetscMemzero(ctx->YuTemp,ctx->localsize_gpu * sizeof(PetscScalar));
@@ -186,7 +176,6 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   nvtxRangePushA("cuda_AVXCUDA_guts");
 #endif
   /* Set up CUDA data for first portion of elemennts (ctx->nel_gpu) */
-  ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
   {
     const QPntVolCoefStokes *cell_gausspoints;
     PetscReal *gaussdata_host=NULL;
@@ -205,15 +194,19 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
         for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
       }
 
-    }
-    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,ctx->nel_gpu,ctx->nen_u,ctx->elnidx_u,ctx->localsize_gpu/NSD);CHKERRQ(ierr);
-    // TODO copy to is not async
-
-    if(gaussdata_host) {
+      ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,ctx->nel_gpu,ctx->nen_u,ctx->elnidx_u,ctx->localsize_gpu/NSD);CHKERRQ(ierr);
       ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
+    } else {
+#ifdef TATIN_HAVE_NVTX
+      nvtxRangePushA("upoke_AVXCUDA");
+#endif
+      ierr = PetscMemcpy(ctx->uTemp,ufield,ctx->localsize_gpu*sizeof(PetscScalar));CHKERRQ(ierr);
+#ifdef TATIN_HAVE_NVTX
+      nvtxRangePop();
+#endif
+      ierr = CopyTo_A11_CUDA_U_Async(ctx->cudactx,ctx->uTemp,ctx->localsize_gpu);CHKERRQ(ierr);
     }
   }
-  ierr = PetscLogEventEnd(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
 
   /* Process elements with CUDA */
   ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,ctx->localsize_gpu);CHKERRQ(ierr);

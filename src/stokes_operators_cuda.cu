@@ -464,6 +464,16 @@ PetscErrorCode CopyFrom_A11_CUDA_Async(MFA11CUDA cudactx,PetscScalar *Yu,PetscIn
   PetscFunctionReturn(0);
 }
 
+/* Note that Async CUDA transfers only work with pinned memory (see cudaMallocHost()) */
+PetscErrorCode CopyTo_A11_CUDA_U_Async(MFA11CUDA cudactx,PetscScalar *u,PetscInt localsize)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = cudaMemcpyAsync(cudactx->ufield,u,localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 PetscErrorCode Synchronize_CUDA()
 {
