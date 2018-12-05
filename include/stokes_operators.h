@@ -142,6 +142,10 @@ PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA);
 PetscErrorCode CopyTo_A11_CUDA(MatA11MF,MFA11CUDA,const PetscScalar*,const PetscReal*,const PetscReal*,PetscInt,PetscInt,const PetscInt*,PetscInt);
 PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA,PetscInt,PetscInt);
 PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA,PetscScalar*,PetscInt);
+PetscErrorCode CopyFrom_A11_CUDA_Async(MFA11CUDA,PetscScalar*,PetscInt);
+PetscErrorCode Synchronize_CUDA();
+PetscErrorCode MallocPinned_CUDA(void**,size_t);
+PetscErrorCode FreePinned_CUDA(void*);
 #ifdef __cplusplus
 }
 #endif

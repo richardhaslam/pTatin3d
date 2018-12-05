@@ -43,6 +43,7 @@ struct _p_MFA11AVXCUDA {
   PetscInt        nel,nel_gpu,nen_u,localsize,localsize_gpu;
   const PetscInt  *elnidx_u;
   MFA11CUDA       cudactx;
+  PetscScalar     *YuTemp;
 };
 
 PetscErrorCode MFA11SetUp_AVXCUDA(MatA11MF mf)
@@ -121,6 +122,8 @@ PetscErrorCode MFA11Destroy_AVXCUDA(MatA11MF mf)
   ierr = MFA11CUDA_CleanUp(ctx->cudactx);CHKERRQ(ierr);
   ierr = PetscFree(ctx->cudactx);CHKERRQ(ierr);
 
+  ierr = FreePinned_CUDA((void*)ctx->YuTemp);CHKERRQ(ierr);
+
   ierr = PetscFree(mf->ctx);CHKERRQ(ierr);
   mf->ctx = NULL;
 
@@ -136,7 +139,6 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   QPntVolCoefStokes *all_gausspoints;
   PetscReal         x1[3],w1[3],B[3][3],D[3][3],w[NQP];
   PetscInt          i,j,k,e;
-  PetscScalar       *YuTemp;
   MFA11AVXCUDA      ctx = (MFA11AVXCUDA)mf->ctx;
 
   PetscFunctionBeginUser;
@@ -166,8 +168,13 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 
-  /* Get array for temporary usage */
-  ierr = PetscCalloc1(ctx->localsize_gpu,&YuTemp);CHKERRQ(ierr);
+  /* Allocate pinned host array for temporary usage, setting state */
+  if (!ctx->state) {
+    ierr = MallocPinned_CUDA((void**) &ctx->YuTemp,ctx->localsize_gpu*sizeof(PetscScalar));CHKERRQ(ierr);
+    ctx->state = mf->state;
+  }
+  ierr = PetscMemzero(ctx->YuTemp,ctx->localsize_gpu * sizeof(PetscScalar));
+  //ierr = PetscCalloc1(ctx->localsize_gpu,&ctx->YuTemp);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
   #define OPENMP_CHKERRQ(x)
@@ -178,13 +185,12 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePushA("cuda_AVXCUDA_guts");
 #endif
-  // TODO overlap GPU operations
   /* Set up CUDA data for first portion of elemennts (ctx->nel_gpu) */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
   {
     const QPntVolCoefStokes *cell_gausspoints;
     PetscReal *gaussdata_host=NULL;
-    if(!ctx->state) { /* check state of this context (not the included cudactx)*/
+    if(!ctx->cudactx->state) {
       PetscReal x1[3],w1[3],w[NQP];
 
       ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
@@ -201,6 +207,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 
     }
     ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield,LA_gcoords,gaussdata_host,ctx->nel_gpu,ctx->nen_u,ctx->elnidx_u,ctx->localsize_gpu/NSD);CHKERRQ(ierr);
+    // TODO copy to is not async
 
     if(gaussdata_host) {
       ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
@@ -209,14 +216,10 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   ierr = PetscLogEventEnd(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
 
   /* Process elements with CUDA */
-  ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
   ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,ctx->localsize_gpu);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
   /* Read back CUDA data */
-  ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-  ierr = CopyFrom_A11_CUDA(ctx->cudactx,YuTemp,ctx->localsize_gpu);CHKERRQ(ierr); /* Note copy back to YuTemp */
-  ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
+  ierr = CopyFrom_A11_CUDA_Async(ctx->cudactx,ctx->YuTemp,ctx->localsize_gpu);CHKERRQ(ierr); /* Note copy back to YuTemp */
 
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePushA("avx_AVXCUDA_guts");
@@ -280,6 +283,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
 #endif
+  ierr = Synchronize_CUDA();CHKERRQ(ierr);
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
 #endif
@@ -289,7 +293,7 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
 #endif
   /* Accumulate results from GPU (some overlap) */
   // TODO reverse this - we expect to have most of the work on the GPU, so have the  CPU compute in the temp array?
-  for (i=0; i<ctx->localsize_gpu; ++i) Yu[i] += YuTemp[i];
+  for (i=0; i<ctx->localsize_gpu; ++i) Yu[i] += ctx->YuTemp[i];
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
 #endif
@@ -299,8 +303,6 @@ PetscErrorCode MFStokesWrapper_A11_AVXCUDA(MatA11MF mf,Quadrature volQ,DM dau,Pe
   PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
   PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
   PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
-
-  ierr = PetscFree(YuTemp);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 

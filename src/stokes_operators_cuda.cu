@@ -425,7 +425,7 @@ PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *
     ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
   }
 
-  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  //ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -441,7 +441,7 @@ PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscIn
   for (i=0; i<cudactx->element_colors; ++i) {
     MFStokesWrapper_A11_CUDA_kernel<<<(cudactx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(cudactx->elements_per_color[i],nen_u,cudactx->el_ids_colored[i],cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
   }
-  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  //ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -453,6 +453,45 @@ PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt loca
   ierr = cudaMemcpy(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
   PetscFunctionReturn(0);
 }
+
+/* Note that Async CUDA transfers only work with pinned memory (see cudaMallocHost()) */
+PetscErrorCode CopyFrom_A11_CUDA_Async(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt localsize)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = cudaMemcpyAsync(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+PetscErrorCode Synchronize_CUDA()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MallocPinned_CUDA(void **ptr,size_t size)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = cudaMallocHost(ptr,size);CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode FreePinned_CUDA(void *ptr)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = cudaFreeHost(ptr);CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
