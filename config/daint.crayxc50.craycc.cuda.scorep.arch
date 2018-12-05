@@ -1,0 +1,47 @@
+# Assumes that PETSc has been configured with the cc/CC/ftn cray wrappers
+# Some example configure options:
+# --with-cc=cc --with-cxx=CC --with-fc=ftn --COPTFLAGS= --CXXOPTFLAGS= --FOPTFLAGS= --with-clib-autodetect=0 --with-cxxlib-autodetect=0 --with-fortranlib-autodetect=0 --with-shared-libraries=0 --with-debugging=0 --with-valgrind=0 --known-mpi-shared-libraries=1 --with-x=0 --download-suitesparse
+
+# Requires
+# module load daint-gpu PrgEnv-cray cudatoolkit Score-P/4.0-CrayCCE-18.08
+
+# Override compilers with instrumenting compiler wrapper
+CC=scorep-cc
+PCC_LINKER=scorep-cc
+
+export TATIN_CFLAGS_DEBUG  = -O0 -g
+export TATIN_FFLAGS_DEBUG  = -O0 -g
+export TATIN_CFLAGS_OPT_a  =
+export TATIN_CFLAGS_OPT_b  = -O3
+export TATIN_FFLAGS_OPT_a  =
+export TATIN_FFLAGS_OPT_b  = -O3
+
+# Compiler flags
+export TATIN_CFLAGS        = $(TATIN_CFLAGS_OPT_b)
+export TATIN_FFLAGS        = $(TATIN_FFLAGS_OPT_b)
+
+# CUDA and OpenCL
+export CUDA_NVCC = $(CUDATOOLKIT_HOME)/bin/nvcc  -I$(CRAY_MPICH_DIR)/include -arch=sm_60
+export CUDA_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lcudart
+export OPENCL_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lOpenCL
+
+CONFIG_CUDA=y
+CONFIG_OPENCL=n
+CONFIG_NVTX=y
+
+# Clear the dependency flags, since craycc seems to only support -M
+# This means that $PETSC_DIR/obj/src will not contain any .d files,
+# so dependencies from included files will not be included in the makefile
+C_DEPFLAGS=
+FC_DEPFLAGS=
+
+#
+#
+#  -- pTatin external packages --
+#  User should select which packages are present
+#    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
+#    ** please compile external packages using the PETSc compiler          **
+#
+#
+PTATIN_CONTAINS_SPMA = 0
+PTATIN_CONTAINS_FASTSCAPE_V3 = 0
