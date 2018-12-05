@@ -828,6 +828,89 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode perform_residual_evaluation(pTatinCtx ctx,PhysCompStokes user)
+{
+  Vec            X,F,xu,xp;
+  DM             stokes_da,dau,dap;
+  PetscLogDouble t0,t1;
+  double         tl,timeMIN,timeMAX;
+  PetscInt       ii,iterations;
+  SNES           snes;
+  PetscReal      norms[2];
+  PetscErrorCode ierr;
+  
+  
+  PetscFunctionBegin;
+  
+  PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", PETSC_FUNCTION_NAME,user->mx,user->my,user->mz );
+  iterations = 5;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
+  
+  stokes_da = ctx->pack;
+  ierr = DMCompositeGetEntries(stokes_da,&dau,&dap);CHKERRQ(ierr);
+
+  ierr = DMCreateGlobalVector(stokes_da,&X);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+  
+  ierr = VecSet(X,0.0);CHKERRQ(ierr);
+  
+  ierr = DMCompositeGetAccess(stokes_da,X,&xu,&xp);CHKERRQ(ierr);
+  ierr = _GenerateTestVector(dau,3,0,xu);CHKERRQ(ierr);
+  ierr = _GenerateTestVector(dau,3,1,xu);CHKERRQ(ierr);
+  ierr = _GenerateTestVector(dau,3,2,xu);CHKERRQ(ierr);
+  ierr = VecSet(xp,1.0);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(stokes_da,X,&xu,&xp);CHKERRQ(ierr);
+  
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetSolution(snes,X);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,F,FormFunction_Stokes,ctx);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  
+  PetscTime(&t0);
+  ierr = SNESSetUp(snes);CHKERRQ(ierr);
+  PetscTime(&t1);
+  
+  tl = (double)(t1 - t0);
+  ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  PetscPrintf(PETSC_COMM_WORLD,"SNESSetUp:                       time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+  
+  PetscTime(&t0);
+  
+  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+
+  ierr = DMCompositeGetAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
+  ierr = VecNorm(xu,NORM_2,&norms[0]);CHKERRQ(ierr);
+  ierr = VecNorm(xp,NORM_2,&norms[1]);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"SNESNorms:  |Fu|_2 %1.6e ; |Fp|_2 %1.6e\n",norms[0],norms[1]);
+  
+  for (ii=1; ii<iterations; ii++) {
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  }
+  PetscTime(&t1);
+  tl = (double)(t1 - t0);
+  ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  
+  PetscPrintf(PETSC_COMM_WORLD,"SNESFormFucnction(cycles = %.3D)  time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+  PetscPrintf(PETSC_COMM_WORLD,"SNESFormFucnction: average       time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
+  
+  ierr = DMCompositeGetAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
+  ierr = VecNorm(xu,NORM_2,&norms[0]);CHKERRQ(ierr);
+  ierr = VecNorm(xp,NORM_2,&norms[1]);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(stokes_da,F,&xu,&xp);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"SNESNorms:  |Fu|_2 %1.6e ; |Fp|_2 %1.6e\n",norms[0],norms[1]);
+
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 {
   PetscErrorCode  ierr;
@@ -946,6 +1029,11 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
     ierr = perform_viscous_solve(user->stokes_ctx);CHKERRQ(ierr);
   }
 
+  found  = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-perform_residual_evaluation",&found,NULL);CHKERRQ(ierr);
+  if (found) {
+    ierr = perform_residual_evaluation(user,user->stokes_ctx);CHKERRQ(ierr);
+  }
 
 
   PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");

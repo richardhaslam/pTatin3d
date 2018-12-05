@@ -474,7 +474,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
    = x_i + phi - x_i
    = phi
    */
-PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx)
+PetscErrorCode FormFunction_Stokes_classic(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode    ierr;
   pTatinCtx         ptatin;
@@ -556,6 +556,19 @@ PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DMCompositeRestoreAccess(stokes_pack,X,&u,&p);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(stokes_pack,F,&Fu,&Fp);CHKERRQ(ierr);
 
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode FormFunction_Stokes_AVX(SNES snes,Vec X,Vec F,void *ctx);
+
+PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx)
+{
+  PetscErrorCode ierr;
+#if defined(__AVX__)
+  ierr = FormFunction_Stokes_AVX(snes,X,F,ctx);CHKERRQ(ierr);
+#else
+  ierr = FormFunction_Stokes_classic(snes,X,F,ctx);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

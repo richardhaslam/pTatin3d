@@ -41,6 +41,8 @@
 #include "stokes_rheology_vp_std.h"
 #include "stokes_rheology_lava.h"
 
+PetscLogEvent PTATIN_CoefficientEvaluate;
+PetscLogEvent PTATIN_CoefficientEvolve;
 
 PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
 {
@@ -178,10 +180,14 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
     case 3:       /* Perform P1 projection and interpolate back to quadrature points */
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P1 marker->quadrature projection not supported");
       break;
-        case 4:
-            ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
-            break;
+    case 4:
+      ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
+      break;
 
+    case 5:
+      ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_sorted(user->materialpoint_db,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+      break;
+      
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Viscosity projection type is not defined");
       break;
@@ -198,7 +204,9 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,Petsc
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
+  ierr = PetscLogEventBegin(PTATIN_CoefficientEvaluate,0,0,0,0);CHKERRQ(ierr);
   ierr = pTatin_EvaluateRheologyNonlinearitiesMarkers(user,dau,u,dap,p);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PTATIN_CoefficientEvaluate,0,0,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -247,6 +255,7 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 
   PetscFunctionBegin;
 
+  ierr = PetscLogEventBegin(PTATIN_CoefficientEvolve,0,0,0,0);CHKERRQ(ierr);
   ierr = pTatinGetRheology(user,&rheo);
 
   switch (rheo->rheology_type) {
@@ -289,6 +298,7 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"StokesCoefficientUpdate is not defined");
       break;
   }
+  ierr = PetscLogEventEnd(PTATIN_CoefficientEvolve,0,0,0,0);CHKERRQ(ierr);
 
 
   been_here = 1;
