@@ -22,7 +22,7 @@ export CUDA_NVCC = $(CUDATOOLKIT_HOME)/bin/nvcc -I$(CRAY_MPICH_DIR)/include -arc
 #
 #  Select optimized or debug compilation flags
 #
-export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -march=native -fopenmp -dynamic
+export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_b} -march=native -fopenmp -dynamic
 
 export CUDA_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lcudart
 export OPENCL_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lOpenCL

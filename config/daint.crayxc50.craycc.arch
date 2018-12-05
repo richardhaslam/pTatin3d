@@ -9,7 +9,7 @@ export TATIN_CFLAGS_OPT_a  =
 export TATIN_CFLAGS_OPT_b  = -O3 -h fp3
 
 # Compiler flags
-export TATIN_CFLAGS        = $(TATIN_CFLAGS_OPT_a)
+export TATIN_CFLAGS        = $(TATIN_CFLAGS_OPT_b)
 
 # Clear the dependency flags, since craycc seems to only support -M
 # This means that $PETSC_DIR/obj/src will not contain any .d files,
