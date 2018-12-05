@@ -984,10 +984,12 @@ int _DataBuckeLoadFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *jso_r
 
     if (one2one == 1) {
       for (r=1; r<commsize_file; r++) {
-        LBA[0] = L_file[r];
-        LBA[1] = B_file[r];
-        LBA[2] = 0;
-        ierr = MPI_Send(LBA,3,MPI_INT,r,r,comm);MPI_ERROR_CHECK(comm,ierr);
+        int bufferLBA[3];
+        
+        bufferLBA[0] = L_file[r];
+        bufferLBA[1] = B_file[r];
+        bufferLBA[2] = 0;
+        ierr = MPI_Send(bufferLBA,3,MPI_INT,r,r,comm);MPI_ERROR_CHECK(comm,ierr);
       }
     }
 
