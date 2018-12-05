@@ -59,6 +59,14 @@ struct _p_MatA11MF {
   PetscErrorCode (*SpMVOp_MatMult)(MatA11MF,Quadrature,DM,PetscScalar[],PetscScalar[]);
   PetscErrorCode (*SpMVOp_SetUp)(MatA11MF);
   PetscErrorCode (*SpMVOp_Destroy)(MatA11MF);
+  PetscInt ncells_boundary,ncells_interior;
+  PetscInt *cell_boundary,*cell_interior;
+  IS isl2g_interior_from,isl2g_boundary_from;
+  IS isl2g_interior_to,isl2g_boundary_to;
+  VecScatter vscat_l2g_boundary,vscat_l2g_interior;
+  PetscBool use_overlapping_implementation;
+  PetscErrorCode (*SpMVOp_MatMult_boundary_iterator)(MatA11MF,Quadrature,DM,PetscInt,PetscInt*,PetscScalar[],PetscScalar[]);
+  PetscErrorCode (*SpMVOp_MatMult_interior_iterator)(MatA11MF,Quadrature,DM,PetscInt,PetscInt*,PetscScalar[],PetscScalar[]);
 };
 
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B);
