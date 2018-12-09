@@ -351,7 +351,7 @@ PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *
 
         if (element_color[i] >= 0) continue;  /* element already has a color */
 
-        /* Check if element can be colored: No element in Yu has current color */
+        /* Check if element can be colored: No corresponding index in Yu has current color */
         PetscInt can_be_colored = 1;
         for (j=0; j<nen_u; ++j) {
           if (Yu_color[elnidx_u[i*nen_u + j]] == cudactx->element_colors) {
