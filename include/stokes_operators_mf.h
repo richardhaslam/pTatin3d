@@ -37,6 +37,7 @@ PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScala
 PetscErrorCode MFStokesWrapper_A11_Tensor(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_A11_Tensor_celliterator(MatA11MF mf,Quadrature volQ,DM dau,PetscInt ncells,PetscInt cell[],PetscScalar ufield[],PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFStokesWrapper_A11_AVX_celliterator(MatA11MF mf,Quadrature volQ,DM dau,PetscInt ncells,PetscInt cell[],PetscScalar ufield[],PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_A11_OpenCL(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
 PetscErrorCode MFA11SetUp_OpenCL(MatA11MF mf);
 PetscErrorCode MFA11Destroy_OpenCL(MatA11MF mf);

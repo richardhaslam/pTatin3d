@@ -163,12 +163,14 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
     
     // no reference / classic implementation
     ierr = PetscFunctionListAdd(&MatMultCellIterator_flist,"tensor",MFStokesWrapper_A11_Tensor_celliterator);CHKERRQ(ierr);
-    // no avx implementation (todo)
+#if defined(__AVX__)
+    ierr = PetscFunctionListAdd(&MatMultCellIterator_flist,"avx",MFStokesWrapper_A11_AVX_celliterator);CHKERRQ(ierr);
+#endif
     // no cuda implementation (unlikely we ever want one)
     
     
 #if defined(__AVX__)
-    ierr = PetscStrcpy(optype,"avx");CHKERRQ(ierr); // I leave this here so you get a big slap in the face to complete a donkey-work todo
+    ierr = PetscStrcpy(optype,"avx");CHKERRQ(ierr);
 #else
     ierr = PetscStrcpy(optype,"tensor");CHKERRQ(ierr);
 #endif
