@@ -66,6 +66,10 @@
 #include "stokes_assembly.h"
 #include "dmda_element_q2p1.h"
 
+#ifdef TATIN_HAVE_NVTX
+#include "nvToolsExt.h"
+#endif
+
 PetscLogEvent MAT_MultMFA11;
 PetscLogEvent MAT_MultMFA11_stp;
 PetscLogEvent MAT_MultMFA11_cto;
@@ -1687,6 +1691,9 @@ PetscErrorCode MatMult_MFStokes_A11OverlapCommFLOPS(Mat A,Vec X,Vec Y)
   VecScatter        vs_b = NULL,vs_i = NULL;
   PetscObjectState  state;
   
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
   PetscFunctionBegin;
   
   ierr = PetscLogEventBegin(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
@@ -1775,6 +1782,9 @@ PetscErrorCode MatMult_MFStokes_A11OverlapCommFLOPS(Mat A,Vec X,Vec Y)
   }
   
   ierr = PetscLogEventEnd(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
   PetscFunctionReturn(0);
 }
 
