@@ -38,6 +38,9 @@
 #include <element_utils_q2.h>
 #include <element_utils_q1.h>
 #include <immintrin.h>
+#ifdef TATIN_HAVE_NVTX
+#include "nvToolsExt.h"
+#endif
 
 #ifndef __FMA__
 #  define _mm256_fmadd_pd(a,b,c) _mm256_add_pd(_mm256_mul_pd(a,b),c)
@@ -875,6 +878,9 @@ PetscErrorCode MFStokesWrapper_A11_AVX_celliterator(MatA11MF mf,Quadrature volQ,
   PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
   PetscInt i,j,k,c;
   
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
   PetscFunctionBegin;
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
@@ -963,7 +969,9 @@ PetscErrorCode MFStokesWrapper_A11_AVX_celliterator(MatA11MF mf,Quadrature volQ,
   }
   
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-  
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
   PetscFunctionReturn(0);
 }
 
