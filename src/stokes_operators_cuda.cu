@@ -551,7 +551,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 
     /* Read back CUDA data */
     ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-    ierr = CopyFrom_A11_Async_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
+    ierr = CopyFrom_A11_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
     ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -752,7 +752,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
 
   /* Read back CUDA data */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-  ierr = CopyFrom_A11_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
+  ierr = CopyFrom_A11_Async_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
