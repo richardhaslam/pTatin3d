@@ -563,7 +563,7 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
 
         if (element_color[i] >= 0) continue;  /* element already has a color */
 
-        /* Check if element can be colored: No element in Yu has current color */
+        /* Check if element can be colored: No corresponding index in Yu has current color */
         PetscInt can_be_colored = 1;
         for (j=0; j<nen_u; ++j) {
           if (Yu_color[elnidx_u[i*nen_u + j]] == cudactx->element_colors) {
@@ -589,13 +589,13 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
     ierr = PetscMalloc(cudactx->element_colors * sizeof(PetscInt), &cudactx->elements_per_color);CHKERRQ(ierr);
     ierr = PetscMalloc(cudactx->element_colors * sizeof(PetscInt*), &cudactx->el_ids_colored);CHKERRQ(ierr);
 
-    for (c=0; c<cudactx->element_colors; ++c) {
+    for (i=0; i<cudactx->element_colors; ++i) {
       /* count elements, collect element indices for this color and copy over to GPU: */
-      cudactx->elements_per_color[c] = 0;
-      for (j=0; j<ncells; ++j) {
-        if (element_color[j] == c) {
-          Yu_color[cudactx->elements_per_color[c]] = cell[j]; /* Reusing Yu_color array here */
-          cudactx->elements_per_color[c] += 1;
+      cudactx->elements_per_color[i] = 0;
+      for (j=0; j<nel; ++j) {
+        if (element_color[j] == i) {
+          Yu_color[cudactx->elements_per_color[i]] = j; /* Reusing Yu_color array here */
+          cudactx->elements_per_color[i] += 1;
         }
       }
 
@@ -648,7 +648,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
   DM                      cda;
   Vec                     gcoords;
   const PetscReal         *LA_gcoords;
-  PetscInt                nel,nen_u,c,i,j,k,localsize;
+  PetscInt                nel,nen_u,e,i,j,k,localsize;
   const PetscInt          *elnidx_u;
   QPntVolCoefStokes       *all_gausspoints;
   const QPntVolCoefStokes *cell_gausspoints;
@@ -681,11 +681,12 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
           for (k=0; k<3; k++)
             w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
 
-      ierr = PetscMalloc(ncells * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
-      for (c=0; c<ncells; c++) {
-        PetscInt e = cell[c];
+      /* Note that we waste some effort still transferring all of the gaussdata, even though not
+         all elements are processed. */
+      ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
+      for (e=0; e<nel; e++) {
         ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
-        for (i=0; i<NQP; i++) gaussdata_host[c*NQP + i] = cell_gausspoints[i].eta * w[i];
+        for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
       }
 
       }
