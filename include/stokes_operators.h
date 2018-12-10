@@ -65,6 +65,7 @@ struct _p_MatA11MF {
   IS isl2g_interior_to,isl2g_boundary_to;
   VecScatter vscat_l2g_boundary,vscat_l2g_interior;
   PetscBool use_overlapping_implementation,interior_iterator_async,interior_iterator_cuda;
+  Vec uLocalPinned,YuLocalPinned;
   PetscErrorCode (*SpMVOp_MatMult_boundary_iterator)(MatA11MF,Quadrature,DM,PetscInt,PetscInt*,PetscScalar[],PetscScalar[]);
   PetscErrorCode (*SpMVOp_MatMult_interior_iterator)(MatA11MF,Quadrature,DM,PetscInt,PetscInt*,PetscScalar[],PetscScalar[]);
   PetscErrorCode (*SpMVOp_SetUp_iterator)(MatA11MF);

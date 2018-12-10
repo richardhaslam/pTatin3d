@@ -124,6 +124,8 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
   A11->use_overlapping_implementation = PETSC_FALSE;
   A11->interior_iterator_async = PETSC_FALSE;
   A11->interior_iterator_cuda = PETSC_FALSE;
+  A11->uLocalPinned = NULL;
+  A11->YuLocalPinned = NULL;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-a11_op_overlap_implementation",&A11->use_overlapping_implementation,NULL);CHKERRQ(ierr);
 
@@ -322,6 +324,10 @@ PetscErrorCode MatA11MFDestroy_InteriorBoundaryIterator(MatA11MF A11)
   if (A11->cell_interior) { ierr = PetscFree(A11->cell_interior);CHKERRQ(ierr); }
   ierr = VecScatterDestroy(&A11->vscat_l2g_boundary);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&A11->vscat_l2g_interior);CHKERRQ(ierr);
+  if (A11->interior_iterator_cuda) {
+    ierr = VecDestroyPinnedSeq_CUDA(&A11->uLocalPinned);CHKERRQ(ierr);
+    ierr = VecDestroyPinnedSeq_CUDA(&A11->YuLocalPinned);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -440,7 +446,10 @@ PetscErrorCode isblock_MatA11MFSetup_InteriorBoundaryIterator(MatA11MF A11)
     ierr = ISCreateBlock(PetscObjectComm((PetscObject)A11->daUVW),3,cnt,(const PetscInt*)idx_f,PETSC_COPY_VALUES,&from_interior);CHKERRQ(ierr);
     ierr = ISCreateBlock(PetscObjectComm((PetscObject)A11->daUVW),3,cnt,(const PetscInt*)idx_t,PETSC_COPY_VALUES,&to_interior);CHKERRQ(ierr);
   }
-  
+
+  /* If CUDA, allocate two pinned vectors to use */
+  ierr = DMDACreateLocalVectorPinnedSeq_CUDA(A11->daUVW,&A11->uLocalPinned);CHKERRQ(ierr);
+  ierr = DMDACreateLocalVectorPinnedSeq_CUDA(A11->daUVW,&A11->YuLocalPinned);CHKERRQ(ierr);
   
   // boundary setup
   ierr = PetscMemzero(mark,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
@@ -1716,17 +1725,12 @@ PetscErrorCode MatMult_MFStokes_A11OverlapCommFLOPS(Mat A,Vec X,Vec Y)
   /*
    It is required that we zero entries as the scatters do not set values for all basis in the local space
   */
-  // TODO thes need to be replaced with checks that the vectors don't already exist in teh contx, then calls to DMDACreateLocalPinnedVectorSeq(),
-  // and the destroy function need to destroy these, and teh creation function needs to initialize these to NULL.
-  // TODO then we can use async memcopies (and remove sync calls?) in the overlapping versions of these kernels.
   if (ctx->interior_iterator_cuda) {
-    // TODO dont' create and destroy these each time, rather store them (as with "get")
-    ierr = DMDACreateLocalVectorPinnedSeq_CUDA(dau,&XUloc);CHKERRQ(ierr);    ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
-    ierr = DMDACreateLocalVectorPinnedSeq_CUDA(dau,&YUloc);CHKERRQ(ierr);    ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
-
+    XUloc = ctx->uLocalPinned;                          ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
+    YUloc = ctx->YuLocalPinned;                         ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
   } else {
-    ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);    ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);    ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);  ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);  ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
   }
   ierr = DMGetLocalVector(dau,&XUloc_b);CHKERRQ(ierr);  ierr = VecZeroEntries(XUloc_b);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc_b);CHKERRQ(ierr);  ierr = VecZeroEntries(YUloc_b);CHKERRQ(ierr);
@@ -1791,9 +1795,8 @@ PetscErrorCode MatMult_MFStokes_A11OverlapCommFLOPS(Mat A,Vec X,Vec Y)
   ierr = VecScatterEnd  (vs_b,YUloc_b,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[boundary]
 
   if (ctx->interior_iterator_cuda) {
-    // TODO just "restore" these and destroy with operator
-    ierr = VecDestroyPinnedSeq_CUDA(&XUloc);CHKERRQ(ierr);
-    ierr = VecDestroyPinnedSeq_CUDA(&YUloc);CHKERRQ(ierr);
+    XUloc = NULL; /* "Restore" */
+    YUloc = NULL; /* "Restore" */
   } else {
     ierr = DMRestoreLocalVector(dau,&YUloc);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dau,&XUloc);CHKERRQ(ierr);
