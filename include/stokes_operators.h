@@ -67,6 +67,8 @@ struct _p_MatA11MF {
   PetscBool use_overlapping_implementation;
   PetscErrorCode (*SpMVOp_MatMult_boundary_iterator)(MatA11MF,Quadrature,DM,PetscInt,PetscInt*,PetscScalar[],PetscScalar[]);
   PetscErrorCode (*SpMVOp_MatMult_interior_iterator)(MatA11MF,Quadrature,DM,PetscInt,PetscInt*,PetscScalar[],PetscScalar[]);
+  PetscErrorCode (*SpMVOp_SetUp_iterator)(MatA11MF);
+  PetscErrorCode (*SpMVOp_Destroy_iterator)(MatA11MF);
 };
 
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B);

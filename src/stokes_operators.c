@@ -119,6 +119,8 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
   A11->SpMVOp_MatMult_interior_iterator = NULL;
   A11->SpMVOp_SetUp   = NULL;
   A11->SpMVOp_Destroy = NULL;
+  A11->SpMVOp_SetUp_iterator = NULL;
+  A11->SpMVOp_Destroy_iterator = NULL;
   A11->use_overlapping_implementation = PETSC_FALSE;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-a11_op_overlap_implementation",&A11->use_overlapping_implementation,NULL);CHKERRQ(ierr);
@@ -157,8 +159,17 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
   if (!A11->SpMVOp_MatMult) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
   if (A11->SpMVOp_MatMult) PetscInfo1(NULL,"Found a11_op method \"%s\"\n",optype);
   
+  /* zap all standard methods */
+  if (A11->use_overlapping_implementation) {
+    A11->SpMVOp_MatMult = NULL;
+    A11->SpMVOp_SetUp = NULL;
+    A11->SpMVOp_Destroy = NULL;
+  }
+  
   if (A11->use_overlapping_implementation) {
     PetscFunctionList MatMultCellIterator_flist = NULL;
+    PetscFunctionList MatSetUpCellIterator_flist = NULL;
+    PetscFunctionList MatDestroyCellIterator_flist = NULL;
     PetscBool found_bi[] = { PETSC_FALSE, PETSC_FALSE };
     
     // no reference / classic implementation
@@ -166,7 +177,12 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 #if defined(__AVX__)
     ierr = PetscFunctionListAdd(&MatMultCellIterator_flist,"avx",MFStokesWrapper_A11_AVX_celliterator);CHKERRQ(ierr);
 #endif
-    // no cuda implementation (unlikely we ever want one)
+#ifdef TATIN_HAVE_CUDA
+    ierr = PetscFunctionListAdd(&MatMultCellIterator_flist,"cuda",MFStokesWrapper_A11_CUDA_celliterator);CHKERRQ(ierr);
+    /* The setup and destroy methods are identical for the cell iterator as for MFStokesWrapper_A11_CUDA() */
+    ierr = PetscFunctionListAdd(&MatSetUpCellIterator_flist,"cuda",MFA11SetUp_CUDA);CHKERRQ(ierr);
+    ierr = PetscFunctionListAdd(&MatDestroyCellIterator_flist,"cuda",MFA11Destroy_CUDA);CHKERRQ(ierr);
+#endif
     
     
 #if defined(__AVX__)
@@ -176,6 +192,8 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 #endif
     ierr = PetscOptionsGetString(NULL,NULL,"-a11_op_boundary",optype,sizeof optype,&found_bi[0]);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(MatMultCellIterator_flist,optype,&A11->SpMVOp_MatMult_boundary_iterator);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(MatSetUpCellIterator_flist,optype,&A11->SpMVOp_SetUp_iterator);CHKERRQ(ierr);
+    ierr = PetscFunctionListFind(MatDestroyCellIterator_flist,optype,&A11->SpMVOp_Destroy_iterator);CHKERRQ(ierr);
     if (A11->SpMVOp_MatMult_boundary_iterator) PetscInfo1(NULL,"Found a11_op_boundary method \"%s\"\n",optype);
     if (found_bi[0] && !A11->SpMVOp_MatMult_boundary_iterator) PetscInfo1(NULL,"Requested a11_op_boundary method \"%s\" was not registered!\n",optype);
     
@@ -186,6 +204,16 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 #endif
     ierr = PetscOptionsGetString(NULL,NULL,"-a11_op_interior",optype,sizeof optype,&found_bi[1]);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(MatMultCellIterator_flist,optype,&A11->SpMVOp_MatMult_interior_iterator);CHKERRQ(ierr);
+    {
+      PetscBool set = A11->SpMVOp_SetUp_iterator != NULL;
+      ierr = PetscFunctionListFind(MatSetUpCellIterator_flist,optype,&A11->SpMVOp_SetUp_iterator);CHKERRQ(ierr);
+      if (set && A11->SpMVOp_SetUp_iterator) SETERRQ(PetscObjectComm((PetscObject)A11->daUVW),PETSC_ERR_SUP,"Only one of the interior/exterior iterators may provide a SetUp function");
+    }
+    {
+      PetscBool set = A11->SpMVOp_Destroy_iterator != NULL;
+      ierr = PetscFunctionListFind(MatDestroyCellIterator_flist,optype,&A11->SpMVOp_Destroy_iterator);CHKERRQ(ierr);
+      if (set && A11->SpMVOp_Destroy_iterator) SETERRQ(PetscObjectComm((PetscObject)A11->daUVW),PETSC_ERR_SUP,"Only one of the interior/exterior iterators may provide a Destroy function");
+    }
     if (A11->SpMVOp_MatMult_interior_iterator) PetscInfo1(NULL,"Found a11_op_interior method \"%s\"\n",optype);
     if (found_bi[1] && !A11->SpMVOp_MatMult_interior_iterator) PetscInfo1(NULL,"Requested a11_op_interior method \"%s\" was not registered!\n",optype);
     
@@ -195,6 +223,8 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
     }
 
     ierr = PetscFunctionListDestroy(&MatMultCellIterator_flist);CHKERRQ(ierr);
+    ierr = PetscFunctionListDestroy(&MatSetUpCellIterator_flist);CHKERRQ(ierr);
+    ierr = PetscFunctionListDestroy(&MatDestroyCellIterator_flist);CHKERRQ(ierr);
   }
 
   ierr = PetscFunctionListDestroy(&MatMult_flist);CHKERRQ(ierr);
@@ -670,6 +700,9 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
   if (A11Ctx->use_overlapping_implementation) {
     ierr = MatA11MFSetup_InteriorBoundaryIterator(A11Ctx);CHKERRQ(ierr);
   }
+  if (A11Ctx->SpMVOp_SetUp_iterator) {
+    ierr = A11Ctx->SpMVOp_SetUp_iterator(A11Ctx);CHKERRQ(ierr);
+  }
 
   A11Ctx->refcnt = 1;
   A11Ctx->is_setup = PETSC_TRUE;
@@ -729,6 +762,9 @@ PetscErrorCode MatA11MFDestroy(MatA11MF *B)
       ierr = A->SpMVOp_Destroy(A);CHKERRQ(ierr);
     }
 
+    if (A->SpMVOp_Destroy_iterator) {
+      ierr = A->SpMVOp_Destroy_iterator(A);CHKERRQ(ierr);
+    }
     ierr = MatA11MFDestroy_InteriorBoundaryIterator(A);CHKERRQ(ierr);
 
     ierr = PetscFree(A);CHKERRQ(ierr);
@@ -916,6 +952,9 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 
   if (A11->use_overlapping_implementation) {
     ierr = MatA11MFSetup_InteriorBoundaryIterator(A11);CHKERRQ(ierr);
+  }
+  if (A11->SpMVOp_SetUp_iterator) {
+    ierr = A11->SpMVOp_SetUp_iterator(A11);CHKERRQ(ierr);
   }
 
   A11->refcnt   = 1;

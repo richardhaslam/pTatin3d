@@ -61,6 +61,7 @@ PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 extern "C" {
 #endif
 PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ,DM dau,PetscInt ncells,PetscInt cell[],PetscScalar ufield[],PetscScalar Yu[]);
 PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf);
 PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf);
 #ifdef __cplusplus
