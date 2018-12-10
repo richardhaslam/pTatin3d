@@ -33,6 +33,9 @@
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
 #include <stokes_operators.h>
+#ifdef TATIN_HAVE_NVTX
+#include "nvToolsExt.h"
+#endif
 
 extern PetscLogEvent MAT_MultMFA11_stp;
 extern PetscLogEvent MAT_MultMFA11_cto;
@@ -448,9 +451,15 @@ PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscIn
 PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt localsize)
 {
   PetscErrorCode ierr;
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
 
   PetscFunctionBegin;
-    ierr = cudaMemcpy(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
+  ierr = cudaMemcpy(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -538,6 +547,9 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
   PetscErrorCode ierr;
   PetscInt       i,c,j;
   PetscInt       localsize = NSD*nnodes_local;
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
 
   PetscFunctionBeginUser;
 
@@ -638,6 +650,9 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
   }
 
   ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -653,6 +668,10 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
   QPntVolCoefStokes       *all_gausspoints;
   const QPntVolCoefStokes *cell_gausspoints;
   MFA11CUDA               cudactx = (MFA11CUDA)mf->ctx;
+
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
@@ -717,6 +736,10 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
   ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
 
   PetscFunctionReturn(0);
 }
