@@ -429,7 +429,8 @@ PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *
     ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
   }
 
-  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  // WARNING: took this away from the already-well-performing existing CUDA implementation. Maybe a bad idea.
+  //ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -668,8 +669,7 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
     ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
   }
 
-  // TODO remove?
-  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  //ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
 #endif
