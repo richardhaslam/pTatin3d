@@ -1,0 +1,10 @@
+-compare_operators
+-mx 8
+-my 9
+-mz 11
+-ptatin_model viscous_sinker
+-model_viscous_sinker_eta1 10
+-lattice_layout_perturb 0.0
+-a11_op_overlap_implementation true
+#-a11_op_boundary avx # should be the default if AVX is available
+#-a11_op_interior avx # should be the default if AVX is available
