@@ -550,9 +550,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 
     /* Read back CUDA data */
     ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-    ierr = CopyFrom_A11_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
-    // TODO
-    //ierr = CopyFrom_A11_Async_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
+    ierr = CopyFrom_A11_Async_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
     ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -643,9 +641,9 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
   if (!cudactx->ufield) {
     ierr = cudaMalloc(&cudactx->ufield, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
   }
-  /* ufield always needs to be copied */
-  // TODO make async (means ufield must be pinned)
-  ierr = cudaMemcpy(cudactx->ufield,ufield, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+  /* ufield always needs to be copied
+     Async so ufield must be pinned.  */
+  ierr = cudaMemcpyAsync(cudactx->ufield,ufield, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
 
   if (!cudactx->LA_gcoords) {
     ierr = cudaMalloc(&cudactx->LA_gcoords, localsize * sizeof(PetscReal));CUDACHECK(ierr);
