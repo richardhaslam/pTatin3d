@@ -536,7 +536,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *ufield,const PetscReal *LA_gcoords,const PetscReal *gaussdata_host,PetscInt nel,PetscInt nen_u,const PetscInt *elnidx_u,PetscInt nnodes_local,PetscInt ncells,PetscInt cell[])
 {
   PetscErrorCode ierr;
-  PetscInt       c,j;
+  PetscInt       i,c,j;
   PetscInt       localsize = NSD*nnodes_local;
 
   PetscFunctionBeginUser;
@@ -559,7 +559,7 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
     while (elements_colored < ncells) {
 
       for (c=0; c<ncells; ++c) {
-        PetscInt i = cells[c];
+        PetscInt i = cell[c];
 
         if (element_color[i] >= 0) continue;  /* element already has a color */
 
