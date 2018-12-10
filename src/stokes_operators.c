@@ -953,6 +953,9 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
   if (A11->use_overlapping_implementation) {
     ierr = MatA11MFSetup_InteriorBoundaryIterator(A11);CHKERRQ(ierr);
   }
+  if (A11->SpMVOp_SetUp_iterator) {
+    ierr = A11->SpMVOp_SetUp_iterator(A11);CHKERRQ(ierr);
+  }
 
   A11->refcnt   = 1;
   A11->is_setup = PETSC_TRUE;
