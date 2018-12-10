@@ -204,8 +204,16 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 #endif
     ierr = PetscOptionsGetString(NULL,NULL,"-a11_op_interior",optype,sizeof optype,&found_bi[1]);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(MatMultCellIterator_flist,optype,&A11->SpMVOp_MatMult_interior_iterator);CHKERRQ(ierr);
-    ierr = PetscFunctionListFind(MatSetUpCellIterator_flist,optype,&A11->SpMVOp_SetUp_iterator);CHKERRQ(ierr);
-    ierr = PetscFunctionListFind(MatDestroyCellIterator_flist,optype,&A11->SpMVOp_Destroy_iterator);CHKERRQ(ierr);
+    {
+      PetscBool set = A11->SpMVOp_SetUp_iterator != NULL;
+      ierr = PetscFunctionListFind(MatSetUpCellIterator_flist,optype,&A11->SpMVOp_SetUp_iterator);CHKERRQ(ierr);
+      if (set && A11->SpMVOp_SetUp_iterator) SETERRQ(PetscObjectComm((PetscObject)A11->daUVW),PETSC_ERR_SUP,"Only one of the interior/exterior iterators may provide a SetUp function");
+    }
+    {
+      PetscBool set = A11->SpMVOp_Destroy_iterator != NULL;
+      ierr = PetscFunctionListFind(MatDestroyCellIterator_flist,optype,&A11->SpMVOp_Destroy_iterator);CHKERRQ(ierr);
+      if (set && A11->SpMVOp_Destroy_iterator) SETERRQ(PetscObjectComm((PetscObject)A11->daUVW),PETSC_ERR_SUP,"Only one of the interior/exterior iterators may provide a Destroy function");
+    }
     if (A11->SpMVOp_MatMult_interior_iterator) PetscInfo1(NULL,"Found a11_op_interior method \"%s\"\n",optype);
     if (found_bi[1] && !A11->SpMVOp_MatMult_interior_iterator) PetscInfo1(NULL,"Requested a11_op_interior method \"%s\" was not registered!\n",optype);
     
