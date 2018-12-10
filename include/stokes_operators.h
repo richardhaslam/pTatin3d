@@ -64,7 +64,7 @@ struct _p_MatA11MF {
   IS isl2g_interior_from,isl2g_boundary_from;
   IS isl2g_interior_to,isl2g_boundary_to;
   VecScatter vscat_l2g_boundary,vscat_l2g_interior;
-  PetscBool use_overlapping_implementation;
+  PetscBool use_overlapping_implementation,interior_iterator_async,interior_iterator_cuda;
   PetscErrorCode (*SpMVOp_MatMult_boundary_iterator)(MatA11MF,Quadrature,DM,PetscInt,PetscInt*,PetscScalar[],PetscScalar[]);
   PetscErrorCode (*SpMVOp_MatMult_interior_iterator)(MatA11MF,Quadrature,DM,PetscInt,PetscInt*,PetscScalar[],PetscScalar[]);
   PetscErrorCode (*SpMVOp_SetUp_iterator)(MatA11MF);
@@ -150,8 +150,13 @@ extern "C" {
 PetscErrorCode MFA11CUDA_SetUp(MFA11CUDA);
 PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA);
 PetscErrorCode CopyTo_A11_CUDA(MatA11MF,MFA11CUDA,const PetscScalar*,const PetscReal*,const PetscReal*,PetscInt,PetscInt,const PetscInt*,PetscInt);
+//TODO async copyto
 PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA,PetscInt,PetscInt);
 PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA,PetscScalar*,PetscInt);
+PetscErrorCode CopyFrom_A11_CUDA_Async(MFA11CUDA,PetscScalar*,PetscInt);
+PetscErrorCode DMDACreateLocalVectorPinnedSeq_CUDA(DM,Vec*);
+PetscErrorCode VecDestroyPinnedSeq_CUDA(Vec*);
+PetscErrorCode Synchronize_CUDA();
 #ifdef __cplusplus
 }
 #endif
