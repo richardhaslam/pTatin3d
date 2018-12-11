@@ -218,6 +218,9 @@ PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscS
   PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
   PetscInt i,j,k,e;
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
   PetscFunctionBegin;
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
@@ -321,6 +324,9 @@ PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscS
   }
   
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
 
   PetscFunctionReturn(0);
 }

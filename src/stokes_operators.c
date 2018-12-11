@@ -1641,6 +1641,9 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 //  PetscBool         use_low_order_geometry = PETSC_FALSE;
   PetscObjectState  state;
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
   PetscFunctionBegin;
 
   ierr = PetscLogEventBegin(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
@@ -1696,6 +1699,9 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   }
 
   ierr = PetscLogEventEnd(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
   PetscFunctionReturn(0);
 }
 

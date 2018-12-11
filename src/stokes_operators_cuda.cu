@@ -451,8 +451,7 @@ PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscIn
 
 PetscErrorCode ProcessElements_A11_Async_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscInt localsize)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt i;
 
   PetscFunctionBegin;
   set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
@@ -506,6 +505,9 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
   const QPntVolCoefStokes *cell_gausspoints;
   MFA11CUDA               cudactx = (MFA11CUDA)mf->ctx;
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
 
@@ -568,6 +570,9 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 
     ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
     PetscFunctionReturn(0);
 }
 
