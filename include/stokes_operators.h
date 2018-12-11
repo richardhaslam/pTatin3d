@@ -153,6 +153,7 @@ PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA);
 PetscErrorCode CopyTo_A11_CUDA(MatA11MF,MFA11CUDA,const PetscScalar*,const PetscReal*,const PetscReal*,PetscInt,PetscInt,const PetscInt*,PetscInt);
 //TODO async copyto
 PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA,PetscInt,PetscInt);
+PetscErrorCode ProcessElements_A11_Async_CUDA(MFA11CUDA,PetscInt,PetscInt);
 PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA,PetscScalar*,PetscInt);
 PetscErrorCode CopyFrom_A11_CUDA_Async(MFA11CUDA,PetscScalar*,PetscInt);
 PetscErrorCode DMDACreateLocalVectorPinnedSeq_CUDA(DM,Vec*);

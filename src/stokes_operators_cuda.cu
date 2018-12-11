@@ -429,8 +429,7 @@ PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *
     ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
   }
 
-  // WARNING: took this away from the already-well-performing existing CUDA implementation. Maybe a bad idea.
-  //ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -446,8 +445,21 @@ PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscIn
   for (i=0; i<cudactx->element_colors; ++i) {
     MFStokesWrapper_A11_CUDA_kernel<<<(cudactx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(cudactx->elements_per_color[i],nen_u,cudactx->el_ids_colored[i],cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
   }
-  // WARNING: took this away from the already-well-performing existing CUDA implementation. Maybe a bad idea.
-  //ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ProcessElements_A11_Async_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscInt localsize)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
+  for (i=0; i<cudactx->element_colors; ++i) {
+    MFStokesWrapper_A11_CUDA_kernel<<<(cudactx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(cudactx->elements_per_color[i],nen_u,cudactx->el_ids_colored[i],cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
+  }
+  /* No sync */
   PetscFunctionReturn(0);
 }
 
@@ -669,7 +681,6 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
     ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
   }
 
-  //ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
 #endif
@@ -743,7 +754,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
   */
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
-  ierr = ProcessElements_A11_CUDA(cudactx,nen_u,localsize);CHKERRQ(ierr);
+  ierr = ProcessElements_A11_Async_CUDA(cudactx,nen_u,localsize);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
   PetscLogFlops((ncells * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
