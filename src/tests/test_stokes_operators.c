@@ -60,7 +60,11 @@ PetscErrorCode _GenerateTestVector(DM da2,PetscInt dofs,PetscInt index,Vec x)
   const PetscInt *GINDICES;
   DM da;
 
-  ierr = DMDAGetReducedDMDA(da2,3,&da);CHKERRQ(ierr);
+#if PETSC_VERSION_GE(3,10,0)
+  ierr = DMDACreateCompatibleDMDA(da2,3,&da);CHKERRQ(ierr);
+#else
+  ierr = DMDAGetReducedDMDA(da2,3,&da);CHKERRQ(ierr); /* Remove when 3.9 support no longer needed */
+#endif
 
   ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
