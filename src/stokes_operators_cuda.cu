@@ -446,8 +446,8 @@ PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscIn
   for (i=0; i<cudactx->element_colors; ++i) {
     MFStokesWrapper_A11_CUDA_kernel<<<(cudactx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(cudactx->elements_per_color[i],nen_u,cudactx->el_ids_colored[i],cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
   }
-  // TODO remove??
-  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  // WARNING: took this away from the already-well-performing existing CUDA implementation. Maybe a bad idea.
+  //ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -551,7 +551,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 
     /* Read back CUDA data */
     ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-    ierr = CopyFrom_A11_Async_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
+    ierr = CopyFrom_A11_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
     ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -752,7 +752,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
 
   /* Read back CUDA data */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-  ierr = CopyFrom_A11_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
+  ierr = CopyFrom_A11_Async_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
