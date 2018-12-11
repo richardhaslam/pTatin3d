@@ -126,6 +126,10 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
   A11->SpMVOp_SetUp_iterator = NULL;
   A11->SpMVOp_Destroy_iterator = NULL;
   A11->use_overlapping_implementation = PETSC_FALSE;
+  A11->interior_iterator_async = PETSC_FALSE;
+  A11->interior_iterator_cuda = PETSC_FALSE;
+  A11->uLocalPinned = NULL;
+  A11->YuLocalPinned = NULL;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-a11_op_overlap_implementation",&A11->use_overlapping_implementation,NULL);CHKERRQ(ierr);
 
@@ -208,6 +212,14 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 #endif
     ierr = PetscOptionsGetString(NULL,NULL,"-a11_op_interior",optype,sizeof optype,&found_bi[1]);CHKERRQ(ierr);
     ierr = PetscFunctionListFind(MatMultCellIterator_flist,optype,&A11->SpMVOp_MatMult_interior_iterator);CHKERRQ(ierr);
+    {
+      PetscBool isCuda;
+      ierr = PetscStrcmp(optype,"cuda",&isCuda);CHKERRQ(ierr);
+      if (isCuda) {
+        A11->interior_iterator_async = PETSC_TRUE;
+        A11->interior_iterator_cuda = PETSC_TRUE;
+      }
+    }
     {
       PetscBool set = A11->SpMVOp_SetUp_iterator != NULL;
       ierr = PetscFunctionListFind(MatSetUpCellIterator_flist,optype,&A11->SpMVOp_SetUp_iterator);CHKERRQ(ierr);
@@ -316,6 +328,10 @@ PetscErrorCode MatA11MFDestroy_InteriorBoundaryIterator(MatA11MF A11)
   if (A11->cell_interior) { ierr = PetscFree(A11->cell_interior);CHKERRQ(ierr); }
   ierr = VecScatterDestroy(&A11->vscat_l2g_boundary);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&A11->vscat_l2g_interior);CHKERRQ(ierr);
+  if (A11->interior_iterator_cuda) {
+    ierr = VecDestroyPinnedSeq_CUDA(&A11->uLocalPinned);CHKERRQ(ierr);
+    ierr = VecDestroyPinnedSeq_CUDA(&A11->YuLocalPinned);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -434,7 +450,10 @@ PetscErrorCode isblock_MatA11MFSetup_InteriorBoundaryIterator(MatA11MF A11)
     ierr = ISCreateBlock(PetscObjectComm((PetscObject)A11->daUVW),3,cnt,(const PetscInt*)idx_f,PETSC_COPY_VALUES,&from_interior);CHKERRQ(ierr);
     ierr = ISCreateBlock(PetscObjectComm((PetscObject)A11->daUVW),3,cnt,(const PetscInt*)idx_t,PETSC_COPY_VALUES,&to_interior);CHKERRQ(ierr);
   }
-  
+
+  /* If CUDA, allocate two pinned vectors to use */
+  ierr = DMDACreateLocalVectorPinnedSeq_CUDA(A11->daUVW,&A11->uLocalPinned);CHKERRQ(ierr);
+  ierr = DMDACreateLocalVectorPinnedSeq_CUDA(A11->daUVW,&A11->YuLocalPinned);CHKERRQ(ierr);
   
   // boundary setup
   ierr = PetscMemzero(mark,sizeof(PetscInt)*nbasis);CHKERRQ(ierr);
@@ -1713,8 +1732,13 @@ PetscErrorCode MatMult_MFStokes_A11OverlapCommFLOPS(Mat A,Vec X,Vec Y)
   /*
    It is required that we zero entries as the scatters do not set values for all basis in the local space
   */
-  ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);    ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);    ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
+  if (ctx->interior_iterator_cuda) {
+    XUloc = ctx->uLocalPinned;                          ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
+    YUloc = ctx->YuLocalPinned;                         ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
+  } else {
+    ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);  ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);  ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
+  }
   ierr = DMGetLocalVector(dau,&XUloc_b);CHKERRQ(ierr);  ierr = VecZeroEntries(XUloc_b);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc_b);CHKERRQ(ierr);  ierr = VecZeroEntries(YUloc_b);CHKERRQ(ierr);
   
@@ -1732,11 +1756,12 @@ PetscErrorCode MatMult_MFStokes_A11OverlapCommFLOPS(Mat A,Vec X,Vec Y)
   /* momentum: y = A x */
   ierr = (*ctx->SpMVOp_MatMult_interior_iterator)(ctx,ctx->volQ,dau,ctx->ncells_interior,ctx->cell_interior,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
   
-  ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
-  ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
-
-  /* For non-GPU implementations, we can initiate the send now for the interior values */
-  ierr = VecScatterBegin(vs_i,YUloc,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[interior]
+  if (!ctx->interior_iterator_async) {
+    ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
+    ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
+    /* For non-async implementations, we can initiate the send now for the interior values */
+    ierr = VecScatterBegin(vs_i,YUloc,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[interior]
+  }
 
   
   ierr = VecScatterEnd  (vs_b,X,XUloc_b,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr); /* the scatter was defined as local to global so we use reverse */
@@ -1765,12 +1790,24 @@ PetscErrorCode MatMult_MFStokes_A11OverlapCommFLOPS(Mat A,Vec X,Vec Y)
 
   
   ierr = VecScatterBegin(vs_b,YUloc_b,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[boundary]
-  /* If the interior did actually require sending off-rank values then since the send was posted longer ago the message should have arrived :D */
+  if (ctx->interior_iterator_async) {
+    if (ctx->interior_iterator_cuda) {
+      ierr = Synchronize_CUDA();CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject)dau),PETSC_ERR_SUP,"Don't know how to finish an asynchronous, non-CUDA iterator");
+    ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
+    ierr = VecScatterBegin(vs_i,YUloc,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[interior]
+    ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
+  }
   ierr = VecScatterEnd  (vs_i,YUloc,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);   // local-to-global[interior]
   ierr = VecScatterEnd  (vs_b,YUloc_b,Y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); // local-to-global[boundary]
 
-  ierr = DMRestoreLocalVector(dau,&YUloc);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dau,&XUloc);CHKERRQ(ierr);
+  if (ctx->interior_iterator_cuda) {
+    XUloc = NULL; /* "Restore" */
+    YUloc = NULL; /* "Restore" */
+  } else {
+    ierr = DMRestoreLocalVector(dau,&YUloc);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dau,&XUloc);CHKERRQ(ierr);
+  }
   ierr = DMRestoreLocalVector(dau,&YUloc_b);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dau,&XUloc_b);CHKERRQ(ierr);
   

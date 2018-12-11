@@ -36,6 +36,7 @@
 #ifdef TATIN_HAVE_NVTX
 #include "nvToolsExt.h"
 #endif
+#include <petsc/private/dmdaimpl.h> /* just used to quickly get local vector size and bs */
 
 extern PetscLogEvent MAT_MultMFA11_stp;
 extern PetscLogEvent MAT_MultMFA11_cto;
@@ -448,6 +449,20 @@ PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscIn
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode ProcessElements_A11_Async_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscInt localsize)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
+  for (i=0; i<cudactx->element_colors; ++i) {
+    MFStokesWrapper_A11_CUDA_kernel<<<(cudactx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(cudactx->elements_per_color[i],nen_u,cudactx->el_ids_colored[i],cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
+  }
+  /* No sync */
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt localsize)
 {
   PetscErrorCode ierr;
@@ -457,6 +472,22 @@ PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt loca
 
   PetscFunctionBegin;
   ierr = cudaMemcpy(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePop();
+#endif
+  PetscFunctionReturn(0);
+}
+
+/* Note that this requires Yu to be pinned/page-locked, and that you need a synchronization call later */
+PetscErrorCode CopyFrom_A11_Async_CUDA(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt localsize)
+{
+  PetscErrorCode ierr;
+#ifdef TATIN_HAVE_NVTX
+  nvtxRangePushA(__FUNCTION__);
+#endif
+
+  PetscFunctionBegin;
+  ierr = cudaMemcpyAsync(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
 #endif
@@ -623,8 +654,9 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
   if (!cudactx->ufield) {
     ierr = cudaMalloc(&cudactx->ufield, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
   }
-  /* ufield always needs to be copied */
-  ierr = cudaMemcpy(cudactx->ufield,ufield, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+  /* ufield always needs to be copied
+     Async so ufield must be pinned.  */
+  ierr = cudaMemcpyAsync(cudactx->ufield,ufield, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
 
   if (!cudactx->LA_gcoords) {
     ierr = cudaMalloc(&cudactx->LA_gcoords, localsize * sizeof(PetscReal));CUDACHECK(ierr);
@@ -649,7 +681,6 @@ PetscErrorCode CopyTo_A11_CUDA_celliterator(MatA11MF mf,MFA11CUDA cudactx,const 
     ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
   }
 
-  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
 #ifdef TATIN_HAVE_NVTX
   nvtxRangePop();
 #endif
@@ -723,7 +754,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
   */
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
-  ierr = ProcessElements_A11_CUDA(cudactx,nen_u,localsize);CHKERRQ(ierr);
+  ierr = ProcessElements_A11_Async_CUDA(cudactx,nen_u,localsize);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
   PetscLogFlops((ncells * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
@@ -732,7 +763,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
 
   /* Read back CUDA data */
   ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-  ierr = CopyFrom_A11_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
+  ierr = CopyFrom_A11_Async_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -744,5 +775,39 @@ PetscErrorCode MFStokesWrapper_A11_CUDA_celliterator(MatA11MF mf,Quadrature volQ
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode DMDACreateLocalVectorPinnedSeq_CUDA(DM da, Vec *vec)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscScalar    *array;
+
+  PetscFunctionBeginUser;
+  PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
+  ierr = cudaMallocHost(&array,dd->nlocal * sizeof(PetscScalar));CUDACHECK(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,dd->nlocal,array,vec);CHKERRQ(ierr);
+  ierr = VecSetDM(*vec,da);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecDestroyPinnedSeq_CUDA(Vec *vec)
+{
+  PetscErrorCode ierr;
+  PetscScalar    *arr;
+
+  PetscFunctionBeginUser;
+  ierr = VecGetArray(*vec,&arr);CHKERRQ(ierr); /* It is safe to not Restore? */
+  ierr = cudaFreeHost(arr);CUDACHECK(ierr);
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode Synchronize_CUDA()
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
 
 } /* extern C */

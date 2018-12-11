@@ -25,6 +25,8 @@ export CUDA_LIB = -L/usr/local/cuda-8.0/lib64 -lcudart
 CONFIG_CUDA=y
 #CONFIG_OPENCL=y
 
+#CONFIG_NVTX=y
+
 #
 #  -- pTatin external packages --
 #  User should select which packages are present
