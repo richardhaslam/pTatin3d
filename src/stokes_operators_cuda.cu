@@ -772,7 +772,7 @@ PetscErrorCode DMDACreateLocalVectorPinnedSeq_CUDA(DM da, Vec *vec)
 
   PetscFunctionBeginUser;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
-  ierr = cudaMallocHost(&array,dd->nlocal * sizeof(PetscScalar)); CUDACHECK(ierr);/* Must be freed later with cudaFree() */
+  ierr = cudaMallocHost(&array,dd->nlocal * sizeof(PetscScalar));CUDACHECK(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,dd->nlocal,array,vec);CHKERRQ(ierr);
   ierr = VecSetDM(*vec,da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -784,11 +784,8 @@ PetscErrorCode VecDestroyPinnedSeq_CUDA(Vec *vec)
   PetscScalar    *arr;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArray(*vec,&arr);CHKERRQ(ierr); /* Is it safe to do this? */
-  //ierr = cudaFree(arr);CUDACHECK(ierr);
-  // TODO do this properly (errors if you check!)
-  ierr = cudaFree(arr);
-  ierr = VecPlaceArray(*vec,NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(*vec,&arr);CHKERRQ(ierr); /* It is safe to not Restore? */
+  ierr = cudaFreeHost(arr);CUDACHECK(ierr);
   ierr = VecDestroy(vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -800,8 +797,6 @@ PetscErrorCode Synchronize_CUDA()
   PetscFunctionBeginUser;
   ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
   PetscFunctionReturn(0);
-
 }
-
 
 } /* extern C */
