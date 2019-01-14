@@ -6,7 +6,7 @@
 
 export TATIN_CFLAGS_DEBUG  = -O0 -g
 export TATIN_CFLAGS_OPT_a  =
-export TATIN_CFLAGS_OPT_b  = -O3 -h fp3
+export TATIN_CFLAGS_OPT_b  = -O3
 
 # Compiler flags
 export TATIN_CFLAGS        = $(TATIN_CFLAGS_OPT_b)
