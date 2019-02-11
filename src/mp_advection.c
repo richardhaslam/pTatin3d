@@ -3,9 +3,9 @@
  **    Copyright (c) 2012
  **        Dave A. May [dave.may@erdw.ethz.ch]
  **        Institute of Geophysics
- **        ETH ZÃ¼rich
+ **        ETH Zürich
  **        Sonneggstrasse 5
- **        CH-8092 ZÃ¼rich
+ **        CH-8092 Zürich
  **        Switzerland
  **
  **    project:    pTatin3d
@@ -315,12 +315,11 @@ PetscErrorCode MaterialPointStd_Removal(DataBucket materialpoints)
   if (escaped != 0) {
     for (p=0; p<npoints; p++) {
       if (mp_std[p].wil == -1) {
-        //printf("############################ Point %d not located in domain (%1.6e , %1.6e) ############################# \n",p,mp_std[p].coor[0],mp_std[p].coor[1]);
-
         /* kill point */
         DataBucketRemovePointAtIndex(materialpoints,p);
         DataBucketGetSizes(materialpoints,&npoints,0,0); /* you need to update npoints as the list size decreases! */
         p--; /* check replacement point */
+        mp_std = PField->data;
       }
     }
   }
