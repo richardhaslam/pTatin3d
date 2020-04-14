@@ -399,19 +399,19 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 */
 PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,PetscInt face_idx,DataBucket db)
 {
-  DataField    PField;
-  PetscInt     e,ei,ej,ek,eij2d;
-  Vec          gcoords;
-  PetscScalar  *LA_coords;
-  PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
-  int          ncells,ncells_face,np_per_cell;
-  PetscInt     nel,nen,lmx,lmy,lmz,MX,MY,MZ;
-  const PetscInt     *elnidx;
-  PetscInt     p,k,pi,pj;
-  PetscReal    dxi,deta;
-  int          np_current,np_new;
-  PetscInt si,sj,sk,M,N,P,lnx,lny,lnz;
-  PetscBool contains_east,contains_west,contains_north,contains_south,contains_front,contains_back;
+  DataField      PField;
+  PetscInt       e,ei,ej,ek,eij2d;
+  Vec            gcoords;
+  PetscScalar    *LA_coords;
+  PetscScalar    el_coords[Q2_NODES_PER_EL_3D*NSD];
+  int            ncells,ncells_face,np_per_cell,points_face,points_face_local=0;
+  PetscInt       nel,nen,lmx,lmy,lmz,MX,MY,MZ;
+  const PetscInt *elnidx;
+  PetscInt       p,k,pi,pj;
+  PetscReal      dxi,deta;
+  int            np_current,np_new;
+  PetscInt       si,sj,sk,M,N,P,lnx,lny,lnz;
+  PetscBool      contains_east,contains_west,contains_north,contains_south,contains_front,contains_back;
   PetscErrorCode ierr;
 
 
@@ -448,18 +448,13 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
       break;
   }
 
-  // re-size //
   np_per_cell = Nxp[0] * Nxp[1];
+  points_face = ncells_face * np_per_cell;
 
-  DataBucketGetSizes(db,&np_current,NULL,NULL);
-  np_new = np_current + ncells_face * np_per_cell;
-
-  DataBucketSetSizes(db,np_new,-1);
-
-  if (perturb<0.0) {
+  if (perturb < 0.0) {
     SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
   }
-  if (perturb>1.0) {
+  if (perturb > 1.0) {
     SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
   }
 
@@ -468,11 +463,40 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
   ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
 
   contains_east  = PETSC_FALSE; if (si+lnx == M) { contains_east  = PETSC_TRUE; }
-  contains_west  = PETSC_FALSE; if (si == 0)       { contains_west  = PETSC_TRUE; }
+  contains_west  = PETSC_FALSE; if (si == 0)     { contains_west  = PETSC_TRUE; }
   contains_north = PETSC_FALSE; if (sj+lny == N) { contains_north = PETSC_TRUE; }
-  contains_south = PETSC_FALSE; if (sj == 0)       { contains_south = PETSC_TRUE; }
+  contains_south = PETSC_FALSE; if (sj == 0)     { contains_south = PETSC_TRUE; }
   contains_front = PETSC_FALSE; if (sk+lnz == P) { contains_front = PETSC_TRUE; }
-  contains_back  = PETSC_FALSE; if (sk == 0)       { contains_back  = PETSC_TRUE; }
+  contains_back  = PETSC_FALSE; if (sk == 0)     { contains_back  = PETSC_TRUE; }
+
+  // re-size //
+  switch (face_idx) {
+    case 0:
+      if (contains_east) points_face_local = points_face;
+      break;
+    case 1:
+      if (contains_west) points_face_local = points_face;
+      break;
+
+    case 2:
+      if (contains_north) points_face_local = points_face;
+      break;
+    case 3:
+      if (contains_south) points_face_local = points_face;
+      break;
+
+    case 4:
+      if (contains_front) points_face_local = points_face;
+      break;
+    case 5:
+      if (contains_back) points_face_local = points_face;
+      break;
+  }
+  
+  DataBucketGetSizes(db,&np_current,NULL,NULL);
+  np_new = np_current + points_face_local;
+  
+  DataBucketSetSizes(db,np_new,-1);
 
   /* setup for coords */
   ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
@@ -482,8 +506,8 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
   DataFieldGetAccess(PField);
   DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
-  dxi    = 2.0/(PetscReal)Nxp[0];
-  deta   = 2.0/(PetscReal)Nxp[1];
+  dxi  = 2.0/(PetscReal)Nxp[0];
+  deta = 2.0/(PetscReal)Nxp[1];
 
   p = np_current;
   for (e = 0; e < ncells; e++) {
@@ -524,7 +548,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
         break;
     }
 
-
     for (pj=0; pj<Nxp[1]; pj++) {
       for (pi=0; pi<Nxp[0]; pi++) {
         MPntStd *marker;
@@ -549,11 +572,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
         }
 
-        /* set to 3d dependnent on face*/
-      // case 0:// east-west
-      // case 2:// north-south
-      // case 4: // front-back
-
+        /* set to 3d dependnent on face */
+        // case 0:// east-west
+        // case 2:// north-south
+        // case 4: // front-back
         switch (face_idx) {
           case 0:// east-west
             xip[0] = 1.0;
@@ -610,7 +632,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 
         marker->wil    = e;
         marker->pid    = 0;
-
         p++;
       }
     }
