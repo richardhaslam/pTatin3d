@@ -2595,9 +2595,7 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
       for (p=0; p<ngp; p++) {
         cell_quadraturepoints[p].eta = 0.0;
       }
-      if (eta_type == CoefAvgGEOMETRIC) {
-        cell_quadraturepoints[0].eta = 1.0;
-      }
+      /* Note: No special intialization is required for CoefAvgGEOMETRIC as we will perform \sum log(eta_p) */
     }
   }
 
@@ -2607,9 +2605,7 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
       for (p=0; p<ngp; p++) {
         cell_quadraturepoints[p].rho = 0.0;
       }
-      if (rho_type == CoefAvgGEOMETRIC) {
-        cell_quadraturepoints[0].rho = 1.0;
-      }
+      /* Note: No special intialization is required for CoefAvgGEOMETRIC as we will perform \sum log(rho_p) */
     }
   }
 
