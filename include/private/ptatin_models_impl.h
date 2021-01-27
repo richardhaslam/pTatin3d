@@ -43,17 +43,16 @@ struct _p_pTatinModel {
   PetscErrorCode (*FP_pTatinModel_ApplyInitialStokesVariableMarkers)(pTatinCtx,Vec,void*);
   PetscErrorCode (*FP_pTatinModel_ApplyBoundaryCondition)(pTatinCtx,void*);
   PetscErrorCode (*FP_pTatinModel_ApplyBoundaryConditionMG)(PetscInt,BCList*,DM*,pTatinCtx,void*);
-  PetscErrorCode (*FP_pTatinModel_ApplyMaterialBoundaryCondition)(pTatinCtx,void*);
   PetscErrorCode (*FP_pTatinModel_ApplyInitialMeshGeometry)(pTatinCtx,void*);
   PetscErrorCode (*FP_pTatinModel_ApplyInitialMaterialGeometry)(pTatinCtx,void*);
   PetscErrorCode (*FP_pTatinModel_UpdateMeshGeometry)(pTatinCtx,Vec,void*);
   PetscErrorCode (*FP_pTatinModel_Output)(pTatinCtx,Vec,const char*,void*);
   PetscErrorCode (*FP_pTatinModel_Destroy)(pTatinCtx,void*);
+  PetscErrorCode (*FP_pTatinModel_AdaptMaterialPointResolution)(pTatinCtx,void*);
   PetscBool disable_initial_solution;
   PetscBool disable_initial_stokes_variables;
   PetscBool disable_apply_bc;
   PetscBool disable_apply_bc_mg;
-  PetscBool disable_apply_material_bc;
   PetscBool disable_initial_mesh_geometry;
   PetscBool disable_initial_material_geometry;
   PetscBool disable_update_mesh_geometry;
