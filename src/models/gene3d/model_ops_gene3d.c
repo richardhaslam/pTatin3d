@@ -41,6 +41,7 @@
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
 #include "cartgrid.h"
+#include "material_point_popcontrol.h"
 
 #include "model_gene3d_ctx.h"
 
@@ -358,11 +359,14 @@ PetscErrorCode ModelApplyBoundaryCondition_Gene3D(pTatinCtx user,void *ctx)
   PetscFunctionReturn (0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Gene3D(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_Gene3D(pTatinCtx c,void *ctx)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
-  PetscPrintf(PETSC_COMM_WORLD, "  NOT IMPLEMENTED \n", PETSC_FUNCTION_NAME);
+  PetscPrintf(PETSC_COMM_WORLD, "  NO MARKER INJECTION ON FACES \n", PETSC_FUNCTION_NAME);
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
 
   PetscFunctionReturn (0);
 }
@@ -784,7 +788,7 @@ PetscErrorCode pTatinModelRegister_Gene3D(void)
   /* Set function pointers */
   ierr =  pTatinModelSetFunctionPointer(m, PTATIN_MODEL_INIT,                  (void (*)(void)) ModelInitialize_Gene3D); CHKERRQ(ierr);
   ierr =  pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_BC,              (void (*)(void)) ModelApplyBoundaryCondition_Gene3D); CHKERRQ(ierr);
-  ierr =  pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void)) ModelApplyMaterialBoundaryCondition_Gene3D);CHKERRQ(ierr);
+  ierr =  pTatinModelSetFunctionPointer(m, PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void)) ModelAdaptMaterialPointResolution_Gene3D);CHKERRQ(ierr);
   ierr =  pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void)) ModelApplyInitialMeshGeometry_Gene3D);CHKERRQ(ierr);
   ierr =  pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void)) ModelApplyInitialMaterialGeometry_Gene3D);CHKERRQ(ierr);
   ierr =  pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void)) ModelApplyUpdateMeshGeometry_Gene3D);CHKERRQ(ierr);

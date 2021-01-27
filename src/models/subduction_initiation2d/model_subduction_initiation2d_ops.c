@@ -51,6 +51,7 @@
 #include "geometry_object.h"
 #include "ptatin3d_energy.h"
 #include "model_subduction_initiation2d_ctx.h"
+#include "material_point_popcontrol.h"
 
 
 PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
@@ -402,11 +403,14 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -992,7 +996,7 @@ PetscErrorCode pTatinModelRegister_Subduction_Initiation2d(void)
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Subduction_Initiation2d);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Subduction_Initiation2d);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Subduction_Initiation2d);CHKERRQ(ierr);
-  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void))ModelAdaptMaterialPointResolution_Subduction_Initiation2d);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Subduction_Initiation2d);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Subduction_Initiation2d);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_Subduction_Initiation2d);CHKERRQ(ierr);

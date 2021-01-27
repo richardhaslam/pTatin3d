@@ -65,7 +65,8 @@ PetscErrorCode GeometryObjectSetFromOptions_InfLayer(GeometryObject go);
 PetscErrorCode GeometryObjectSetFromOptions_EllipticCylinder(GeometryObject go);
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx);
+PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx);
+PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T(pTatinCtx c, void *ctx);
 
 PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx);
 
@@ -337,7 +338,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     PetscPrintf(PETSC_COMM_WORLD,"rift3D_T: activating semi Eulerian mesh advection\n");
     ierr = pTatinGetModel(c,&model);CHKERRQ(ierr);
     ierr = pTatinModelSetFunctionPointer(model,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian);CHKERRQ(ierr);
-    ierr = pTatinModelSetFunctionPointer(model,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian);CHKERRQ(ierr);
+    ierr = pTatinModelSetFunctionPointer(model,PTATIN_MODEL_ADAPT_MP_RESOLUTION,          (void (*)(void))ModelAdaptMaterialPointResolution_Rift3D_T_semi_eulerian);CHKERRQ(ierr);
   }
 
   data->output_markers = PETSC_FALSE;
@@ -511,14 +512,19 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D_T(PetscInt nl,BCList bclist[
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T(pTatinCtx c,void *ctx)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscPrintf(PETSC_COMM_WORLD,"[[%s]] - Not implemented \n", PETSC_FUNCTION_NAME);
+  
+  PetscPrintf(PETSC_COMM_WORLD,"[[%s]] - NO MARKER INJECTION ON FACES \n", PETSC_FUNCTION_NAME);
+  /* injection and cleanup */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx)
 {
   PhysCompStokes  stokes;
   DM              stokes_pack,dav,dap;
@@ -591,11 +597,13 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
   DataBucketDestroy(&material_point_face_db);
 
 #endif
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T_semi_eulerian_v2(pTatinCtx c,void *ctx)
 {
   PhysCompStokes  stokes;
   DM              stokes_pack,dav,dap;
@@ -651,6 +659,8 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTa
 
   /* delete */
   DataBucketDestroy(&material_point_face_db);
+  
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -994,7 +1004,7 @@ PetscErrorCode pTatinModelRegister_Rift3D_T(void)
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Rift3D_T);CHKERRQ(ierr);
 
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Rift3D_T);CHKERRQ(ierr);
-  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D_T);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void))ModelAdaptMaterialPointResolution_Rift3D_T);CHKERRQ(ierr);
 
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_Rift3D_T);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_Rift3D_T);CHKERRQ(ierr);

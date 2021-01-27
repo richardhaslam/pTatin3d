@@ -37,6 +37,7 @@
 #include "material_point_utils.h"
 #include "dmda_update_coords.h"
 #include "material_point_std_utils.h"
+#include "material_point_popcontrol.h"
 #include "mesh_update.h"
 
 typedef struct _p_ModelCtxGeoMod2008 *ModelCtxGeoMod2008;
@@ -467,7 +468,7 @@ PetscErrorCode GeomMod2008ApplyFrictionalBoundarySkin(ModelCtxGeoMod2008 data,DM
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_GeoMod2008(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_GeoMod2008(pTatinCtx c,void *ctx)
 {
   ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
   DataBucket         material_points;
@@ -482,6 +483,8 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_GeoMod2008(pTatinCtx c,void *
   ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 
   ierr = GeomMod2008ApplyFrictionalBoundarySkin(data,stokes->dav,material_points);CHKERRQ(ierr);
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -929,7 +932,7 @@ PetscErrorCode pTatinModelRegister_GeoMod2008(void)
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_GeoMod2008);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_GeoMod2008);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyStokesVelocityBoundaryConditionMG_GeoMod2008);CHKERRQ(ierr);
-  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_GeoMod2008);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void))ModelAdaptMaterialPointResolution_GeoMod2008);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_GeoMod2008);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_GeoMod2008);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_GeoMod2008);CHKERRQ(ierr);

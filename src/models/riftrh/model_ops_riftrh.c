@@ -40,13 +40,14 @@
 #include "model_utils.h"
 #include "dmda_iterator.h"
 #include "mesh_update.h"
+#include "material_point_popcontrol.h"
 
 #include "ptatin_models.h"
 
 #include "model_riftrh_ctx.h"
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCtx c,void *ctx);
+PetscErrorCode ModelAdaptMaterialPointResolution_Riftrh_semi_eulerian(pTatinCtx c,void *ctx);
 PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, void *ctx );
 PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, void *ctx );
 
@@ -616,8 +617,9 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Riftrh(PetscInt nl,BCList bclist[],
 
 // adding particles on the lower boundary to accommodate inflow
 // adding particles on the left and right boundary to accommodate inflow
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_Riftrh_semi_eulerian(pTatinCtx c,void *ctx)
 {
+  PetscErrorCode     ierr;
 #if 0
   ModelRiftrhCtx     *data = (ModelRiftrhCtx*)ctx;
   PhysCompStokes     stokes;
@@ -628,7 +630,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
   PetscInt           f, n_face_list=3, face_list[] = { 0, 1, 3 }; // xmin, xmax, ybase //
   int                p,n_mp_points;
   MPAccess           mpX;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -685,6 +686,8 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
   /* delete */
   DataBucketDestroy(&material_point_face_db);
 #endif
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -999,7 +1002,7 @@ PetscErrorCode pTatinModelRegister_Riftrh(void)
 
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Riftrh);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Riftrh);CHKERRQ(ierr);
-  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void))ModelAdaptMaterialPointResolution_Riftrh_semi_eulerian);CHKERRQ(ierr);
 
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Riftrh);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Riftrh);CHKERRQ(ierr);
