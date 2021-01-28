@@ -1231,10 +1231,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
     /* initial viscosity  */
   ierr = pTatinModel_ApplyInitialStokesVariableMarkers(model,user,X);CHKERRQ(ierr);
 
-
-  /* [TMP] 3a - Add material */
-  //ierr = pTatinModel_ApplyMaterialBoundaryCondition(model,user);CHKERRQ(ierr);
-
   /* insert boundary conditions into solution vector */
   {
     Vec velocity,pressure;
@@ -2671,9 +2667,6 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 
   /* initial viscosity  */
   ierr = pTatinModel_ApplyInitialStokesVariableMarkers(model,user,X);CHKERRQ(ierr);
-
-  /* [TMP] 3a - Add material */
-  //ierr = pTatinModel_ApplyMaterialBoundaryCondition(model,user);CHKERRQ(ierr);
 
   /* insert boundary conditions into solution vector */
   {
