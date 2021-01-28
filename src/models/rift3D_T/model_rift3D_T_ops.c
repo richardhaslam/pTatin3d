@@ -59,6 +59,10 @@
 #include "rift3D_T_ctx.h"
 
 #define REMOVE_FACE_INJECTION
+#define MPPC_LOG_LEVEL 1
+
+PetscLogEvent PTATIN_MaterialPointPopulationControlInsert;
+PetscLogEvent PTATIN_MaterialPointPopulationControlRemove;
 
 PetscErrorCode GeometryObjectSetFromOptions_Box(GeometryObject go);
 PetscErrorCode GeometryObjectSetFromOptions_InfLayer(GeometryObject go);
@@ -67,6 +71,10 @@ PetscErrorCode GeometryObjectSetFromOptions_EllipticCylinder(GeometryObject go);
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
 PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx);
 PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T(pTatinCtx c, void *ctx);
+
+PetscErrorCode MaterialPointResolutionMask(DM dav, pTatinCtx ctx, PetscBool *popctrl_mask);
+PetscErrorCode AdaptMaterialPointResolution_Mask(pTatinCtx ctx);
+PetscErrorCode MPPC_SimpleRemoval_Mask(PetscInt np_upper,DM da,DataBucket db,PetscBool reverse_order_removal, PetscBool *popctrl_mask);
 
 PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx);
 
@@ -598,11 +606,269 @@ PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T_semi_eulerian(pTatinCt
 
 #endif
   /* Perform injection and cleanup of markers */
+  /* Default population control */
+#if 1
   ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
+#endif
+  /* User defined population control */
+#if 0
+  ierr = AdaptMaterialPointResolution_Mask(c);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+#if 0
+PetscErrorCode AdaptMaterialPointResolution_Mask(pTatinCtx ctx)
+{
+  PetscErrorCode ierr;
+  PetscInt       np_lower,np_upper,patch_extent,nxp,nyp,nzp;
+  PetscReal      perturb;
+  PetscBool      flg;
+  PetscBool      *popctrl_mask; 
+  DataBucket     db;
+  PetscBool      reverse_order_removal;
+  PetscInt       nel,nen;
+  const PetscInt *elnidx;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+
+  /* options for control number of points per cell */
+  np_lower = 0;
+  np_upper = 60;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
+
+  /* options for injection of markers */
+  nxp = 2;
+  nyp = 2;
+  nzp = 2;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nxp",&nxp,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nyp",&nyp,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
+
+  perturb = 0.1;
+  ierr = PetscOptionsGetReal(NULL,NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
+  patch_extent = 1;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
+
+  ierr = pTatinGetMaterialPoints(ctx,&db,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)ctx->stokes_ctx->dav,&comm);CHKERRQ(ierr);
+
+  /* Get element number (nel)*/
+  ierr = DMDAGetElements_pTatinQ2P1(ctx->stokes_ctx->dav,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  /* Allocate memory for the array */
+  ierr = PetscMalloc1(nel,&popctrl_mask);CHKERRQ(ierr);
+  
+  ierr = MaterialPointResolutionMask(ctx->stokes_ctx->dav,ctx,popctrl_mask);CHKERRQ(ierr);
+  
+  /* insertion */
+#if (MPPC_LOG_LEVEL >= 1)
+  {
+    long int np_g;
+    DataBucketGetGlobalSizes(comm,db,&np_g,NULL,NULL);
+    PetscPrintf(comm,"[LOG]  total markers before population control (%ld) \n", np_g );
+  }
+#endif
+
+  ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
+
+#if (MPPC_LOG_LEVEL >= 1)
+  {
+    long int np_g;
+    DataBucketGetGlobalSizes(comm,db,&np_g,NULL,NULL);
+    PetscPrintf(comm,"[LOG]  total markers after INJECTION (%ld) \n", np_g );
+  }
+#endif
+
+  /* removal */
+  if (np_upper != -1) {
+    reverse_order_removal = PETSC_TRUE;
+	ierr = MPPC_SimpleRemoval_Mask(np_upper,ctx->stokes_ctx->dav,db,reverse_order_removal,popctrl_mask);CHKERRQ(ierr);
+  }
+
+#if (MPPC_LOG_LEVEL >= 1)
+  {
+    long int np_g;
+    DataBucketGetGlobalSizes(comm,db,&np_g,NULL,NULL);
+    PetscPrintf(comm,"[LOG]  total markers after DELETION (%ld) \n", np_g );
+  }
+#endif
+
+  ierr = PetscFree(popctrl_mask);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
+/* Example function
+   The elements containing markers with the 
+   region index = 0 will ignore clean up  */
+PetscErrorCode MaterialPointResolutionMask(DM dav, pTatinCtx ctx, PetscBool *popctrl_mask)
+{
+  DataField       PField;
+  DataBucket      db;
+  PetscInt        nel,nen;
+  const PetscInt  *elnidx;
+//  PetscInt        mx,my,mz;
+//  PetscInt        esi,esj,esk,lmx,lmy,lmz,e;
+//  PetscInt        iel,kel,jel;
+  PetscInt        iel;
+  PetscInt        npoints32,p32;
+  PetscErrorCode  ierr;
+  
+  PetscFunctionBegin;
+  /* Get Q2 elements information */	
+  ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&elnidx);CHKERRQ(ierr);
+//  ierr = DMDAGetSizeElementQ2(dav,&mx,&my,&mz);CHKERRQ(ierr);
+//  ierr = DMDAGetCornersElementQ2(dav,&esi,&esj,&esk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+  /* Set all to TRUE */
+  for (iel=0; iel<nel; iel++) {
+    popctrl_mask[iel] = PETSC_TRUE;
+  }
+  
+  ierr = pTatinGetMaterialPoints(ctx,&db,NULL);CHKERRQ(ierr);
+  DataBucketGetSizes(db,&npoints32,NULL,NULL);
+  DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+  DataFieldGetAccess(PField);
+		
+  for (p32=0; p32<npoints32; p32++) {
+    MPntStd  *marker_p;
+    PetscInt wil,phase;
+
+    DataFieldAccessPoint(PField,p32,(void**)&marker_p);
+    phase = marker_p->phase; // Region index of the marker
+    wil   = marker_p->wil; // Element number of the marker		
+    /* Set elements containing the region index = 0 to FALSE */	
+    if (phase == 0) {
+      popctrl_mask[wil] = PETSC_FALSE;
+    }
+  }
+  DataFieldRestoreAccess(PField);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MPPC_SimpleRemoval_Mask(PetscInt np_upper,DM da,DataBucket db,PetscBool reverse_order_removal, PetscBool *popctrl_mask)
+{
+  PetscInt        *cell_count,count;
+  int             p32,npoints32;
+  PetscInt        c,nel,nen;
+  const PetscInt  *elnidx;
+  DataField       PField;
+  PetscLogDouble  t0,t1;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
+
+#if (MPPC_LOG_LEVEL >= 1)
+  PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
+#endif
+  ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+
+  ierr = PetscMalloc( sizeof(PetscInt)*(nel),&cell_count );CHKERRQ(ierr);
+  ierr = PetscMemzero( cell_count, sizeof(PetscInt)*(nel) );CHKERRQ(ierr);
+
+  DataBucketGetSizes(db,&npoints32,NULL,NULL);
+
+  /* compute number of points per cell */
+  DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+  DataFieldGetAccess(PField);
+  for (p32=0; p32<npoints32; p32++) {
+    MPntStd *marker_p;
+
+    DataFieldAccessPoint(PField,p32,(void**)&marker_p);
+    if (marker_p->wil < 0) { continue; }
+
+    cell_count[ marker_p->wil ]++;
+  }
+  DataFieldRestoreAccess(PField);
+
+  count = 0;
+  for (c=0; c<nel; c++) {
+    if (cell_count[c] > np_upper) {
+      count++;
+    }
+  }
+
+#if (MPPC_LOG_LEVEL >= 1)
+  PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %D cells with points > np_upper (%D) \n", count, np_upper);
+#endif
+
+  if (count == 0) {
+    ierr = PetscFree(cell_count);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  PetscTime(&t0);
+
+  if (!reverse_order_removal) {
+    /* remove points from cells with excessive number */
+    DataFieldGetAccess(PField);
+    for (p32=0; p32<npoints32; p32++) {
+      MPntStd *marker_p;
+      int wil;
+
+      DataFieldAccessPoint(PField,p32,(void**)&marker_p);
+      wil = marker_p->wil;
+	  if (popctrl_mask[wil] == PETSC_TRUE) {
+        if (cell_count[wil] > np_upper) {
+          DataBucketRemovePointAtIndex(db,p32);
+
+          DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
+          p32--; /* check replacement point */
+          cell_count[wil]--;
+		}
+      }
+    }
+    DataFieldRestoreAccess(PField);
+  }
+
+  if (reverse_order_removal) {
+    MPntStd *mp_std;
+    int     wil;
+
+    DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+    mp_std = PField->data;
+
+    for (p32=npoints32-1; p32>=0; p32--) {
+
+      wil = mp_std[p32].wil;
+      if (wil < 0) { continue; }
+	
+	  if (popctrl_mask[wil] == PETSC_TRUE) {
+        if (cell_count[wil] > np_upper) {
+          mp_std[p32].wil = -2;
+          cell_count[wil]--;
+        }
+      }
+	}
+
+    for (p32=0; p32<npoints32; p32++) {
+      wil = mp_std[p32].wil;
+      if (wil == -2) {
+
+        DataBucketRemovePointAtIndex(db,p32);
+        DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
+        p32--; /* check replacement point */
+        mp_std = PField->data;
+      }
+    }
+  }
+
+
+  PetscTime(&t1);
+
+#if (MPPC_LOG_LEVEL >= 1)
+  PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(MPPC_SimpleRemoval): %1.4e (sec)\n", t1-t0);
+#endif
+
+  ierr = PetscFree(cell_count);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+#endif
 PetscErrorCode ModelAdaptMaterialPointResolution_Rift3D_T_semi_eulerian_v2(pTatinCtx c,void *ctx)
 {
   PhysCompStokes  stokes;
