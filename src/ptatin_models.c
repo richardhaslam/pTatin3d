@@ -31,6 +31,7 @@
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
 #include "ptatin_models.h"
+#include "material_point_popcontrol.h"
 
 pTatinModel *registered_model_list = NULL;
 PetscFunctionList ptatin_registered_model_flist = NULL;
@@ -537,7 +538,7 @@ PetscErrorCode pTatinModel_AdaptMaterialPointResolution(pTatinModel model,pTatin
       ierr = model->FP_pTatinModel_AdaptMaterialPointResolution(ctx,model->model_data);CHKERRQ(ierr);
     } else {
       ierr = MaterialPointPopulationControl_v1(ctx);CHKERRQ(ierr);
-	}
+    }
   } else {
     PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: pTatinModel_AdaptMaterialPointResolution deactivated for model \"%s\"\n",model->model_name );
   }
