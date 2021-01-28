@@ -57,6 +57,7 @@ struct _p_pTatinModel {
   PetscBool disable_initial_material_geometry;
   PetscBool disable_update_mesh_geometry;
   PetscBool disable_output;
+  PetscBool disable_adapt_mp_resolution;
 };
 
 #endif

@@ -66,6 +66,7 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
   m->disable_initial_material_geometry = PETSC_FALSE;
   m->disable_update_mesh_geometry      = PETSC_FALSE;
   m->disable_output                    = PETSC_FALSE;
+  m->disable_adapt_mp_resolution       = PETSC_FALSE;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_intial_solution_disable",&m->disable_initial_solution,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_initial_stokes_variables_disable",&m->disable_initial_stokes_variables,0);CHKERRQ(ierr);
@@ -75,6 +76,7 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
   ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_initial_material_geometry_disable",&m->disable_initial_material_geometry,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_update_mesh_geometry_disable",&m->disable_update_mesh_geometry,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_output_disable",&m->disable_output,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_model_adapt_mp_resolution_disable",&m->disable_adapt_mp_resolution,0);CHKERRQ(ierr);
 
   *model = m;
   PetscFunctionReturn(0);
@@ -531,8 +533,14 @@ PetscErrorCode pTatinModel_AdaptMaterialPointResolution(pTatinModel model,pTatin
   PetscFunctionBegin;
   
   ierr = PetscLogEventBegin(PTATIN_ModelAdaptMaterialPointResolution,0,0,0,0);CHKERRQ(ierr);
-  if (model->FP_pTatinModel_AdaptMaterialPointResolution) {
-    ierr = model->FP_pTatinModel_AdaptMaterialPointResolution(ctx,model->model_data);CHKERRQ(ierr);
+  if (!model->disable_adapt_mp_resolution) {
+    if (model->FP_pTatinModel_AdaptMaterialPointResolution) {
+      ierr = model->FP_pTatinModel_AdaptMaterialPointResolution(ctx,model->model_data);CHKERRQ(ierr);
+    } else {
+      ierr = MaterialPointPopulationControl_v1(ctx);CHKERRQ(ierr);
+	}
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: pTatinModel_AdaptMaterialPointResolution deactivated for model \"%s\"\n",model->model_name );
   }
   ierr = PetscLogEventEnd(PTATIN_ModelAdaptMaterialPointResolution,0,0,0,0);CHKERRQ(ierr);
 
