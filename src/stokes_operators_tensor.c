@@ -276,10 +276,12 @@ PetscErrorCode MFStokesWrapper_A11_Tensor(MatA11MF mf,Quadrature volQ,DM dau,Pet
   }
 
 #undef OPENMP_CHKERRQ
-    PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-    PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-    PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
-
+  {
+    PetscLogDouble _nel = (PetscLogDouble)nel;
+    PetscLogFlops((_nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+    PetscLogFlops(_nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+    PetscLogFlops(_nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  }
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

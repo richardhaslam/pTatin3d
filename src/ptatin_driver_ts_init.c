@@ -1281,16 +1281,20 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
   {
     char output_path[PETSC_MAX_PATH_LEN];
     char output_path_ic[PETSC_MAX_PATH_LEN];
+    PetscBool debug = PETSC_FALSE;
     
-    ierr = PetscSNPrintf(output_path,PETSC_MAX_PATH_LEN-1,"%s",user->outputpath);CHKERRQ(ierr);
-    
-    ierr = PetscSNPrintf(output_path_ic,PETSC_MAX_PATH_LEN-1,"%s/fromfile",output_path);CHKERRQ(ierr);
-    ierr = pTatinCreateDirectory(output_path_ic);CHKERRQ(ierr);
-    
-    ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path_ic);CHKERRQ(ierr);
-    ierr = pTatinModel_Output(model,user,X_s,"icbc");CHKERRQ(ierr);
-    
-    ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-checkpoint_debug",&debug,NULL);CHKERRQ(ierr);
+    if (debug) {
+      ierr = PetscSNPrintf(output_path,PETSC_MAX_PATH_LEN-1,"%s",user->outputpath);CHKERRQ(ierr);  /* copy initial value */
+      
+      ierr = PetscSNPrintf(output_path_ic,PETSC_MAX_PATH_LEN-1,"%s/fromfile",output_path);CHKERRQ(ierr);
+      ierr = pTatinCreateDirectory(output_path_ic);CHKERRQ(ierr);
+      
+      ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path_ic);CHKERRQ(ierr);
+      ierr = pTatinModel_Output(model,user,X_s,"icbc");CHKERRQ(ierr);
+      
+      ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path);CHKERRQ(ierr); /* restore initial value */
+    }
   }
 
   if (write_checkpoint) {

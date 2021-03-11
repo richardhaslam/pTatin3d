@@ -302,9 +302,12 @@ PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscS
 
 #undef OPENMP_CHKERRQ
 
-  PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-  PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-  PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  {
+    PetscLogDouble _nel = (PetscLogDouble)nel;
+    PetscLogFlops((_nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+    PetscLogFlops(_nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+    PetscLogFlops(_nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  }
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
@@ -627,10 +630,13 @@ PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-  PetscLogFlops(nel*(3 + NQP*(Q1_NODES_PER_EL_3D*(2*3) + 2*3))); /* pressure basis evaluation */
-  PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-  PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 3x3 matrix inversion + determinant per element */
-  PetscLogFlops(nel*NQP*(5*9+6+6+3+6*9));             /* quadrature action per element */
+  {
+    PetscLogDouble _nel = (PetscLogDouble)nel;
+    PetscLogFlops(_nel*(3 + NQP*(Q1_NODES_PER_EL_3D*(2*3) + 2*3))); /* pressure basis evaluation */
+    PetscLogFlops((_nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+    PetscLogFlops(_nel*NQP*(14 + 1/* division */ + 27)); /* 3x3 matrix inversion + determinant per element */
+    PetscLogFlops(_nel*NQP*(5*9+6+6+3+6*9));             /* quadrature action per element */
+  }
 
   PetscFunctionReturn(0);
 }
@@ -820,11 +826,13 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-  PetscLogFlops(nel*(3 + NQP*(Q1_NODES_PER_EL_3D*(2*3) + 2*3))); /* pressure basis evaluation */
-  PetscLogFlops((nel * 6) * 3*NQP*(6+6+6));           /* 6 tensor contractions per element */
-  PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 3x3 matrix inversion + determinant per element */
-  PetscLogFlops(nel*NQP*(7*9)); /* quadrature action */
-
+  {
+    PetscLogDouble _nel = (PetscLogDouble)nel;
+    PetscLogFlops(_nel*(3 + NQP*(Q1_NODES_PER_EL_3D*(2*3) + 2*3))); /* pressure basis evaluation */
+    PetscLogFlops((_nel * 6) * 3*NQP*(6+6+6));           /* 6 tensor contractions per element */
+    PetscLogFlops(_nel*NQP*(14 + 1/* division */ + 27)); /* 3x3 matrix inversion + determinant per element */
+    PetscLogFlops(_nel*NQP*(7*9)); /* quadrature action */
+  }
   PetscFunctionReturn(0);
 }
 
