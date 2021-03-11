@@ -903,6 +903,15 @@ PetscErrorCode pTatinNonlinearStokesSolve(pTatinCtx user,SNES snes,Vec X,const c
   ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
 
+  /* insert boundary conditions into solution vector */
+  {
+    Vec Xu,Xp;
+    
+    ierr = DMCompositeGetAccess(dmstokes,X,&Xu,&Xp);CHKERRQ(ierr);
+    ierr = BCListInsert(stokes->u_bclist,Xu);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X,&Xu,&Xp);CHKERRQ(ierr);
+  }
+
   if (stagename) {
     PetscPrintf(PETSC_COMM_WORLD,"   --------- Stokes[%s] ---------\n",stagename);
   }
@@ -1009,14 +1018,12 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 
   /* insert boundary conditions into solution vector */
-  {
-    ierr = DMCompositeGetAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
-    ierr = BCListInsert(stokes->u_bclist,velocity);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
+  ierr = BCListInsert(stokes->u_bclist,velocity);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
 
-    if (activate_energy) {
-      ierr = BCListInsert(energy->T_bclist,X_e);CHKERRQ(ierr);
-    }
+  if (activate_energy) {
+    ierr = BCListInsert(energy->T_bclist,X_e);CHKERRQ(ierr);
   }
 
   ierr = pTatinGetMaterialConstants(user,&material_constants_db);CHKERRQ(ierr);
@@ -1466,6 +1473,9 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 
       PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n",k);
+
+      /* insert boundary conditions into solution vector */
+      ierr = BCListInsert(energy->T_bclist,X_e);CHKERRQ(ierr);
 
       PetscTime(&time[0]);
       ierr = SNESSolve(snesT,NULL,X_e);CHKERRQ(ierr);
