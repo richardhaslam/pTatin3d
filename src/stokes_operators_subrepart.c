@@ -714,9 +714,12 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   /* Note that this is identical to the AVX impl, under the assumption
      that we are logging "useful flops" and that identical work is being performed.
      This has not been scrutinized */
-  PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-  PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-  PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  {
+    PetscLogDouble _nel = (PetscLogDouble)ctx->nel;
+    PetscLogFlops((_nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+    PetscLogFlops(_nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+    PetscLogFlops(_nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  }
 
   PetscFunctionReturn(0);
 }
