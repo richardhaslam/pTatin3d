@@ -2595,9 +2595,7 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
       for (p=0; p<ngp; p++) {
         cell_quadraturepoints[p].eta = 0.0;
       }
-      if (eta_type == CoefAvgGEOMETRIC) {
-        cell_quadraturepoints[0].eta = 1.0;
-      }
+      /* Note: No special intialization is required for CoefAvgGEOMETRIC as we will perform \sum log(eta_p) */
     }
   }
 
@@ -2607,9 +2605,7 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
       for (p=0; p<ngp; p++) {
         cell_quadraturepoints[p].rho = 0.0;
       }
-      if (rho_type == CoefAvgGEOMETRIC) {
-        cell_quadraturepoints[0].rho = 1.0;
-      }
+      /* Note: No special intialization is required for CoefAvgGEOMETRIC as we will perform \sum log(rho_p) */
     }
   }
 
@@ -2644,7 +2640,7 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
         cell_quadraturepoints[1].eta += 1.0;
         break;
       case CoefAvgGEOMETRIC:
-        cell_quadraturepoints[0].eta *= eta_p; /* GEOMETRIC */
+        cell_quadraturepoints[0].eta += log(eta_p); /* GEOMETRIC */
         cell_quadraturepoints[1].eta += 1.0;
         break;
       case CoefAvgNULL:
@@ -2661,7 +2657,7 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
         cell_quadraturepoints[1].rho += 1.0;
         break;
       case CoefAvgGEOMETRIC:
-        cell_quadraturepoints[0].rho *= rho_p; /* GEOMETRIC */
+        cell_quadraturepoints[0].rho += log(rho_p); /* GEOMETRIC */
         cell_quadraturepoints[1].rho += 1.0;
         break;
       case CoefAvgNULL:
@@ -2696,11 +2692,11 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
         break;
       }
       case CoefAvgGEOMETRIC: {
-        double prod_field,sum_np;
+        double sum_log_field,sum_np;
         
-        prod_field = cell_quadraturepoints[0].eta;
-        sum_np     = cell_quadraturepoints[1].eta;
-        avg_field  = pow(prod_field,1.0/sum_np);
+        sum_log_field = cell_quadraturepoints[0].eta;
+        sum_np        = cell_quadraturepoints[1].eta;
+        avg_field     = exp(sum_log_field/sum_np);
         break;
       }
       case CoefAvgNULL:
@@ -2733,11 +2729,11 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
         break;
       }
       case CoefAvgGEOMETRIC: {
-        double prod_field,sum_np;
+        double sum_log_field,sum_np;
 
-        prod_field = cell_quadraturepoints[0].rho;
-        sum_np     = cell_quadraturepoints[1].rho;
-        avg_field  = pow(prod_field,1.0/sum_np);
+        sum_log_field = cell_quadraturepoints[0].rho;
+        sum_np        = cell_quadraturepoints[1].rho;
+        avg_field     = exp(sum_log_field/sum_np);
         break;
       }
       case CoefAvgNULL:
