@@ -9,7 +9,7 @@ pipelines:
             - sudo apt-get update
             - sudo apt-get --fix-missing -yq --no-install-suggests --no-install-recommends --force-yes install gfortran libblas-dev liblapack-dev python-numpy
             # PETSc 3.8.3 (Note that we use a cache to avoid rebuilding, checking if configure.log exists)
-            - if [ ! -f "petsc-3.8.3/configure.log" ]; then curl -O http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.8.3.tar.gz && tar zxvf petsc-lite-3.8.3.tar.gz; fi
+            - if [ ! -f "petsc-3.8.3/configure.log" ]; then curl -O https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.8.3.tar.gz && tar zxvf petsc-lite-3.8.3.tar.gz; fi
             - cd petsc-3.8.3
             - export PETSC_DIR=$PWD
             - export PETSC_ARCH=default-arch-gnu-debug
