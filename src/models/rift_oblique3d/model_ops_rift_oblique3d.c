@@ -47,6 +47,7 @@
 #include "model_utils.h"
 #include "dmda_iterator.h"
 #include "mesh_update.h"
+#include "material_point_popcontrol.h"
 
 // added includes
 #include "output_material_points.h"
@@ -64,7 +65,7 @@
 
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx);
+PetscErrorCode ModelAdaptMaterialPointResolution_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx);
 PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *value, void *ctx );
 PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *value, void *ctx );
 
@@ -1685,8 +1686,9 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift_oblique3d(pTatinCtx u
 
 // adding particles on the lower boundary to accommodate inflow
 // adding particles on the left and right boundary to accommodate inflow
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx)
 {
+  PetscErrorCode     ierr;
 #if 0
   ModelRift_oblique3dCtx     *data = (ModelRift_oblique3dCtx*)ctx;
   PhysCompStokes     stokes;
@@ -1697,7 +1699,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
   PetscInt           f, n_face_list=3, face_list[] = { 0, 1, 3 }; // xmin, xmax, ybase //
   int                p,n_mp_points;
   MPAccess           mpX;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
@@ -1754,6 +1755,10 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
   /* delete */
   DataBucketDestroy(&material_point_face_db);
 #endif
+
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -1948,7 +1953,7 @@ PetscErrorCode pTatinModelRegister_Rift_oblique3d(void)
 
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Rift_oblique3d);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Rift_oblique3d);CHKERRQ(ierr);
-    ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void))ModelAdaptMaterialPointResolution_Rift_oblique3d_semi_eulerian);CHKERRQ(ierr);
 
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Rift_oblique3d);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Rift_oblique3d);CHKERRQ(ierr);

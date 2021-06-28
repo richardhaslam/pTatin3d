@@ -55,6 +55,7 @@
 #include "material_constants.h"
 #include "dmda_element_q2p1.h"
 #include "material_point_point_location.h"
+#include "material_point_popcontrol.h"
 
 #include "submarinelavaflow_ctx.h"
 
@@ -565,7 +566,7 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
   SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
   PetscBool apply_inflow;
@@ -577,6 +578,9 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
     ierr = SubmarineLavaFlow_ApplyInflow(c,data);CHKERRQ(ierr);
   }
 
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -946,7 +950,7 @@ PetscErrorCode pTatinModelRegister_SubmarineLavaFlow(void)
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_SubmarineLavaFlow);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_SubmarineLavaFlow);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_SubmarineLavaFlow);CHKERRQ(ierr);
-  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void))ModelAdaptMaterialPointResolution_SubmarineLavaFlow);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_SubmarineLavaFlow);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_SubmarineLavaFlow);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_SubmarineLavaFlow);CHKERRQ(ierr);

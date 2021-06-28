@@ -44,6 +44,7 @@
 #include "dmda_iterator.h"
 #include "material_point_std_utils.h"
 #include <time.h>
+#include "material_point_popcontrol.h"
 
 #include "model_multilayer_folding_ctx.h"
 #include "model_utils.h"
@@ -355,10 +356,14 @@ PetscErrorCode ModelApplyBoundaryConditionMG_MultilayerFolding(PetscInt nl,BCLis
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_MultilayerFolding(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_MultilayerFolding(pTatinCtx c,void *ctx)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
+  
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -2058,7 +2063,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
     ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_MultilayerFolding);CHKERRQ(ierr);
     ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_MultilayerFolding);CHKERRQ(ierr);
     ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_MultilayerFolding);CHKERRQ(ierr);
-    ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_MultilayerFolding);CHKERRQ(ierr);
+    ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void))ModelAdaptMaterialPointResolution_MultilayerFolding);CHKERRQ(ierr);
     ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_MultilayerFolding);CHKERRQ(ierr);
     ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_MultilayerFolding);CHKERRQ(ierr);
     ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))_ModelApplyUpdateMeshGeometry_MultilayerFolding);CHKERRQ(ierr);

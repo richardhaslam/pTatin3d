@@ -1423,10 +1423,8 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     ierr = MaterialPointStd_UpdateCoordinates(pctx->materialpoint_db,dmv,pctx->materialpoint_ex);CHKERRQ(ierr);
 
     /* 3a - Add material */
-    ierr = pTatinModel_ApplyMaterialBoundaryCondition(model,pctx);CHKERRQ(ierr);
-
     /* add / remove points if cells are over populated or depleted of points */
-    ierr = MaterialPointPopulationControl_v1(pctx);CHKERRQ(ierr);
+    ierr = pTatinModel_AdaptMaterialPointResolution(model,pctx);CHKERRQ(ierr);
 
     /* update markers = >> gauss points */
     {

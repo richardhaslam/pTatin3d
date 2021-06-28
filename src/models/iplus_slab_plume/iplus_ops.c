@@ -54,6 +54,7 @@
 #include "ptatin_utils.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "geometry_object.h"
+#include "material_point_popcontrol.h"
 
 #include "iplus_ctx.h"
 
@@ -423,7 +424,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_iPLUS(PetscInt nl,BCList bclist[],D
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ModelApplyMaterialBoundaryCondition_iPLUS(pTatinCtx c,void *ctx)
+PetscErrorCode ModelAdaptMaterialPointResolution_iPLUS(pTatinCtx c,void *ctx)
 {
   iPLUSCtx       *data = (iPLUSCtx*)ctx;
   PetscErrorCode ierr;
@@ -434,6 +435,9 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_iPLUS(pTatinCtx c,void *ctx)
   if ( (data->modeltype == iPLUsModelPlume) || (data->modeltype == iPLUsModelSlabPlume) ) {
     ierr = iPLUS_ApplyMaterialBoundaryCondition_Plume(c,data);CHKERRQ(ierr);
   }
+  
+  /* Perform injection and cleanup of markers */
+  ierr = MaterialPointPopulationControl_v1(c);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -660,7 +664,7 @@ PetscErrorCode pTatinModelRegister_iPLUS(void)
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_iPLUS);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_iPLUS);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_iPLUS);CHKERRQ(ierr);
-  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_iPLUS);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_ADAPT_MP_RESOLUTION,   (void (*)(void))ModelAdaptMaterialPointResolution_iPLUS);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_iPLUS);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_iPLUS);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_iPLUS);CHKERRQ(ierr);
