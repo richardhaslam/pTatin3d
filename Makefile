@@ -51,7 +51,6 @@ INCDIRGEN ?= $(INSTALL_DIR)/include_gen
 CONFIG_SPMA      ?= n
 CONFIG_FASTSCAPE ?= n
 
-CONFIG_FORTRAN = y
 CONFIG_CUDA ?= n
 CONFIG_OPENCL ?= n
 
@@ -101,11 +100,11 @@ endif
 libptatin3d = $(LIBDIR)/libptatin3d.$(AR_LIB_SUFFIX)
 libptatin3d : $(libptatin3d)
 
-$(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.cu:%.cu=$(OBJDIR)/%.o) $(libptatin3d-y.f:%.f90=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
+$(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.cu:%.cu=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
 
 libptatin3dmodels = $(LIBDIR)/libptatin3dmodels.$(AR_LIB_SUFFIX)
 libptatin3dmodels : $(libptatin3dmodels)
-$(libptatin3dmodels) : $(libptatin3dmodels-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3dmodels-y.f:%.f90=$(OBJDIR)/%.o)
+$(libptatin3dmodels) : $(libptatin3dmodels-y.c:%.c=$(OBJDIR)/%.o)
 
 info:
 	-@echo "—————————————————————————————————————————————————————————————————"
@@ -185,7 +184,6 @@ FC_DEPFLAGS ?= -MMD -MP
 TATIN_CFLAGS_EXTENSIONS+=-D_GNU_SOURCE
 
 TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS) $(TATIN_CFLAGS_EXTENSIONS)
-TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
 TATIN_COMPILE.cu = $(CUDA_NVCC) -c -Xcompiler "$(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(TATIN_CFLAGS_EXTENSIONS)"
 
 
@@ -207,9 +205,6 @@ $(BINDIR)/%.app : $(OBJDIR)/%.o | $$(@D)/.DIR
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 	$(TATIN_COMPILE.c) $(abspath $<) -o $@
-
-$(OBJDIR)/%.o: %.f90 | $$(@D)/.DIR
-	$(TATIN_COMPILE.f90) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o: %.cu | $$(@D)/.DIR
 	$(TATIN_COMPILE.cu) $(abspath $<) -o $@

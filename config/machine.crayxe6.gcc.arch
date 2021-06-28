@@ -7,15 +7,10 @@
 export TATIN_CFLAGS_DEBUG	= -O0 -g
 export TATIN_CFLAGS_OPT_a	= -O2 -hfp2 -hipa4 -hvector2 -hreport=vs
 export TATIN_CFLAGS_OPT_b = -O3 -hfp3 -hipa4 -hvector3 -hreport=vs
-
-export TATIN_FFLAGS_DEBUG	= -O0 -ffree-line-length-4000
-export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
-
 #
 #  Select optimized or debug compilation flags
 #
 export TATIN_CFLAGS	= ${TATIN_CFLAGS_OPT_a}
-export TATIN_FFLAGS	= ${TATIN_FFLAGS_OPT_a}
 
 #
 #  -- pTatin external packages --
